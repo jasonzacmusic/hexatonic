@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "About",
-  description: "How SHADAVA was built, what it claims, and what it deliberately does not claim.",
+  description: "How Hexatonic was built, what it claims, and what it deliberately does not claim.",
 };
 
 export default function Page() {
@@ -11,7 +11,7 @@ export default function Page() {
     <article className="max-w-2xl space-y-6 pb-10">
       <h1 className="text-3xl font-extrabold">About</h1>
       <p className="lede">
-        SHADAVA is a practice tool for six-note scales, built at Nathaniel School of
+        Hexatonic is a practice tool for six-note scales, built at Nathaniel School of
         Music by Jason Zac.
       </p>
       <p className="text-muted">

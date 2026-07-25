@@ -1,8 +1,8 @@
 {
-  "name": "shadava",
+  "name": "hexatonic",
   "version": "1.0.0",
   "private": true,
-  "description": "SHADAVA — the six-note practice engine. Nathaniel School of Music.",
+  "description": "Hexatonic — the six-note practice engine. Nathaniel School of Music.",
   "scripts": {
     "dev": "next dev -p 3311",
     "build": "next build",

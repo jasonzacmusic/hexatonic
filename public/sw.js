@@ -1,4 +1,4 @@
-/* SHADAVA offline shell. The live shoot cannot depend on venue wifi. */
+/* Hexatonic offline shell. The live shoot cannot depend on venue wifi. */
 const CACHE = "shadava-v1";
 const CORE = ["/", "/practice", "/learn", "/scales", "/resolution", "/live",
               "/manifest.webmanifest", "/icon.svg"];

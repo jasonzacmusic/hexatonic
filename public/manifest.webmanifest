@@ -1,6 +1,6 @@
 {
-  "name": "SHADAVA — the six-note practice engine",
-  "short_name": "SHADAVA",
+  "name": "Hexatonic — the six-note practice engine",
+  "short_name": "Hexatonic",
   "description": "Practise hexatonic scales in any key, in Carnatic groupings, with real notation and real piano.",
   "start_url": "/practice",
   "scope": "/",
