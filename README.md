@@ -1,20 +1,21 @@
-# SHADAVA — the six-note practice engine
+# Hexatonic — the six-note practice engine
 
-## ▶ It's live — use it
+## ▶ LIVE
 
-**https://shadava-4wmm5aqpa-jasonzacmusics-projects.vercel.app**
+# **https://hexatonic.nathanielschool.com**
 
-- [/practice](https://shadava-4wmm5aqpa-jasonzacmusics-projects.vercel.app/practice) — the drill machine
-- [/learn](https://shadava-4wmm5aqpa-jasonzacmusics-projects.vercel.app/learn) — the five theorems, each with a button that proves it by ear
-- [/scales](https://shadava-4wmm5aqpa-jasonzacmusics-projects.vercel.app/scales) — every family in every key
-- [/resolution](https://shadava-4wmm5aqpa-jasonzacmusics-projects.vercel.app/resolution) — the bar-count calculator
-- [/live](https://shadava-4wmm5aqpa-jasonzacmusics-projects.vercel.app/live) — presenter mode for the shoot
+Immediate alias (skips DNS): **https://hexatonic.vercel.app**
 
-This is a **preview** deployment, not production — per the house rule, main waits for
-your approval. Say the word and it goes to `hexatonic.nathanielschool.com`.
+| | |
+|---|---|
+| [/practice](https://hexatonic.nathanielschool.com/practice) | the drill machine |
+| [/learn](https://hexatonic.nathanielschool.com/learn) | the five theorems, each with a button that proves it by ear |
+| [/scales](https://hexatonic.nathanielschool.com/scales) | every family in every key |
+| [/resolution](https://hexatonic.nathanielschool.com/resolution) | the bar-count calculator |
+| [/live](https://hexatonic.nathanielschool.com/live) | presenter mode for the shoot |
 
-Run it locally: `npm install && npm run dev` → http://localhost:3311
-Run the theory tests: `npm test` (56 tests, gated against `engine/verified.json`)
+Local: `npm install && npm run dev` → http://localhost:3311
+Tests: `npm test` — 56 tests gated against `engine/verified.json`
 
 ---
 
