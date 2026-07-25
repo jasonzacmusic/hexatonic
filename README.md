@@ -14,6 +14,11 @@ Immediate alias (skips DNS): **https://hexatonic.vercel.app**
 | [/resolution](https://hexatonic.nathanielschool.com/resolution) | the bar-count calculator |
 | [/live](https://hexatonic.nathanielschool.com/live) | presenter mode for the shoot |
 
+**Repo:** https://github.com/jasonzacmusic/hexatonic
+
+**Handing it to Codex?** → [CODEX-AUDIT-PROMPT.md](CODEX-AUDIT-PROMPT.md) — one copy-paste block.
+**What's still unbuilt?** → [docs/09-ROADMAP.md](docs/09-ROADMAP.md) — every feature from the original brief, with status.
+
 Local: `npm install && npm run dev` → http://localhost:3311
 Tests: `npm test` — 56 tests gated against `engine/verified.json`
 
