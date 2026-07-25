@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: dark; }
+html, body { background: #0E0D0C; color: #F4EFE4; }
+body { -webkit-font-smoothing: antialiased; }
+
+/* VexFlow sizes its root SVG with an INLINE absolute-pixel style. This is the one
+   place !important genuinely earns its keep — without it, percentage-positioned
+   overlays drift sideways from the notes they label. */
+.vf-host svg { width: 100% !important; height: auto !important; display: block; }
+
+@layer components {
+  .btn { @apply rounded-lg px-4 py-2.5 text-sm font-semibold transition; }
+  .btn-primary { @apply bg-gold text-[#17130a] hover:brightness-110; }
+  .btn-ghost { @apply border border-line text-muted hover:text-cream; }
+  .btn-ghost[data-on="true"] { @apply border-gold text-gold; }
+  .seg { @apply flex overflow-hidden rounded-lg border border-line; }
+  .seg button { @apply border-r border-line bg-surface2 px-3 py-2 text-sm text-muted transition last:border-r-0 hover:text-cream; }
+  .seg button[data-on="true"] { @apply bg-gold font-bold text-[#17130a] hover:text-[#17130a]; }
+  .field { @apply flex flex-col gap-1.5; }
+  .field label { @apply font-mono text-[10px] uppercase tracking-[0.12em] text-muted; }
+  .sel { @apply rounded-lg border border-line bg-surface2 px-3 py-2 text-sm text-cream outline-none focus:border-gold; }
+  .card { @apply rounded-xl border border-line bg-surface p-5; }
+  .lede { @apply text-lg leading-relaxed text-cream/85; }
+  .chip { @apply rounded-lg border border-line bg-surface2 px-3 py-2 text-center; }
+}
+::selection { background: #C9A227; color: #17130a; }

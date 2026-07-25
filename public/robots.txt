@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /live
+Sitemap: https://hexatonic.nathanielschool.com/sitemap.xml

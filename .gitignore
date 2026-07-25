@@ -1,4 +1,8 @@
 node_modules/
 .next/
+out/
+.vercel/
 .DS_Store
 __pycache__/
+*.tsbuildinfo
+next-env.d.ts
