@@ -1,5 +1,7 @@
 /* Hexatonic offline shell. The live shoot cannot depend on venue wifi. */
-const CACHE = "shadava-v1";
+const CACHE_PREFIX = "hexatonic-";
+const BUILD = new URL(self.location.href).searchParams.get("v") || "local";
+const CACHE = `${CACHE_PREFIX}${BUILD}`;
 const CORE = ["/", "/practice", "/learn", "/scales", "/resolution", "/live",
               "/manifest.webmanifest", "/icon.svg"];
 
@@ -9,7 +11,9 @@ self.addEventListener("install", (e) => {
 self.addEventListener("activate", (e) => {
   e.waitUntil(
     caches.keys()
-      .then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then((ks) => Promise.all(
+        ks.filter((k) => k.startsWith(CACHE_PREFIX) && k !== CACHE).map((k) => caches.delete(k))
+      ))
       .then(() => self.clients.claim())
   );
 });

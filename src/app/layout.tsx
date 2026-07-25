@@ -1,9 +1,19 @@
 import type { Metadata, Viewport } from "next";
+import { Archivo, Cormorant, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import Nav from "@/components/Nav";
 import Link from "next/link";
 
 const SITE = "https://hexatonic.nathanielschool.com";
+const BUILD_VERSION = process.env.NEXT_PUBLIC_BUILD_VERSION || "local";
+const archivo = Archivo({ subsets: ["latin"], variable: "--font-archivo", display: "swap" });
+const cormorant = Cormorant({
+  subsets: ["latin"], weight: ["400", "600"], style: ["normal", "italic"],
+  variable: "--font-cormorant", display: "swap",
+});
+const plex = IBM_Plex_Mono({
+  subsets: ["latin"], weight: ["400", "500"], variable: "--font-plex-mono", display: "swap",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
@@ -71,16 +81,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;800;900&family=Cormorant:ital,wght@0,400;0,600;1,300;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap"
-        />
         <script type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(JSONLD) }} />
       </head>
-      <body className="min-h-screen font-sans antialiased">
+      <body className={`${archivo.variable} ${cormorant.variable} ${plex.variable} min-h-screen font-sans antialiased`}>
         <Nav />
         <main className="mx-auto max-w-content px-5 pb-28 pt-8 sm:px-8">{children}</main>
 
@@ -118,7 +122,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         <script
           dangerouslySetInnerHTML={{
-            __html: `if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){})})}`,
+            __html: `if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js?v=${encodeURIComponent(BUILD_VERSION)}').catch(function(){})})}`,
           }}
         />
       </body>

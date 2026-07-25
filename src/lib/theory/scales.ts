@@ -132,7 +132,7 @@ export const FAMILIES: Family[] = [
     id: "diatonic", short: "Diatonic hexachord",
     label: "Diatonic hexachord (6-32) — the core", kind: "rotation", size: 6,
     modes: DIATONIC_MODES,
-    note: "Zero tritones, five perfect fourths. The most consonant six-note set there is.",
+    note: "Zero tritones and five perfect fourths in its skip-three cycle.",
   },
   {
     id: "mixo", short: "Mixolydian hexatonic",
@@ -184,6 +184,8 @@ export const familyById = (id: string): Family =>
 export interface ScaleInstance {
   notes: Note[];
   removed: Note | null;
+  /** Relative-major key signature used by the staff, or null for synthetic sets. */
+  keySignature: string | null;
   label: string;
   aka: string[];
   teaching: string;
@@ -202,13 +204,14 @@ export interface ScaleInstance {
 export function buildScale(tonicName: string, familyId: string, modeIndex = 0): ScaleInstance {
   const family = familyById(familyId);
   const fail = (msg: string): ScaleInstance => ({
-    notes: [], removed: null, label: family.label, aka: [], teaching: "",
+    notes: [], removed: null, keySignature: null, label: family.label, aka: [], teaching: "",
     degrees: [], family, modeIndex, tonic: tonicName, pcs: [], primeForm: [],
     intervalVector: [], forte: "—", tritones: 0, error: msg,
   });
 
   let notes: Note[] = [];
   let removed: Note | null = null;
+  let keySignature: string | null = null;
   let label = family.label;
   let aka: string[] = [];
   let teaching = family.note ?? "";
@@ -229,18 +232,22 @@ export function buildScale(tonicName: string, familyId: string, modeIndex = 0): 
     label = md.name;
     aka = md.aka;
     teaching = md.teaching;
-    removed = findRemoved(notes);
+    const parent = findParentScale(notes);
+    removed = parent?.removed ?? null;
+    keySignature = parent?.key ?? null;
   } else if (family.kind === "omit") {
     const full = buildDiatonic(tonicName, family.parent!);
     if (!full) return fail(`${tonicName} cannot be spelled here.`);
     const k = family.omit as number;
     notes = full.filter((_, i) => i !== k - 1);
     removed = full[k - 1];
+    keySignature = inferMajorKey(full);
   } else if (family.kind === "omitMulti") {
     const full = buildDiatonic(tonicName, family.parent!);
     if (!full) return fail(`${tonicName} cannot be spelled here.`);
     const om = family.omit as number[];
     notes = full.filter((_, i) => !om.includes(i + 1));
+    keySignature = inferMajorKey(full);
   } else {
     const t = parseNoteName(tonicName);
     for (let i = 0; i < family.semis!.length; i++) {
@@ -257,7 +264,7 @@ export function buildScale(tonicName: string, familyId: string, modeIndex = 0): 
   if (!degrees.length) degrees = degreesFromSemis(notes);
 
   return {
-    notes, removed, label, aka, teaching, degrees, family, modeIndex,
+    notes, removed, keySignature, label, aka, teaching, degrees, family, modeIndex,
     tonic: tonicName, pcs, primeForm: primeForm(pcs), intervalVector: iv,
     forte: forteName(pcs), tritones: iv[5],
   };
@@ -273,8 +280,8 @@ function degreesFromSemis(notes: Note[]): string[] {
   return notes.map((n) => SEMI_DEG[(((pc(n) - root) % 12) + 12) % 12]);
 }
 
-/** Which note did we knock off? Find the major scale containing all of ours. */
-function findRemoved(notes: Note[]): Note | null {
+/** Which parent key and note produced this rotation? */
+function findParentScale(notes: Note[]): { key: string; removed: Note } | null {
   const have = new Set(notes.map(pc));
   for (const root of KEYS) {
     const full = buildDiatonic(root, MAJOR);
@@ -282,8 +289,19 @@ function findRemoved(notes: Note[]): Note | null {
     const fpc = full.map(pc);
     if ([...have].every((p) => fpc.includes(p))) {
       const miss = full.filter((n) => !have.has(pc(n)));
-      if (miss.length === 1) return miss[0];
+      if (miss.length === 1) return { key: root, removed: miss[0] };
     }
+  }
+  return null;
+}
+
+/** Infer the relative-major signature for a complete parent scale. */
+function inferMajorKey(notes: Note[]): string | null {
+  const target = new Set(notes.map(pc));
+  for (const root of KEYS) {
+    const major = buildDiatonic(root, MAJOR);
+    if (!major || major.length !== target.size) continue;
+    if (major.every((n) => target.has(pc(n)))) return root;
   }
   return null;
 }

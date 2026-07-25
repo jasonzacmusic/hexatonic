@@ -115,14 +115,14 @@ export default function ScaleRing({
           const r = size * 0.032;
           return (
             <g key="rm">
-              <circle cx={x} cy={y} r={r} fill="none" stroke="#8B1E24" strokeWidth={size * 0.011} />
+              <circle cx={x} cy={y} r={r} fill="none" stroke="#E8666C" strokeWidth={size * 0.011} />
               <line x1={x - r * 0.72} y1={y - r * 0.72} x2={x + r * 0.72} y2={y + r * 0.72}
-                    stroke="#8B1E24" strokeWidth={size * 0.009} strokeLinecap="round" />
+                    stroke="#E8666C" strokeWidth={size * 0.009} strokeLinecap="round" />
               {showLabels && (() => {
                 const L = labelFor(removedPc, size * 0.088);
                 return (
                   <text x={L.x} y={L.y} textAnchor="middle"
-                        className="fill-[#8B1E24] font-mono"
+                        className="fill-[#E8666C] font-mono"
                         style={{ fontSize: size * 0.05, fontWeight: 600 }}>
                     {notePretty(removed!)}
                   </text>

@@ -7,4 +7,11 @@ export const metadata: Metadata = {
   robots: { index: false },
 };
 
-export default function Page() { return <LiveClient />; }
+export default function Page() {
+  return (
+    <>
+      <h1 className="sr-only">Hexatonic presenter mode</h1>
+      <LiveClient />
+    </>
+  );
+}

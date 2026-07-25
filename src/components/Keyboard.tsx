@@ -10,7 +10,8 @@
  *   cream = the rest of the scale
  */
 
-import { Note, pc, midi, noteName } from "@/lib/theory/note";
+import { Note, pc } from "@/lib/theory/note";
+import type { KeyboardEvent } from "react";
 
 interface Props {
   scale: Note[];
@@ -24,6 +25,11 @@ interface Props {
 
 const WHITE_OFFSETS = [0, 2, 4, 5, 7, 9, 11];
 const BLACK_AFTER: Record<number, number> = { 1: 0, 3: 1, 6: 3, 8: 4, 10: 5 };
+const MIDI_NAMES = ["C", "C sharp", "D", "E flat", "E", "F", "F sharp", "G", "A flat", "A", "B flat", "B"];
+
+function midiLabel(m: number) {
+  return `${MIDI_NAMES[((m % 12) + 12) % 12]} ${Math.floor(m / 12) - 1}`;
+}
 
 export default function Keyboard({
   scale, removed, activeMidi = null, startMidi = 60, octaves = 2,
@@ -51,28 +57,45 @@ export default function Keyboard({
     if (inScale.has(p)) return black ? "#C9A227" : "#F4EFE4";
     return black ? "#100E0D" : "#2A2624";
   };
+  const keyProps = (m: number, removedKey: boolean) => onNote ? {
+    role: "button",
+    tabIndex: 0,
+    "aria-label": `Play ${midiLabel(m)}${
+      removedKey ? ", the removed note" : inScale.has(((m % 12) + 12) % 12) ? ", a scale note" : ""
+    }`,
+    onKeyDown: (e: KeyboardEvent<SVGGElement>) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        onNote(m);
+      }
+    },
+  } : {};
 
   return (
     <div className="overflow-x-auto">
       <svg
         width={width}
         height={height + 4}
-        role="img"
-        aria-label="Keyboard showing the scale, with the removed note struck through"
+        role={onNote ? "group" : "img"}
+        aria-label={onNote
+          ? "Playable piano keyboard. Use Tab to move between keys and Enter or Space to play."
+          : "Keyboard showing the scale, with the removed note struck through"}
       >
         {whites.map(({ m, x }) => {
           const p = ((m % 12) + 12) % 12;
           const isRem = p === removedPc;
           return (
-            <g key={`w${m}`} onClick={() => onNote?.(m)} style={{ cursor: onNote ? "pointer" : "default" }}>
+            <g key={`w${m}`} className={onNote ? "piano-key" : undefined}
+               {...keyProps(m, isRem)}
+               onClick={() => onNote?.(m)} style={{ cursor: onNote ? "pointer" : "default" }}>
               <rect
                 x={x + 1} y={1} width={W - 2} height={height} rx={3}
                 fill={fill(m, false)}
-                stroke={isRem ? "#8B1E24" : "#332E2C"}
+                stroke={isRem ? "#E8666C" : "#332E2C"}
                 strokeWidth={isRem ? 3 : 1}
               />
               {isRem && (
-                <text x={x + W / 2} y={height - 10} fill="#8B1E24" fontSize={16}
+                <text x={x + W / 2} y={height - 10} fill="#E8666C" fontSize={16}
                       fontWeight={800} textAnchor="middle">✕</text>
               )}
             </g>
@@ -82,15 +105,17 @@ export default function Keyboard({
           const p = ((m % 12) + 12) % 12;
           const isRem = p === removedPc;
           return (
-            <g key={`b${m}`} onClick={() => onNote?.(m)} style={{ cursor: onNote ? "pointer" : "default" }}>
+            <g key={`b${m}`} className={onNote ? "piano-key" : undefined}
+               {...keyProps(m, isRem)}
+               onClick={() => onNote?.(m)} style={{ cursor: onNote ? "pointer" : "default" }}>
               <rect
                 x={x} y={1} width={19} height={height * 0.62} rx={2}
                 fill={fill(m, true)}
-                stroke={isRem ? "#8B1E24" : "#000"}
+                stroke={isRem ? "#E8666C" : "#000"}
                 strokeWidth={isRem ? 3 : 1}
               />
               {isRem && (
-                <text x={x + 9.5} y={height * 0.62 - 6} fill="#8B1E24" fontSize={13}
+                <text x={x + 9.5} y={height * 0.62 - 6} fill="#E8666C" fontSize={13}
                       fontWeight={800} textAnchor="middle">✕</text>
               )}
             </g>

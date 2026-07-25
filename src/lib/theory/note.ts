@@ -153,7 +153,7 @@ export const FORTE: Record<string, string> = {
   "0,1,2,4,7,9": "6-Z47 · blues (minor AND major blues — same class, T3 apart)",
   "0,1,3,6,7,9": "6-30 · Petrushka / tritone",
   "0,1,3,5,7,9": "6-34 · Prometheus / mystic",
-  "0,2,4,5,7,9,11": "7-35 · diatonic",
+  "0,1,3,5,6,8,10": "7-35 · diatonic",
   "0,2,4,7,9": "5-35 · major pentatonic",
 };
 

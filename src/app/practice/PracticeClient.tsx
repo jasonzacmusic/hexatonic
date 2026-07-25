@@ -14,26 +14,32 @@ import { getAudio } from "@/lib/audio/engine";
 
 export default function PracticeClient() {
   const d = useDrill();
-  const { state, set, scale, notes, resolution, gati, seconds, playing, index } = d;
+  const { state, set, scale, notes, resolution, gati, seconds, playing, index, toggle } = d;
   const [copied, setCopied] = useState(false);
+  const [mobileTab, setMobileTab] = useState<"scale" | "pattern" | "rhythm">("scale");
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement;
       if (["INPUT", "SELECT", "TEXTAREA"].includes(t.tagName)) return;
-      if (e.code === "Space") { e.preventDefault(); d.toggle(); }
+      if (e.code === "Space") { e.preventDefault(); toggle(); }
       if (e.key === "l") set("loop", !state.loop);
       if (e.key === "c") set("click", !state.click);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [d, set, state.loop, state.click]);
+  }, [set, state.loop, state.click, toggle]);
 
   const activeNote = index >= 0 && notes[index] ? notes[index] : null;
   const activePc = activeNote ? pc(activeNote) : null;
   const isRotation = scale.family.kind === "rotation";
   const usesTop = d.patternDef.usesTopNote;
   const usesCell = d.patternDef.usesCell;
+  const copyLink = () => {
+    navigator.clipboard?.writeText(d.shareUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1600);
+  };
 
   return (
     <div className="space-y-5">
@@ -42,13 +48,15 @@ export default function PracticeClient() {
         <div className="card flex flex-col justify-between gap-6">
           <div>
             <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-              <h1 className="display text-4xl">{state.key}</h1>
-              <span className="text-lg font-semibold text-cream/80">{scale.label}</span>
+              <h1 className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                <span className="display text-4xl">{state.key}</span>
+                <span className="text-lg font-semibold text-cream/80">{scale.label}</span>
+              </h1>
             </div>
             <p className="quiet mt-2 max-w-xl">{scale.teaching}</p>
           </div>
 
-          <ScaleChips scale={scale} activePc={activePc} transpose={state.transpose} size="lg" />
+          <ScaleChips scale={scale} activePc={activePc} size="lg" />
 
           <div className="flex flex-wrap gap-x-6 gap-y-1 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
             <span>{scale.forte}</span>
@@ -60,7 +68,7 @@ export default function PracticeClient() {
           </div>
         </div>
 
-        <div className="card flex items-center justify-center lg:w-[340px]">
+        <div className="card hidden items-center justify-center lg:flex lg:w-[340px]">
           <div className="relative">
             <ScaleRing notes={scale.notes} removed={scale.removed} activePc={activePc} size={290} />
             <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
@@ -86,7 +94,114 @@ export default function PracticeClient() {
 
       {/* ── controls ────────────────────────────────────────────────── */}
       <section className="card">
-        <div className="grid gap-5 lg:grid-cols-2">
+        <div className="mb-5 grid grid-cols-3 gap-1 rounded-xl border border-line bg-surface2 p-1 lg:hidden"
+             role="tablist" aria-label="Practice controls">
+          {(["scale", "pattern", "rhythm"] as const).map((tab) => (
+            <button key={tab} role="tab" aria-selected={mobileTab === tab}
+                    onClick={() => setMobileTab(tab)}
+                    className={`rounded-lg px-2 py-2.5 text-xs font-bold capitalize transition ${
+                      mobileTab === tab ? "bg-gold text-[#17130a]" : "text-muted"}`}>
+              {tab}
+            </button>
+          ))}
+        </div>
+
+        <div className="space-y-4 lg:hidden">
+          {mobileTab === "scale" && (
+            <>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="field">
+                  <label htmlFor="mobile-key">Key</label>
+                  <select id="mobile-key" className="sel" value={state.key}
+                          onChange={(e) => set("key", e.target.value)}>
+                    {KEYS.map((k) => <option key={k}>{k}</option>)}
+                  </select>
+                </div>
+                <div className="field">
+                  <label htmlFor="mobile-family">Family</label>
+                  <select id="mobile-family" className="sel" value={state.family}
+                          onChange={(e) => { set("family", e.target.value); set("mode", 0); }}>
+                    {FAMILIES.map((f) => <option key={f.id} value={f.id}>{f.short}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div className="field">
+                <label htmlFor="mobile-mode">Mode / rotation</label>
+                <select id="mobile-mode" className="sel" value={state.mode} disabled={!isRotation}
+                        onChange={(e) => set("mode", Number(e.target.value))}>
+                  {isRotation
+                    ? DIATONIC_MODES.map((m) => (
+                        <option key={m.index} value={m.index}>{m.name} · {m.degrees}</option>))
+                    : <option value={0}>—</option>}
+                </select>
+              </div>
+            </>
+          )}
+
+          {mobileTab === "pattern" && (
+            <>
+              <div className="field">
+                <label htmlFor="mobile-pattern">Pattern</label>
+                <select id="mobile-pattern" className="sel" value={state.pattern}
+                        onChange={(e) => set("pattern", e.target.value as any)}>
+                  {PATTERNS.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
+                </select>
+              </div>
+              <div className="flex flex-wrap items-end gap-4">
+                <div className="field">
+                  <label>Octaves</label>
+                  <Seg value={state.octaves} ariaLabel="Mobile octaves"
+                       options={[1, 2, 3].map((v) => ({ label: String(v), value: v }))}
+                       onChange={(v) => set("octaves", v)} />
+                </div>
+                <div className="field" style={{ opacity: usesTop ? 1 : 0.4 }}>
+                  <label>Top note</label>
+                  <Toggle on={state.includeTop && usesTop} disabled={!usesTop}
+                          onClick={() => usesTop && set("includeTop", !state.includeTop)}>
+                    {usesTop ? (state.includeTop ? "on" : "off") : "n/a"}
+                  </Toggle>
+                </div>
+                <div className="field" style={{ opacity: usesCell ? 1 : 0.4 }}>
+                  <label htmlFor="mobile-cell">Cell</label>
+                  <select id="mobile-cell" className="sel !w-20" value={state.cell} disabled={!usesCell}
+                          onChange={(e) => set("cell", Number(e.target.value))}>
+                    {[3, 4, 5, 6].map((v) => <option key={v}>{v}</option>)}
+                  </select>
+                </div>
+              </div>
+            </>
+          )}
+
+          {mobileTab === "rhythm" && (
+            <>
+              <div className="field">
+                <label>Subdivision</label>
+                <Seg value={state.sub} ariaLabel="Mobile subdivision"
+                     options={SUBDIVISIONS.map((s) => ({ label: s.label, value: s.value }))}
+                     onChange={(v) => set("sub", v)} />
+              </div>
+              <div className="field">
+                <label>Accent grouping</label>
+                <Seg value={state.grouping} ariaLabel="Mobile accent grouping"
+                     options={[3, 4, 5, 6, 7, 9].map((v) => ({ label: String(v), value: v }))}
+                     onChange={(v) => set("grouping", v)} />
+              </div>
+              <div className="flex flex-wrap items-end gap-3">
+                <div className="field">
+                  <label>Resolve</label>
+                  <Seg value={state.resolve} ariaLabel="Mobile resolve mode"
+                       options={[{ label: "accent", value: "accent" as const },
+                                 { label: "full", value: "full" as const }]}
+                       onChange={(v) => set("resolve", v)} />
+                </div>
+                <Toggle on={state.loop} onClick={() => set("loop", !state.loop)}>Loop</Toggle>
+                <Toggle on={state.click} onClick={() => set("click", !state.click)}>Click</Toggle>
+              </div>
+            </>
+          )}
+        </div>
+
+        <div className="hidden gap-5 lg:grid lg:grid-cols-2">
           <div className="space-y-4">
             <p className="eyebrow">The scale</p>
             <div className="grid gap-4 sm:grid-cols-2">
@@ -175,9 +290,9 @@ export default function PracticeClient() {
           </div>
         </div>
 
-        <hr className="my-5 border-line" />
-
-        <div className="flex flex-wrap items-center gap-4">
+        <div className="hidden lg:block">
+          <hr className="my-5 border-line" />
+          <div className="flex flex-wrap items-center gap-4">
           <button className={`btn ${playing ? "btn-stop" : "btn-primary"} min-w-[132px] px-8 py-3.5 text-base tracking-wider`}
                   onClick={d.toggle}>
             {d.loadingAudio ? "LOADING…" : playing ? "STOP" : "PLAY"}
@@ -190,18 +305,40 @@ export default function PracticeClient() {
           <Toggle on={state.loop} onClick={() => set("loop", !state.loop)}>Loop</Toggle>
           <Toggle on={state.click} onClick={() => set("click", !state.click)}>Click</Toggle>
           <button className="btn btn-ghost"
-                  onClick={() => {
-                    navigator.clipboard?.writeText(d.shareUrl);
-                    setCopied(true); setTimeout(() => setCopied(false), 1600);
-                  }}>
+                  onClick={copyLink}>
             {copied ? "✓ Link copied" : "Copy drill link"}
           </button>
           <span className="ml-auto font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
             space play · l loop · c click
           </span>
+          </div>
         </div>
-        {d.audioError && <p className="mt-3 text-sm text-red-hi">Audio: {d.audioError}</p>}
+        <p className="mt-3 min-h-5 text-sm text-muted" role="status" aria-live="polite">
+          {d.loadingAudio ? "Loading 17 piano samples…"
+            : d.audioReady ? "Piano ready."
+            : "Piano samples load the first time you press Play."}
+        </p>
+        {d.audioError && <p className="mt-1 text-sm text-amber" role="alert">Audio: {d.audioError}</p>}
       </section>
+
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-bg/95 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-xl lg:hidden">
+        <div className="mx-auto flex max-w-lg items-center gap-2">
+          <button className={`btn ${playing ? "btn-stop" : "btn-primary"} min-w-[116px] flex-1 py-3 text-base tracking-wider`}
+                  onClick={toggle}>
+            {d.loadingAudio ? "LOADING…" : playing ? "STOP" : "PLAY"}
+          </button>
+          <button className="btn btn-ghost px-3 py-3" aria-label="Decrease tempo"
+                  onClick={() => set("bpm", Math.max(40, state.bpm - 4))}>−</button>
+          <span className="w-12 text-center text-xl font-extrabold tabular-nums text-gold"
+                aria-label={`${state.bpm} beats per minute`}>{state.bpm}</span>
+          <button className="btn btn-ghost px-3 py-3" aria-label="Increase tempo"
+                  onClick={() => set("bpm", Math.min(200, state.bpm + 4))}>+</button>
+          <button className="btn btn-ghost px-3 py-3" onClick={copyLink}
+                  aria-label={copied ? "Link copied" : "Copy drill link"}>
+            {copied ? "✓" : "Link"}
+          </button>
+        </div>
+      </div>
 
       <ResolutionBanner resolution={resolution} gati={gati} seconds={seconds}
                         bpm={state.bpm} playing={playing} />
@@ -215,13 +352,14 @@ export default function PracticeClient() {
 
       {!scale.error && notes.length > 0 && (
         <Notation notes={notes} subdivision={state.sub} grouping={state.grouping}
+                  keySignature={scale.keySignature}
                   activeIndex={index} />
       )}
 
       <section className="card">
         <Keyboard scale={scale.notes} removed={scale.removed}
                   activeMidi={activeNote ? midi(activeNote) : null} octaves={2}
-                  onNote={(m) => getAudio().preview([m + 12])} />
+                  onNote={(m) => getAudio().preview([m])} />
         <div className="mt-4 flex flex-wrap gap-x-7 gap-y-2 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
           <span><i className="mr-2 inline-block h-2.5 w-2.5 rounded-sm bg-gold align-middle" />sounding now</span>
           <span><i className="mr-2 inline-block h-2.5 w-2.5 rounded-sm bg-red align-middle" />the note we removed</span>
@@ -231,11 +369,11 @@ export default function PracticeClient() {
       </section>
 
       <section className="card">
-        <p className="eyebrow">Available harmony</p>
+        <h2 className="eyebrow">Available harmony</h2>
         <p className="quiet mb-5 mt-2">
           Tap to hear it. Where a chord has two correct names, tap again to flip the reading.
         </p>
-        <ChordGrid scale={scale} transpose={state.transpose} />
+        <ChordGrid scale={scale} />
       </section>
 
       <p className="quiet max-w-3xl">

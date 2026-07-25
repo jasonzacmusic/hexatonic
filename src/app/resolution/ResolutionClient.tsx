@@ -52,7 +52,7 @@ export default function ResolutionClient() {
   );
 
   const tone = (bars: number) =>
-    bars <= 4 ? "text-gold" : bars <= 8 ? "text-amber" : "text-red/80";
+    bars <= 4 ? "text-gold" : "text-amber";
 
   return (
     <div className="space-y-6 pb-10">

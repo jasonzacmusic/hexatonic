@@ -19,9 +19,7 @@ export function ResolutionBanner({
   big?: boolean; playing?: boolean;
 }) {
   const bars = resolution.bars;
-  const tone = bars <= 4 ? "gold" : bars <= 8 ? "amber" : "red";
-  const accent =
-    tone === "gold" ? "#C9A227" : tone === "amber" ? "#D08A2C" : "#C4353C";
+  const accent = bars <= 4 ? "#C9A227" : "#D08A2C";
   const verdict =
     bars <= 4 ? "Short and camera-friendly."
     : bars <= 8 ? "Usable, but long for a live take."
@@ -73,9 +71,9 @@ function Stat({
 /* ── scale chips, with the ghost ─────────────────────────────────────────── */
 
 export function ScaleChips({
-  scale, activePc = null, transpose = 1, size = "md",
-}: { scale: ScaleInstance; activePc?: number | null; transpose?: number; size?: "md" | "lg" }) {
-  if (scale.error) return <p className="text-sm text-red-hi">{scale.error}</p>;
+  scale, activePc = null, size = "md",
+}: { scale: ScaleInstance; activePc?: number | null; size?: "md" | "lg" }) {
+  if (scale.error) return <p className="text-sm text-amber">{scale.error}</p>;
   const lg = size === "lg";
   return (
     <div className="flex flex-wrap items-center gap-2.5">
@@ -84,7 +82,7 @@ export function ScaleChips({
         return (
           <button
             key={i}
-            onClick={() => getAudio().preview([midi(n) + 12 * transpose])}
+            onClick={() => { void getAudio().preview([midi(n)]).catch(() => undefined); }}
             className={`chip ${lit ? "chip-lit" : ""} ${lg ? "min-w-[74px] px-5 py-3" : "min-w-[58px]"}`}
           >
             <span className={`block font-semibold ${lg ? "text-3xl" : "text-lg"}`}>
@@ -113,7 +111,7 @@ export function ScaleChips({
    A chord is a pitch-class SET with a LIST of names. Tapping flips the reading,
    and that interaction is the teaching.                                     */
 
-export function ChordGrid({ scale, transpose = 1 }: { scale: ScaleInstance; transpose?: number }) {
+export function ChordGrid({ scale }: { scale: ScaleInstance }) {
   const chords = useMemo(() => (scale.error ? [] : findChords(scale.notes, [3, 4])), [scale]);
   if (!chords.length) return null;
   const groups: [string, ChordSet[]][] = [
@@ -130,7 +128,7 @@ export function ChordGrid({ scale, transpose = 1 }: { scale: ScaleInstance; tran
               {label} <span className="text-gold">{list.length}</span>
             </h3>
             <div className="flex flex-wrap gap-2">
-              {list.map((c, i) => <ChordCard key={i} chord={c} transpose={transpose} />)}
+              {list.map((c, i) => <ChordCard key={i} chord={c} />)}
             </div>
           </div>
         ) : null
@@ -139,14 +137,14 @@ export function ChordGrid({ scale, transpose = 1 }: { scale: ScaleInstance; tran
   );
 }
 
-function ChordCard({ chord, transpose }: { chord: ChordSet; transpose: number }) {
+function ChordCard({ chord }: { chord: ChordSet }) {
   const [i, setI] = useState(0);
   const name = chord.names[i % chord.names.length];
   const multi = chord.names.length > 1;
   return (
     <button
       onClick={() => {
-        getAudio().preview(chord.notes.map((n) => midi(n) + 12 * transpose));
+        void getAudio().preview(name.voicing.map(midi)).catch(() => undefined);
         if (multi) setI((v) => v + 1);
       }}
       className="group rounded-xl border border-line bg-surface2 px-4 py-2.5 text-left transition hover:border-gold/60 hover:bg-white/[0.03]"
@@ -170,6 +168,7 @@ export function Seg<T extends string | number>({
     <div className="seg" role="group" aria-label={ariaLabel}>
       {options.map((o) => (
         <button key={String(o.value)} type="button" data-on={o.value === value}
+                aria-pressed={o.value === value}
                 onClick={() => onChange(o.value)}>
           {o.label}
         </button>
@@ -183,7 +182,7 @@ export function Toggle({
 }: { on: boolean; onClick: () => void; children: React.ReactNode; title?: string; disabled?: boolean }) {
   return (
     <button type="button" className="btn btn-ghost" data-on={on} onClick={onClick}
-            title={title} disabled={disabled}>
+            aria-pressed={on} title={title} disabled={disabled}>
       {children}
     </button>
   );

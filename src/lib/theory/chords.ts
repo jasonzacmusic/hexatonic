@@ -7,7 +7,7 @@
  * the most valuable teaching moment in the app.
  */
 
-import { Note, noteName, pc } from "./note";
+import { midi, Note, note, noteName, pc } from "./note";
 
 type Family = "tertian" | "sus" | "quartal";
 
@@ -43,6 +43,8 @@ export interface ChordName {
   root: string;
   family: Family;
   notes: string[];
+  /** Close-position voicing above this reading's root, used for playback. */
+  voicing: Note[];
 }
 
 export interface ChordSet {
@@ -84,11 +86,22 @@ export function findChords(scaleNotes: Note[], sizes: (3 | 4)[] = [3, 4]): Chord
         const ordered = [...set].sort(
           (a, b) => ((((a - root) % 12) + 12) % 12) - ((((b - root) % 12) + 12) % 12)
         );
+        const voicing: Note[] = [];
+        let previousMidi = -Infinity;
+        for (const pitchClass of ordered) {
+          const source = byPc.get(pitchClass)!;
+          let voiced = note(source.letter, source.alt, source.octave);
+          while (midi(voiced) <= previousMidi)
+            voiced = note(voiced.letter, voiced.alt, voiced.octave + 1);
+          voicing.push(voiced);
+          previousMidi = midi(voiced);
+        }
         names.push({
           symbol: noteName(rootNote) + suffix,
           root: noteName(rootNote),
           family,
           notes: ordered.map((p) => noteName(byPc.get(p)!)),
+          voicing,
         });
       }
       if (!names.length) continue;
@@ -96,7 +109,7 @@ export function findChords(scaleNotes: Note[], sizes: (3 | 4)[] = [3, 4]): Chord
       out.push({
         size,
         pcs: set,
-        notes: names[0].notes.map((nn) => [...byPc.values()].find((v) => noteName(v) === nn)!),
+        notes: names[0].voicing,
         noteNames: names[0].notes,
         names,
         primaryFamily: names[0].family,

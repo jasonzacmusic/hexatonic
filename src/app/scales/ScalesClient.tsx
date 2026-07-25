@@ -19,7 +19,7 @@ export default function ScalesClient() {
   const chords = scale.error ? [] : tertianOnly(findChords(scale.notes, [3, 4]));
 
   const play = (gap = 0.2) =>
-    getAudio().preview(scale.notes.map((n) => midi(n) + 12), gap);
+    getAudio().preview(scale.notes.map((n) => midi(n)), gap);
 
   return (
     <div className="space-y-6 pb-10">
@@ -62,7 +62,7 @@ export default function ScalesClient() {
       </section>
 
       {scale.error ? (
-        <p className="text-red">{scale.error}</p>
+        <p className="text-amber">{scale.error}</p>
       ) : (
         <>
           <section className="card">
@@ -86,7 +86,7 @@ export default function ScalesClient() {
                     tone={scale.tritones === 0 ? "gold" : undefined} />
             </div>
             <div className="mt-5"><Keyboard scale={scale.notes} removed={scale.removed}
-                                            onNote={(m) => getAudio().preview([m + 12])} /></div>
+                                            onNote={(m) => getAudio().preview([m])} /></div>
           </section>
 
           {chords.length > 0 && (
@@ -97,7 +97,7 @@ export default function ScalesClient() {
               <div className="flex flex-wrap gap-2">
                 {chords.map((c, i) => (
                   <button key={i} className="chip hover:border-gold"
-                          onClick={() => getAudio().preview(c.notes.map((n) => midi(n) + 12), 0.05)}>
+                          onClick={() => getAudio().preview(c.notes.map((n) => midi(n)), 0.05)}>
                     <span className="font-semibold">{c.names.map((n) => n.symbol).join(" = ")}</span>
                     <span className="block font-mono text-[10px] text-muted">{c.noteNames.join(" ")}</span>
                   </button>
@@ -128,7 +128,7 @@ export default function ScalesClient() {
                     </span>
                     <button className="btn btn-ghost ml-auto px-3 py-1 text-xs"
                             onClick={() => getAudio().preview(
-                              c.pairs.flatMap((p) => [midi(p.from) + 12, midi(p.to) + 12]), 0.17)}>
+                              c.pairs.flatMap((p) => [midi(p.from), midi(p.to)]), 0.17)}>
                       ▶
                     </button>
                   </div>
@@ -159,8 +159,9 @@ export default function ScalesClient() {
           })}
         </div>
         <p className="mt-4 text-sm text-muted">
-          No repeated letters, no triple accidentals, in any of them. That is what the
-          letter-and-alteration model buys you.
+          Diatonic spellings preserve distinct scale letters and avoid triple accidentals.
+          Synthetic collections use the clearest conventional spelling, which can repeat
+          a letter in collections such as the blues scale.
         </p>
       </section>
 

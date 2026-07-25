@@ -22,7 +22,7 @@ function PlayLine({ notes, label, gap = 0.26 }: { notes: Note[]; label: string; 
       disabled={busy}
       onClick={async () => {
         setBusy(true);
-        await getAudio().preview(notes.map((n) => midi(n) + 12), gap);
+        await getAudio().preview(notes.map((n) => midi(n)), gap);
         setTimeout(() => setBusy(false), notes.length * gap * 1000 + 300);
       }}
     >
@@ -68,7 +68,8 @@ export default function LearnClient() {
       <Card n={1} title="Only the 4th and the 7th can go">
         <p className="text-muted">
           The major scale contains exactly one tritone: F–B. Remove either member of it —
-          and only those two — and nothing dissonant is left. Every other removal keeps it.
+          and only those two — and that tritone is gone. Every other removal keeps it.
+          This does not mean every remaining interval is consonant in every musical context.
         </p>
         <div className="overflow-x-auto">
           <table className="w-full max-w-xl text-sm">
@@ -125,7 +126,7 @@ export default function LearnClient() {
 
       <Card n={3} title="The scale is a chord">
         <p className="text-muted">
-          Stack all six notes in thirds and nothing is left over. From C you get maj13
+          Stack all six notes in thirds and every scale note is accounted for. From C you get maj13
           without the 11th; from A you get m11. Every note is a chord tone — because the
           note that wasn&rsquo;t is the one we removed.
         </p>
@@ -150,7 +151,7 @@ export default function LearnClient() {
         <div className="flex flex-wrap gap-2">
           {triads.map((c, i) => (
             <button key={i} className="chip hover:border-gold"
-                    onClick={() => getAudio().preview(c.notes.map((n) => midi(n) + 12), 0.05)}>
+                    onClick={() => getAudio().preview(c.notes.map((n) => midi(n)), 0.05)}>
               <span className="font-semibold">{c.names[0].symbol}</span>
               <span className="block font-mono text-[10px] text-muted">{c.noteNames.join(" ")}</span>
             </button>
@@ -159,7 +160,7 @@ export default function LearnClient() {
         <div className="flex flex-wrap gap-2">
           {tetrads.map((c, i) => (
             <button key={i} className="chip hover:border-gold"
-                    onClick={() => getAudio().preview(c.notes.map((n) => midi(n) + 12), 0.05)}>
+                    onClick={() => getAudio().preview(c.notes.map((n) => midi(n)), 0.05)}>
               <span className="font-semibold">{c.names.map((n) => n.symbol).join(" = ")}</span>
               <span className="block font-mono text-[10px] text-muted">{c.noteNames.join(" ")}</span>
             </button>
@@ -193,11 +194,11 @@ export default function LearnClient() {
             </p>
             <div className="mt-2"><PlayLine notes={flat(hexaFourths)} label="hear it" gap={0.2} /></div>
           </div>
-          <div className="rounded-lg border border-red/40 bg-red/5 p-3">
-            <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-red">seven notes</p>
+          <div className="rounded-lg border border-amber/40 bg-amber/5 p-3">
+            <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-amber">seven notes</p>
             <p className="mt-1 font-mono text-sm">
               {heptFourths.pairs.map((p) => (
-                <span key={noteName(p.from)} className={p.interval === "A4" ? "text-red" : ""}>
+                <span key={noteName(p.from)} className={p.interval === "A4" ? "text-amber" : ""}>
                   {noteName(p.from)}–{noteName(p.to)} ({p.interval}){"  "}
                 </span>
               ))}

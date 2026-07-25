@@ -15,7 +15,9 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import { Note, vexKey, ALT_NAME } from "@/lib/theory/note";
+import {
+  Note, vexKey, ALT_NAME, keySignatureAlterations, notePretty,
+} from "@/lib/theory/note";
 
 export interface NotationProps {
   notes: Note[];
@@ -23,13 +25,14 @@ export interface NotationProps {
   grouping: number;         // accent every N
   beatsPerBar?: number;
   maxBars?: number;
+  keySignature?: string | null;
   activeIndex?: number;
   compact?: boolean;
 }
 
 export default function Notation({
   notes, subdivision, grouping, beatsPerBar = 4,
-  maxBars = 24, activeIndex = -1, compact = false,
+  maxBars = 35, keySignature = null, activeIndex = -1, compact = false,
 }: NotationProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const groupsRef = useRef<SVGGElement[]>([]);
@@ -67,27 +70,39 @@ export default function Notation({
 
         const barsPerSystem = compact ? (subdivision <= 3 ? 2 : 1)
           : subdivision <= 2 ? 4 : subdivision === 3 ? 3 : 2;
+        const maxBarsInSystem = Math.min(barsPerSystem, showBars);
         const barW = compact ? 260
           : subdivision <= 2 ? 200 : subdivision === 3 ? 320 : subdivision === 4 ? 430 : 560;
         const dur = subdivision === 2 ? "8" : subdivision === 3 ? "8"
           : subdivision === 4 ? "16" : "16";
         const isTuplet = subdivision === 3 || subdivision === 6;
         const systems = Math.ceil(showBars / barsPerSystem);
-        const width = barsPerSystem * barW + 80;
-        const sysH = 128;
+        const width = maxBarsInSystem * barW + 80;
+        const sysH = 142;
+        const probe = new VF.Stave(12, 18 + Math.max(0, systems - 1) * sysH, barW + 46);
+        // A stave's y is the top of its box. Size from the actual bottom staff
+        // line instead of assuming that y is the first staff line.
+        const height = Math.ceil(probe.getYForLine(4) + 68);
 
         const renderer = new VF.Renderer(el, VF.Renderer.Backends.SVG);
-        renderer.resize(width, systems * sysH + 40);
+        renderer.resize(width, height);
         const ctx = renderer.getContext();
+        ctx.setFillStyle("#E8E0D2");
+        ctx.setStrokeStyle("#E8E0D2");
         ctx.setFont("Academico", 10);
         setNaturalWidth(width);
+        const signatureAlts = keySignature
+          ? keySignatureAlterations(keySignature)
+          : { C: 0, D: 0, E: 0, F: 0, G: 0, A: 0, B: 0 };
 
         let idx = 0;
         for (let sy = 0; sy < systems; sy++) {
           const barsHere = Math.min(barsPerSystem, showBars - sy * barsPerSystem);
           if (barsHere <= 0) break;
           const stave = new VF.Stave(12, 18 + sy * sysH, barsHere * barW + 46);
-          if (sy === 0) stave.addClef("treble").addTimeSignature(`${beatsPerBar}/4`);
+          stave.addClef("treble");
+          if (keySignature) stave.addKeySignature(keySignature);
+          if (sy === 0) stave.addTimeSignature(`${beatsPerBar}/4`);
           stave.setContext(ctx).draw();
 
           const tickables: any[] = [];
@@ -96,11 +111,20 @@ export default function Notation({
 
           for (let b = 0; b < barsHere; b++) {
             const barNotes: any[] = [];
+            // Accidentals reset at each bar and otherwise carry within the bar.
+            const accidentalState = new Map<string, number>();
             for (let k = 0; k < perBar; k++) {
               const n = notes[idx];
               if (!n) break;
               const sn = new VF.StaveNote({ keys: [vexKey(n)], duration: dur, auto_stem: true });
-              if (n.alt !== 0) sn.addModifier(new VF.Accidental(ALT_NAME[String(n.alt)]), 0);
+              const accidentalKey = `${n.letter}${n.octave}`;
+              const previous = accidentalState.get(accidentalKey)
+                ?? signatureAlts[n.letter];
+              if (n.alt !== previous) {
+                const accidental = n.alt === 0 ? "n" : ALT_NAME[String(n.alt)];
+                sn.addModifier(new VF.Accidental(accidental), 0);
+                accidentalState.set(accidentalKey, n.alt);
+              }
               if (idx % grouping === 0)
                 sn.addModifier(
                   new VF.Articulation("a>").setPosition(VF.Modifier.Position.ABOVE), 0
@@ -145,30 +169,39 @@ export default function Notation({
     })();
 
     return () => { cancelled = true; };
-  }, [notes, subdivision, grouping, beatsPerBar, maxBars, compact]);
+  }, [notes, subdivision, grouping, beatsPerBar, maxBars, keySignature, compact]);
 
   // Highlight without re-rendering the score.
   useEffect(() => {
     const gs = groupsRef.current;
     for (const g of gs) { g.style.fill = ""; g.style.stroke = ""; }
     const g = gs[activeIndex];
-    if (g) { g.style.fill = "#9A6B08"; g.style.stroke = "#9A6B08"; }
+    if (g) { g.style.fill = "#F3D765"; g.style.stroke = "#F3D765"; }
   }, [activeIndex]);
 
+  const totalBars = Math.ceil(notes.length / Math.max(1, subdivision * beatsPerBar));
+  const opening = notes.slice(0, 16).map(notePretty).join(", ");
+
   return (
-    <div>
+    <div
+      role="img"
+      aria-label={`Staff notation for a ${notes.length}-note drill across ${totalBars} ${
+        totalBars === 1 ? "bar" : "bars"
+      }, with accents every ${grouping} notes. Opening notes: ${opening}.`}
+    >
       <div
-        className="vf-host overflow-x-auto rounded-xl bg-[#F7F4EC] p-3"
+        className="vf-host overflow-x-auto rounded-xl border border-line bg-[#171512] p-3"
         style={{ maxWidth: naturalWidth ? naturalWidth * 1.15 : undefined }}
+        aria-hidden="true"
       >
         <div ref={hostRef} />
       </div>
       {truncated > 0 && (
         <p className="mt-2 font-mono text-[11px] text-amber">
-          Showing the first {Math.min(truncated, 24)} of {truncated} bars — playback runs all of it.
+          Showing the first {Math.min(truncated, maxBars)} of {truncated} bars — playback runs all of it.
         </p>
       )}
-      {error && <p className="mt-2 font-mono text-[11px] text-red">Notation: {error}</p>}
+      {error && <p className="mt-2 font-mono text-[11px] text-amber">Notation: {error}</p>}
     </div>
   );
 }

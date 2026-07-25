@@ -8,10 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return (
-    <>
-      <h1 className="sr-only">Practice a hexatonic scale</h1>
-      <PracticeClient />
-    </>
-  );
+  return <PracticeClient />;
 }

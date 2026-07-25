@@ -29,8 +29,8 @@ export default async function Image() {
           </div>
           <div style={{ display: "flex", marginTop: 30, fontSize: 27, color: "#B9B0A6",
                         lineHeight: 1.35, width: 560 }}>
-            The tritone goes with it — and what is left is a scale you cannot play a
-            wrong note in.
+            The tritone goes with it — and the six remaining notes stack into one
+            extended harmony.
           </div>
           <div style={{ display: "flex", marginTop: "auto", fontSize: 19, letterSpacing: 4,
                         color: "#8A8178" }}>
@@ -46,7 +46,7 @@ export default async function Image() {
               position: "absolute", left: d.x - r, top: d.y - r,
               width: r * 2, height: r * 2, borderRadius: r, display: "flex",
               background: isRemoved ? "transparent" : inScale ? "#C9A227" : "#3A3331",
-              border: isRemoved ? "5px solid #8B1E24" : "none",
+              border: isRemoved ? "5px solid #E8666C" : "none",
             }} />
           );
         })}
