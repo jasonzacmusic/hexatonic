@@ -17,6 +17,9 @@ READ THESE FIRST, IN THIS ORDER, BEFORE WRITING ANY CODE:
   docs/02-APP-SPEC.md      stack, data model, screens, build order, house rules
   docs/03-RHYTHM-ENGINE.md the grouping / resolution system
   docs/06-PRIOR-ART.md     what we may and may not claim in copy
+  docs/07-CARNATIC.md      VERIFIED raga names, gati, konnakol, varisai ladder --
+                           and a list of things marked UNVERIFIED that must NOT be
+                           stated as fact anywhere in the UI
   engine/shadava_theory.py the working reference implementation
   engine/VERIFIED-OUTPUT.txt  its verified output — these ARE the tests
   engine/verified.json     machine-readable form of the same truth tables
@@ -77,9 +80,14 @@ NON-NEGOTIABLES — these are permanent house rules, violating any one is a bug:
    - One bar of count-in minimum. Metronome on its own gain node.
    - Note onsets must be frame-accurate against the notation highlight.
 
-4. COPY
+4. COPY AND TERMINOLOGY
    - Do NOT write "world's first" anywhere. It is false. Read
      docs/06-PRIOR-ART.md and use claim #2 from its table.
+   - Carnatic terms must come from docs/07-CARNATIC.md verbatim. Do not invent or
+     "improve" a konnakol syllable set, a raga scale, or a yati name. Anything
+     that document marks UNVERIFIED must not appear as a factual claim in the UI.
+   - The minor hexatonic IS raga Pushpalathika (mela 22, dhaivata-varjya) and the
+     app should say so. Sriranjani is NOT this scale -- it is panchama-varjya.
 
 BUILD ORDER — ship in this sequence, do not skip ahead:
 

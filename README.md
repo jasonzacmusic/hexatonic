@@ -85,8 +85,41 @@ warn you before you press play.
 
 And your 3/4/5/6/7 ladder already has a name in your own tradition: it's the
 **gati** system (tisra, chatusra, khanda, misra, sankeerna), and going 3→4→5→6→7 is
-**srotovaha yati**. Using the real vocabulary costs nothing and makes the app
-unmistakably yours.
+**srotovaha yati** — the image is a river widening from its source. Using the real
+vocabulary costs nothing and makes the app unmistakably yours.
+
+---
+
+## The best thing I found: your minor hexatonic is a real raga
+
+I had the Carnatic literature searched properly. **Your minor hexatonic —
+C D Eb F G Bb — is Raga PUSHPALATHIKA.** Janya of mela 22 Kharaharapriya,
+**dhaivata-varjya**, six notes in both directions, straight, no vakra. Its
+Hindustani twin with the identical pitch set is **Gaudgiri Malhar**.
+
+And Dr M. Radhakrishnan's *Rare Raga Series* derives it **exactly the way you did**
+— by adding a note to Madhyamavathi, or by making Manirangu's descent into its
+ascent. First compositions by **Swathi Thirunal**.
+
+> **You derived a real raga from first principles by removing the tritone.** That
+> is your best moment on the live stream. Say it exactly like that.
+
+**The major one is thinner and you should be careful.** C D E G A B is the
+note-set of **Raga Shankara** (Hindustani, madhyam varjit — a first-rank raga, but
+its actual *shape* skips Re in ascent). As a straight symmetric scale it's
+**Ānandharoopa** in the Carnatic system, mela 29 — but that one is very rare and I
+could only find it in web databases, no print authority. **There is no mainstream
+raga whose scale is exactly C D E G A B both ways.** Safe wording is in
+[07-CARNATIC.md](docs/07-CARNATIC.md).
+
+⚠️ **One thing NOT to say: Sriranjani is not this scale.** It's *panchama*-varjya —
+the opposite (it has the A, it's missing the G). That's exactly the slip a rasika
+would jump on.
+
+The research also caught **three of my own konnakol syllable sets being wrong**
+(7 is canonically Ta Ka Di Mi Ta Ki Ta, 4+3, not 3+4) and that there are **six
+yatis, not five**. All corrected, all flagged — including a list of things that are
+still ⚠️ unverified and must not be said as fact.
 
 ---
 
@@ -125,6 +158,7 @@ the moat.** Full detail and citations: [06-PRIOR-ART.md](docs/06-PRIOR-ART.md).
 | [docs/03-RHYTHM-ENGINE.md](docs/03-RHYTHM-ENGINE.md) | grouping + resolution maths | Opus |
 | [docs/04-YOUTUBE-LIVE.md](docs/04-YOUTUBE-LIVE.md) | 75-min run of show, team roles, promo ladder | you + team |
 | [docs/05-CAN-OPUS-DO-IT.md](docs/05-CAN-OPUS-DO-IT.md) | **honest feasibility: what Opus can and can't carry** | you |
+| [docs/07-CARNATIC.md](docs/07-CARNATIC.md) | **verified raga names, gati, konnakol, varisai ladder** | you + Opus |
 | [docs/06-PRIOR-ART.md](docs/06-PRIOR-ART.md) | what we may and may not claim | you |
 | [docs/DESIGN-BRIEF-THUMBNAIL.md](docs/DESIGN-BRIEF-THUMBNAIL.md) | ready-to-paste Claude Design briefs | you → Claude Design |
 | [engine/shadava_theory.py](engine/shadava_theory.py) | working engine — the spec Opus ports | Opus |

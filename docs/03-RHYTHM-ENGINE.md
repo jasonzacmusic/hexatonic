@@ -117,34 +117,62 @@ something Indian. They **are** the Carnatic **gati / nadai** system, and the
 "resolve on the one" requirement **is** landing on **samam**. Using the real
 vocabulary costs nothing and makes the app unmistakable.
 
-| group | Carnatic gati | konnakol syllables |
-|---|---|---|
-| 3 | **Tisra** | Ta Ki Ta |
-| 4 | **Chatusra** | Ta Ka Di Mi |
-| 5 | **Khanda** | Ta Ka Ta Ki Ta |
-| 7 | **Misra** | Ta Ki Ta Ta Ka Di Mi |
-| 9 | **Sankeerna** | Ta Ka Di Mi Ta Ka Ta Ki Ta |
+**These syllable sets are now VERIFIED — see `docs/07-CARNATIC.md §4.4`. Three of
+the ones I first wrote here were WRONG; these are the canonical forms:**
 
-*(Syllable sets to be confirmed against the research briefing before shipping —
-there are regional variants and this must be right.)*
+| group | Carnatic gati | konnakol (canonical) | note |
+|---|---|---|---|
+| 3 | **Tisra** | Ta Ki Ta | — |
+| 4 | **Chatusra** | Ta Ka Di Mi | *caturaśra* = "four-sided" |
+| 5 | **Khanda** | **Ta Din Gi Na Tom** | also Ta Ka Ta Ki Ta (2+3) inside korvais |
+| 6 | — | **Ta Ka Di Mi Ta Ka** | 4+2 |
+| 7 | **Misra** | **Ta Ka Di Mi Ta Ki Ta** | **4+3**; *misra* = "mixed" (3+4) |
+| 9 | **Sankeerna** | **Ta Ka Di Mi Ta Din Gi Na Tom** | **4+5**; *sankeerna* = "complex" |
 
-Two more concepts map directly onto features:
+Romanisation varies legitimately (Tha/Ta, Dhi/Di, Thom/Tom, Gi/Ki). **Pick one
+convention and hold it** — mixing them on one screen reads as sloppiness.
+Cite print, not web: Nelson, *Solkattu Manual* / *Konnakkol Manual* (Wesleyan UP).
+
+Three more concepts map directly onto features:
 
 - **Samam / eduppu** — where the phrase starts relative to the tala cycle. The
-  app's "resolution" indicator *is* an eduppu display. Support starting on
-  samam (beat 1) and off-samam starts as an advanced mode.
-- **Yati patterns** — the traditional shapes for *sequences* of groupings.
-  **Srotovaha yati** (river-flowing: 3→4→5→6→7, increasing) is **precisely what
-  Jason described** when he said "accents of threes, fours, fives, or six or
-  sevens." **Gopuchha yati** (cow's tail) is the decreasing mirror.
+  app's resolution indicator *is* an eduppu display. Support **sama** (on beat 1),
+  **atita** (before) and **anagata** (after) as an advanced mode. ⚠️ atita and
+  anagata are **reversed in some published sources** — the correct assignment and
+  the etymology that settles it are in `07-CARNATIC.md §4.5`.
+- **Yati patterns** — the traditional shapes for *sequences* of groupings. There
+  are **six**, not five — I first wrote five and omitted *vishama*.
+  **Srotovaha yati** — the image is *a river widening from its source* — is
+  3→4→5→6→7 increasing, and is **precisely what Jason described**.
+  **Gopuccha yati** — *a cow's tail, tapering* — is the decreasing mirror.
+  (These two get swapped in some writing; teach the image and you can't be
+  contradicted.)
   → Ship a **"Yati Ladder"** mode that runs 3→4→5→6→7 back to back, each segment
   resolving before the next begins. That is the centrepiece of the live stream
   and it is a genuinely traditional structure, not a gimmick.
 
-The exercise ladder itself should be modelled on the real **varisai** system —
-Sarali (straight), Janta (doubled), Dhatu (leaping), Alankara (in the seven
-talas) — rather than on generic Western "scale exercises." Confirm the exact
-progression against the research briefing.
+- **Kala pramanam** — every traditional exercise is practised at **three speeds**
+  (×1, ×2, ×4). **Make tempo-doubling a first-class axis, not a slider
+  afterthought.** That is how the tradition actually gears students up.
+
+⚠️ **Do not ship a "gati = in the composition / nadai = in percussion"
+distinction.** It is not standard and could not be verified. *Gati* (Sanskrit,
+"gait") and *nadai* (Tamil, "gait") are literal translations of each other and are
+used interchangeably in practice. The distinction that actually matters is
+**jati vs nadai** — jati is the akshara count in the *laghu*, nadai is pulses per
+beat. Approved copy is in `07-CARNATIC.md §4.2`.
+
+The exercise ladder should be modelled on the real **varisai** system, verified in
+`docs/07-CARNATIC.md §6`: Sarali → Melsthayi → Mandrasthayi → Janta (doubled
+notes) → **Dhatu (zigzag permutations — the direct analogue of "in 3rds / in
+4ths")** → Alankaram (the same patterns across talas).
+
+**The structural insight worth stealing wholesale:** levels 1–5 hold the *raga*
+constant and vary only the *pattern*; Alankaram then holds the pattern constant
+and varies the *tala*. **Permute, then re-tala.** That two-phase design is the real
+varisai system and it maps perfectly onto this app — fix the six-note set, run the
+permutation ladder, then run the same material through gati and tala changes.
+Use it as the curriculum spine instead of inventing a Western one.
 
 ---
 
