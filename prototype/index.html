@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SHADAVA — six-note practice engine</title>
+<script src="vendor/vexflow.js"></script>
+<style>
+  :root{
+    --bg:#0E0D0C; --surface:#1B1917; --surface2:#242120;
+    --red:#8B1E24; --gold:#C9A227; --cream:#F4EFE4; --muted:#8A8178;
+    --line:#332E2C;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--cream);
+       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+       font-size:15px;line-height:1.5}
+  header{padding:18px 24px 12px;border-bottom:1px solid var(--line);
+         display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
+  h1{margin:0;font-size:22px;letter-spacing:.14em;font-weight:800}
+  h1 .six{color:var(--gold)}
+  .tag{color:var(--muted);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+  main{padding:18px 24px 60px;max-width:1500px;margin:0 auto}
+
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;
+         padding:14px 16px;margin-bottom:14px}
+  .row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-end}
+  .fld{display:flex;flex-direction:column;gap:5px}
+  label{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  select,input[type=number]{background:var(--surface2);color:var(--cream);
+    border:1px solid var(--line);border-radius:6px;padding:7px 9px;font-size:14px;
+    font-family:inherit;min-width:110px}
+  select:focus,input:focus{outline:1px solid var(--gold)}
+  .seg{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+  .seg button{background:var(--surface2);color:var(--muted);border:0;padding:7px 12px;
+    font-size:14px;cursor:pointer;font-family:inherit;border-right:1px solid var(--line)}
+  .seg button:last-child{border-right:0}
+  .seg button.on{background:var(--gold);color:#17130a;font-weight:700}
+  .seg button:hover:not(.on){color:var(--cream)}
+
+  .play{background:var(--gold);color:#17130a;border:0;border-radius:7px;
+        padding:11px 26px;font-size:15px;font-weight:800;cursor:pointer;
+        letter-spacing:.06em;font-family:inherit}
+  .play:hover{filter:brightness(1.09)}
+  .play.stop{background:var(--red);color:var(--cream)}
+  .ghostbtn{background:transparent;color:var(--muted);border:1px solid var(--line);
+    border-radius:7px;padding:11px 16px;font-size:14px;cursor:pointer;font-family:inherit}
+  .ghostbtn.on{border-color:var(--gold);color:var(--gold)}
+  .ghostbtn:hover{color:var(--cream)}
+
+  #banner{display:flex;gap:26px;align-items:center;flex-wrap:wrap;
+    background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--gold);
+    border-radius:10px;padding:13px 18px;margin-bottom:14px}
+  #banner.warn{border-left-color:#C97C22}
+  #banner.bad{border-left-color:var(--red)}
+  .stat{display:flex;flex-direction:column;gap:2px}
+  .stat b{font-size:21px;font-weight:800;color:var(--gold);font-variant-numeric:tabular-nums}
+  #banner.warn .stat b{color:#E39B3C}
+  #banner.bad .stat b{color:#E06A70}
+  .stat span{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  #verdict{font-size:13.5px;color:var(--cream);max-width:520px}
+  #verdict em{color:var(--muted);font-style:normal}
+
+  #scaleline{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+  .nchip{background:var(--surface2);border:1px solid var(--line);border-radius:6px;
+    padding:6px 11px;font-size:15px;font-weight:700;font-variant-numeric:tabular-nums}
+  .nchip .deg{display:block;font-size:9.5px;color:var(--muted);font-weight:500;
+    letter-spacing:.06em;text-align:center;margin-top:1px}
+  .nchip.ghost{border-color:var(--red);color:var(--red);background:transparent;
+    text-decoration:line-through;text-decoration-thickness:2px}
+  .nchip.lit{background:var(--gold);color:#17130a;border-color:var(--gold)}
+  .nchip.lit .deg{color:#5a4a12}
+
+  #score{background:#F7F4EC;border-radius:10px;padding:10px 4px;overflow-x:auto;
+         margin-bottom:14px;min-height:150px}
+  #score svg{width:auto!important;height:auto!important;display:block}
+  #kb{margin-bottom:14px}
+  .note{color:var(--muted);font-size:12.5px;margin-top:8px}
+  .note b{color:var(--cream)}
+  #err{color:#E06A70;font-size:13px;padding:8px 0}
+  .legend{display:flex;gap:16px;font-size:11px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
+  .sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;
+      vertical-align:middle}
+  h2{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);
+     margin:0 0 10px}
+  #chords{display:flex;gap:8px;flex-wrap:wrap}
+  .ch{background:var(--surface2);border:1px solid var(--line);border-radius:6px;
+      padding:6px 10px;font-size:13px;cursor:pointer}
+  .ch:hover{border-color:var(--gold)}
+  .ch small{color:var(--muted);display:block;font-size:10px}
+</style>
+</head>
+<body>
+<header>
+  <h1>SHADAVA <span class="six">6</span></h1>
+  <span class="tag">six-note practice engine &middot; prototype</span>
+  <span class="tag" style="margin-left:auto">Nathaniel School of Music</span>
+</header>
+
+<main>
+  <div class="panel">
+    <div class="row">
+      <div class="fld"><label>Key</label>
+        <select id="key"></select></div>
+      <div class="fld"><label>Scale family</label>
+        <select id="family"></select></div>
+      <div class="fld"><label>Mode / rotation</label>
+        <select id="mode"></select></div>
+      <div class="fld"><label>Pattern</label>
+        <select id="pattern"></select></div>
+      <div class="fld"><label>Cell length</label>
+        <select id="cell"><option>3</option><option selected>4</option><option>5</option><option>6</option></select></div>
+      <div class="fld"><label>Octaves</label>
+        <div class="seg" id="oct"></div></div>
+      <div class="fld"><label>Top note</label>
+        <button class="ghostbtn" id="top" title="Include the octave note. ON makes the pattern 7 notes long, which throws away the six-note arithmetic advantage.">off &middot; 6 notes</button></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="row">
+      <div class="fld"><label>Subdivision</label>
+        <div class="seg" id="sub"></div></div>
+      <div class="fld"><label>Accent grouping</label>
+        <div class="seg" id="grp"></div></div>
+      <div class="fld"><label>Resolve</label>
+        <div class="seg" id="res"></div></div>
+      <div class="fld"><label>Tempo <span id="bpmv" style="color:var(--gold)">84</span></label>
+        <input type="range" id="bpm" min="40" max="200" value="84" style="width:150px"></div>
+      <div class="fld"><label>&nbsp;</label>
+        <button class="play" id="go">PLAY</button></div>
+      <div class="fld"><label>&nbsp;</label>
+        <button class="ghostbtn on" id="loop">Loop</button></div>
+      <div class="fld"><label>&nbsp;</label>
+        <button class="ghostbtn on" id="click">Click</button></div>
+    </div>
+  </div>
+
+  <div id="banner"></div>
+  <div id="scaleline"></div>
+  <div id="score"></div>
+  <div id="kb"></div>
+  <div class="legend">
+    <span><i class="sw" style="background:var(--gold)"></i>note sounding now</span>
+    <span><i class="sw" style="background:var(--red)"></i>the note we removed (ghost)</span>
+    <span><i class="sw" style="background:var(--cream)"></i>scale notes</span>
+    <span>&gt; = accent (start of each group)</span>
+  </div>
+
+  <div class="panel" style="margin-top:14px">
+    <h2>Available harmony — tap a chord to hear it, tap again for its other name</h2>
+    <div id="chords"></div>
+  </div>
+  <div id="err"></div>
+  <p class="note">Prototype. Real Salamander grand piano samples, real VexFlow engraving.
+    <b>Everything here is generated by the verified theory engine</b> — spelling, available
+    harmony, and the bar-count in the banner. Keys: <b>space</b> play/stop.</p>
+</main>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════════════
+   1. THEORY ENGINE  — ported from engine/shadava_theory.py
+      A note is {letter, alt, octave}. NEVER a bare integer.
+   ══════════════════════════════════════════════════════════════════════════ */
+const LETTERS = "CDEFGAB";
+const LETTER_PC = {C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+const ALT_NAME = {"-2":"bb","-1":"b","0":"","1":"#","2":"##"};
+
+function N(letter, alt, octave){ return {letter, alt, octave}; }
+const pc   = n => ((LETTER_PC[n.letter] + n.alt) % 12 + 12) % 12;
+const midi = n => 12*(n.octave+1) + LETTER_PC[n.letter] + n.alt;
+const nm   = n => n.letter + ALT_NAME[String(n.alt)];
+const vf   = n => n.letter.toLowerCase() + ALT_NAME[String(n.alt)] + "/" + n.octave;
+const stepLetter = (L,k) => LETTERS[(LETTERS.indexOf(L)+k+70)%7];
+
+function spell(letter, targetPc, octave){
+  let alt = ((targetPc - LETTER_PC[letter]) % 12 + 12) % 12;
+  if (alt > 6) alt -= 12;
+  if (Math.abs(alt) > 2) return null;
+  return N(letter, alt, octave);
+}
+function parseTonic(t){
+  return N(t[0], {"":0,"#":1,"b":-1}[t.slice(1)] ?? 0, 4);
+}
+/* build a 7-note scale, one letter per degree — the ONLY way spelling stays right */
+function buildDiatonic(tonicName, modeSemis){
+  const t = parseTonic(tonicName), out = [];
+  for (let d=0; d<modeSemis.length; d++){
+    const L = stepLetter(t.letter, d);
+    const oct = t.octave + Math.floor((LETTERS.indexOf(t.letter)+d)/7);
+    const s = spell(L, (pc(t)+modeSemis[d])%12, oct);
+    if (!s) return null;
+    out.push(s);
+  }
+  return out;
+}
+const MAJOR = [0,2,4,5,7,9,11], NATMIN = [0,2,3,5,7,8,10];
+
+/* ── scale families ─────────────────────────────────────────────────────── */
+/* The diatonic hexachord is ONE set with SIX rotations (Theorem 2).
+   Modal-intersection names per docs/08-JAZZ-GOSPEL.md — never "gospel scale". */
+const DIATONIC_MODES = [
+  {name:"Ionian/Lydian Hexatonic",     deg:"1 2 3 5 6 7",     rot:0, omitFrom:"major, no 4th",
+   teach:"Won't commit to 4 or #4 — which is why it works over maj7 AND maj7#11."},
+  {name:"Sus Hexatonic (no 3rd)",      deg:"1 2 4 5 6 b7",    rot:1, omitFrom:"—",
+   teach:"No third at all. A pure quartal/suspended colour."},
+  {name:"Phrygian Hexatonic",          deg:"1 b3 4 5 b6 b7",  rot:2, omitFrom:"—",
+   teach:"The dark one. No 2nd."},
+  {name:"Ionian/Mixolydian (Guidonian)",deg:"1 2 3 4 5 6",    rot:3, omitFrom:"major, no 7th",
+   teach:"Guido d'Arezzo's ut-re-mi-fa-sol-la. Folk and bluegrass live here."},
+  {name:"Dorian/Aeolian Hexatonic",    deg:"1 2 b3 4 5 b7",   rot:4, omitFrom:"minor, no b6",
+   teach:"= raga Pushpalathika. No 6th of any kind, so it fits m7 AND m6 harmony."},
+  {name:"Locrian Hexatonic (no 5th)",  deg:"1 b2 b3 4 b6 b7", rot:5, omitFrom:"—",
+   teach:"No perfect fifth. Useful colour, rarely a tonic."},
+];
+const FAMILIES = {
+  diatonic:{label:"Diatonic hexachord (6-32) — the core", kind:"rot", modes:DIATONIC_MODES},
+  mixo:{label:"Mixolydian hexatonic (no 4)", kind:"omit", parent:[0,2,4,5,7,9,10], omit:4,
+        note:"dominant colour — has a tritone"},
+  blues:{label:"Blues hexatonic", kind:"fixed",
+         semis:[0,3,5,6,7,10], letters:[0,2,3,4,4,6]},
+  aug:{label:"Augmented hexatonic (jazz 'the hexatonic scale')", kind:"fixed",
+       semis:[0,3,4,7,8,11], letters:[0,1,2,4,5,6],
+       note:"two augmented triads a semitone apart · 3 major + 3 minor triads inside"},
+  whole:{label:"Whole tone", kind:"fixed", semis:[0,2,4,6,8,10], letters:[0,1,2,3,4,5],
+         note:"no perfect fifth anywhere"},
+  penta:{label:"Audava (5) — major pentatonic", kind:"omitmulti", parent:MAJOR, omit:[4,7]},
+  hepta:{label:"Sampurna (7) — the major scale", kind:"omitmulti", parent:MAJOR, omit:[]},
+};
+
+/* returns {notes:[Note], removed:Note|null, label, teach} */
+function buildScale(tonicName, famKey, modeIdx){
+  const F = FAMILIES[famKey];
+  if (F.kind === "rot"){
+    // ONE parent hexachord, then rotate. Store once, rotate — never two scales.
+    const md = F.modes[modeIdx] || F.modes[0];
+    // the parent set is major-no-4 built on the tonic that puts our mode on `tonicName`
+    // simpler + always correct: build major-no-4 from a root, then rotate to tonicName.
+    // We instead derive directly: take the mode's degree pattern as semitones.
+    const semis = degStrToSemis(md.deg);
+    const letters = degStrToLetterOffsets(md.deg);
+    const t = parseTonic(tonicName), notes = [];
+    for (let i=0;i<semis.length;i++){
+      const L = stepLetter(t.letter, letters[i]);
+      const oct = t.octave + Math.floor((LETTERS.indexOf(t.letter)+letters[i])/7);
+      const s = spell(L, (pc(t)+semis[i])%12, oct);
+      if (!s) return {error:`${tonicName} needs a triple accidental in this mode — pick another key.`};
+      notes.push(s);
+    }
+    // the removed note: the 7-note parent this rotation came from, minus our 6
+    const removed = findRemoved(notes, tonicName, md);
+    return {notes, removed, label:md.name, teach:md.teach, deg:md.deg};
+  }
+  if (F.kind === "omit"){
+    const full = buildDiatonic(tonicName, F.parent);
+    if (!full) return {error:`${tonicName} can't be spelled here.`};
+    return {notes: full.filter((_,i)=>i!==F.omit-1), removed: full[F.omit-1],
+            label:F.label, teach:F.note||"", deg:""};
+  }
+  if (F.kind === "omitmulti"){
+    const full = buildDiatonic(tonicName, F.parent);
+    if (!full) return {error:`${tonicName} can't be spelled here.`};
+    return {notes: full.filter((_,i)=>!F.omit.includes(i+1)), removed:null,
+            label:F.label, teach:"", deg:""};
+  }
+  // fixed: declared letter template (guessing produces E#/D# nonsense)
+  const t = parseTonic(tonicName), notes=[];
+  for (let i=0;i<F.semis.length;i++){
+    const L = stepLetter(t.letter, F.letters[i]);
+    const oct = t.octave + Math.floor((LETTERS.indexOf(t.letter)+F.letters[i])/7);
+    const s = spell(L, (pc(t)+F.semis[i])%12, oct);
+    if (!s) return {error:`${tonicName} needs a triple accidental in this scale — pick another key.`};
+    notes.push(s);
+  }
+  return {notes, removed:null, label:F.label, teach:F.note||"", deg:""};
+}
+const DEG_SEMI = {"1":0,"b2":1,"2":2,"b3":3,"3":4,"4":5,"b5":6,"5":7,"b6":8,"6":9,"b7":10,"7":11};
+const DEG_LETTER = {"1":0,"b2":1,"2":1,"b3":2,"3":2,"4":3,"b5":4,"5":4,"b6":5,"6":5,"b7":6,"7":6};
+const degStrToSemis = s => s.split(" ").map(d=>DEG_SEMI[d]);
+const degStrToLetterOffsets = s => s.split(" ").map(d=>DEG_LETTER[d]);
+
+/* which note did we knock off? the diatonic parent minus our six */
+function findRemoved(notes, tonicName, md){
+  const have = new Set(notes.map(pc));
+  // try every major scale; the one containing all 6 of ours reveals the missing note
+  for (const root of ["C","G","D","A","E","B","F#","Db","Ab","Eb","Bb","F"]){
+    const full = buildDiatonic(root, MAJOR);
+    if (!full) continue;
+    const fpc = full.map(pc);
+    if ([...have].every(p=>fpc.includes(p))){
+      const miss = full.filter(n=>!have.has(pc(n)));
+      if (miss.length === 1) return miss[0];
+    }
+  }
+  return null;
+}
+
+/* ── chords living in the scale: a pitch-class SET with a LIST of names ──── */
+const TRIADS = {"0,4,7":"", "0,3,7":"m", "0,3,6":"dim", "0,4,8":"aug",
+                "0,2,7":"sus2","0,5,7":"sus4"};
+const TETRADS= {"0,4,7,11":"maj7","0,4,7,10":"7","0,3,7,10":"m7","0,3,6,10":"m7b5",
+                "0,3,6,9":"dim7","0,4,7,9":"6","0,3,7,9":"m6","0,3,7,11":"mMaj7"};
+function findChords(notes){
+  const byPc = {}; notes.forEach(n=>byPc[pc(n)]=n);
+  const pcs = Object.keys(byPc).map(Number).sort((a,b)=>a-b);
+  const out = [];
+  for (const size of [3,4]){
+    const table = size===3?TRIADS:TETRADS;
+    combos(pcs,size).forEach(set=>{
+      const names = [];
+      set.forEach(root=>{
+        const iv = set.map(p=>((p-root)%12+12)%12).sort((a,b)=>a-b).join(",");
+        if (table[iv]!==undefined){
+          const tertian = !/sus/.test(table[iv]);
+          names.push({sym: nm(byPc[root]) + table[iv], root, tertian});
+        }
+      });
+      if (names.length){
+        names.sort((a,b)=>(b.tertian-a.tertian));
+        out.push({size, pcs:set, names, notes:set.map(p=>byPc[p])});
+      }
+    });
+  }
+  return out.filter(c=>c.names.some(n=>n.tertian));
+}
+function combos(arr,k,start=0,cur=[],res=[]){
+  if (cur.length===k){res.push(cur.slice());return res;}
+  for(let i=start;i<arr.length;i++){cur.push(arr[i]);combos(arr,k,i+1,cur,res);cur.pop();}
+  return res;
+}
+
+/* ── patterns ───────────────────────────────────────────────────────────── */
+/* The octave note is a REAL choice, not a detail: including it makes a hexatonic
+   pattern 7 notes long, and 7 shares factors with nothing — which throws away the
+   entire arithmetic advantage of a six-note scale. Both answers are musically
+   correct, so the UI exposes it rather than deciding silently. */
+function ladder(scale, octaves, includeTop){
+  const n = scale.length, out = [];
+  const count = n*octaves + (includeTop?1:0);
+  for (let i=0;i<count;i++){
+    const b = scale[i%n];
+    out.push(N(b.letter,b.alt,b.octave+Math.floor(i/n)));
+  }
+  return out;
+}
+const PATTERNS = {
+  aroha:{label:"Aroha (ascending)", top:true, fn:(s,o,c,t)=>ladder(s,o,t)},
+  avaroha:{label:"Avaroha (descending)", top:true,
+    fn:(s,o,c,t)=>ladder(s,o,t).slice().reverse()},
+  both:{label:"Aroha–Avaroha (up then down)", top:true, fn:(s,o,c,t)=>{
+    const up=ladder(s,o,true); return up.concat(up.slice(0,-1).reverse());}},
+  thirds:{label:"In thirds (step 2) — 3rds AND 4ths", fn:(s,o)=>skip(s,o,2)},
+  fourths:{label:"In fourths (step 3) — every one perfect", fn:(s,o)=>skip(s,o,3)},
+  fifths:{label:"In fifths (step 4)", fn:(s,o)=>skip(s,o,4)},
+  cells:{label:"Cells of N (running)", fn:(s,o,c)=>cells(s,o,c)},
+};
+function skip(scale, octaves, step){
+  const L = ladder(scale, octaves+1, true), n = scale.length, out=[];
+  for (let i=0;i<n*octaves;i++){ out.push(L[i]); out.push(L[i+step]); }
+  return out;
+}
+function cells(scale, octaves, len){
+  const L = ladder(scale, octaves+1, true), n = scale.length, out=[];
+  for (let i=0;i<n*octaves;i++) for(let k=0;k<len;k++) out.push(L[i+k]);
+  return out;
+}
+
+/* ── THE RESOLUTION SOLVER ──────────────────────────────────────────────── */
+const gcd=(a,b)=>b?gcd(b,a%b):a, lcm=(a,b)=>a*b/gcd(a,b);
+function solveResolution(patternLen, sub, beats, grouping, mode){
+  const perBar = sub*beats;
+  let cycles = [perBar];
+  if (mode==="full") cycles.push(patternLen);
+  if (grouping) cycles.push(grouping);
+  const total = cycles.reduce((a,b)=>lcm(a,b),1);
+  return {total, bars: total/perBar, perBar, reps: total/patternLen};
+}
+const GATI = {3:"Tisra",4:"Chatusra",5:"Khanda",7:"Misra",9:"Sankeerna"};
+const KONNAKOL = {3:"Ta Ki Ta",4:"Ta Ka Di Mi",5:"Ta Din Gi Na Tom",
+  6:"Ta Ka Di Mi Ta Ka",7:"Ta Ka Di Mi Ta Ki Ta",9:"Ta Ka Di Mi Ta Din Gi Na Tom"};
+
+/* ══════════════════════════════════════════════════════════════════════════
+   2. AUDIO — real Salamander grand samples, scheduled on AudioContext
+   ══════════════════════════════════════════════════════════════════════════ */
+const SAMPLES = {36:"C2",39:"Ds2",42:"Fs2",45:"A2",48:"C3",51:"Ds3",54:"Fs3",57:"A3",
+  60:"C4",63:"Ds4",66:"Fs4",69:"A4",72:"C5",75:"Ds5",78:"Fs5",81:"A5",84:"C6"};
+let ctx=null, buffers={}, master=null, clickGain=null, loaded=false;
+async function initAudio(){
+  if (ctx) { if (ctx.state==="suspended") await ctx.resume(); return; }
+  ctx = new (window.AudioContext||window.webkitAudioContext)();
+  master = ctx.createGain(); master.gain.value=0.85; master.connect(ctx.destination);
+  clickGain = ctx.createGain(); clickGain.gain.value=0.32; clickGain.connect(ctx.destination);
+  const keys = Object.keys(SAMPLES);
+  await Promise.all(keys.map(async k=>{
+    const r = await fetch(`audio/salamander/${SAMPLES[k]}.mp3`);
+    buffers[k] = await ctx.decodeAudioData(await r.arrayBuffer());
+  }));
+  loaded = true;
+}
+function nearestSample(m){
+  let best=null,bd=99;
+  for (const k of Object.keys(buffers)){ const d=Math.abs(m-k); if(d<bd){bd=d;best=+k;} }
+  return best;
+}
+function playNote(m, when, dur, vel=0.8){
+  const s = nearestSample(m); if (s==null) return;
+  const src = ctx.createBufferSource(); src.buffer = buffers[s];
+  src.playbackRate.value = Math.pow(2,(m-s)/12);
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0,when);
+  g.gain.linearRampToValueAtTime(vel,when+0.006);
+  g.gain.setTargetAtTime(0.0001, when+Math.max(dur*0.9,0.08), 0.09);
+  src.connect(g); g.connect(master);
+  src.start(when); src.stop(when+Math.max(dur*1.5,0.4));
+}
+function playClick(when, strong){
+  const o=ctx.createOscillator(), g=ctx.createGain();
+  o.frequency.value = strong?1500:900; o.type="square";
+  g.gain.setValueAtTime(0,when);
+  g.gain.linearRampToValueAtTime(strong?0.5:0.25,when+0.002);
+  g.gain.exponentialRampToValueAtTime(0.0001,when+0.035);
+  o.connect(g); g.connect(clickGain); o.start(when); o.stop(when+0.05);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   3. STATE + UI
+   ══════════════════════════════════════════════════════════════════════════ */
+const S = {key:"C", family:"diatonic", mode:0, pattern:"aroha", cell:4,
+           octaves:1, includeTop:false, sub:4, grouping:4, resolve:"full", bpm:84,
+           loop:true, click:true, playing:false};
+const KEYS = ["C","G","D","A","E","B","F#","Db","Ab","Eb","Bb","F"];
+const $ = id => document.getElementById(id);
+
+function seg(el, items, get, set){
+  el.innerHTML="";
+  items.forEach(it=>{
+    const b=document.createElement("button");
+    b.textContent=it.label; b.className = get()===it.val?"on":"";
+    b.onclick=()=>{ set(it.val); render(); };
+    el.appendChild(b);
+  });
+}
+function buildUI(){
+  $("key").innerHTML = KEYS.map(k=>`<option${k===S.key?" selected":""}>${k}</option>`).join("");
+  $("family").innerHTML = Object.entries(FAMILIES)
+    .map(([k,f])=>`<option value="${k}"${k===S.family?" selected":""}>${f.label}</option>`).join("");
+  $("pattern").innerHTML = Object.entries(PATTERNS)
+    .map(([k,p])=>`<option value="${k}"${k===S.pattern?" selected":""}>${p.label}</option>`).join("");
+  refreshModes();
+  $("key").onchange=e=>{S.key=e.target.value;render();};
+  $("family").onchange=e=>{S.family=e.target.value;S.mode=0;refreshModes();render();};
+  $("mode").onchange=e=>{S.mode=+e.target.value;render();};
+  $("pattern").onchange=e=>{S.pattern=e.target.value;render();};
+  $("cell").onchange=e=>{S.cell=+e.target.value;render();};
+  $("bpm").oninput=e=>{S.bpm=+e.target.value;$("bpmv").textContent=S.bpm;};
+  $("go").onclick=toggle;
+  $("loop").onclick=()=>{S.loop=!S.loop;$("loop").className="ghostbtn"+(S.loop?" on":"");};
+  $("top").onclick=()=>{S.includeTop=!S.includeTop;render();};
+  $("click").onclick=()=>{S.click=!S.click;$("click").className="ghostbtn"+(S.click?" on":"");};
+  seg($("oct"), [1,2,3].map(v=>({label:String(v),val:v})), ()=>S.octaves, v=>S.octaves=v);
+  seg($("sub"), [{label:"8ths",val:2},{label:"triplets",val:3},{label:"16ths",val:4},
+                 {label:"sextuplets",val:6}], ()=>S.sub, v=>S.sub=v);
+  seg($("grp"), [3,4,5,6,7,9].map(v=>({label:String(v),val:v})), ()=>S.grouping, v=>S.grouping=v);
+  seg($("res"), [{label:"accent",val:"accent"},{label:"full",val:"full"}],
+      ()=>S.resolve, v=>S.resolve=v);
+  document.addEventListener("keydown",e=>{
+    if(e.code==="Space" && e.target.tagName!=="INPUT" && e.target.tagName!=="SELECT"){
+      e.preventDefault(); toggle();}
+  });
+}
+function refreshModes(){
+  const F=FAMILIES[S.family];
+  const opts = F.kind==="rot"
+    ? F.modes.map((m,i)=>`<option value="${i}"${i===S.mode?" selected":""}>${m.name} · ${m.deg}</option>`)
+    : `<option value="0">—</option>`;
+  $("mode").innerHTML = Array.isArray(opts)?opts.join(""):opts;
+  $("mode").disabled = F.kind!=="rot";
+  $("cell").parentElement.style.opacity = S.pattern==="cells"?1:0.35;
+}
+
+/* ── the drill ──────────────────────────────────────────────────────────── */
+let DRILL = null;
+function buildDrill(){
+  const sc = buildScale(S.key, S.family, S.mode);
+  if (sc.error) return {error:sc.error};
+  const base = PATTERNS[S.pattern].fn(sc.notes, S.octaves, S.cell, S.includeTop);
+  const R = solveResolution(base.length, S.sub, 4, S.grouping, S.resolve);
+  // repeat the pattern until it resolves
+  const notes = [];
+  while (notes.length < R.total) notes.push(base[notes.length % base.length]);
+  return {scale:sc, base, notes, R};
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   4. NOTATION — VexFlow 4, full house checklist
+   ══════════════════════════════════════════════════════════════════════════ */
+const VFL = Vex.Flow;
+let BARS_PER_SYSTEM = 4;
+let noteEls = [];
+
+function drawScore(D){
+  const host = $("score"); host.innerHTML="";
+  noteEls = [];
+  if (!D || D.error) return;
+  const perBar = D.R.perBar, totalBars = Math.round(D.notes.length/perBar);
+  const MAXBARS = 24;
+  const showBars = Math.min(totalBars, MAXBARS);
+  BARS_PER_SYSTEM = S.sub<=2 ? 4 : S.sub===3 ? 3 : 2;
+  const dur = S.sub===2?"8" : S.sub===4?"16" : S.sub===6?"16":"8";
+  const tuplet = (S.sub===3||S.sub===6);
+  const systems = Math.ceil(showBars/BARS_PER_SYSTEM);
+  const barW = S.sub<=2?185:S.sub===3?300:S.sub===4?400:520;
+  const width = BARS_PER_SYSTEM*barW+80;
+
+  const div = document.createElement("div");
+  host.appendChild(div);
+  const renderer = new VFL.Renderer(div, VFL.Renderer.Backends.SVG);
+  renderer.resize(width, systems*124+34);
+  const ctxv = renderer.getContext();
+  ctxv.setFont("Academico", 10);
+
+  let idx = 0;
+  for (let sy=0; sy<systems; sy++){
+    const barsHere = Math.min(BARS_PER_SYSTEM, showBars - sy*BARS_PER_SYSTEM);
+    const stave = new VFL.Stave(12, 16+sy*124, barsHere*barW+46);
+    if (sy===0){ stave.addClef("treble").addTimeSignature("4/4"); }
+    stave.setContext(ctxv).draw();
+
+    const tickables = [], beamGroups = [], tuplets = [];
+    for (let b=0; b<barsHere; b++){
+      const barNotes = [];
+      for (let k=0; k<perBar; k++){
+        const n = D.notes[idx];
+        if (!n) break;
+        const sn = new VFL.StaveNote({keys:[vf(n)], duration:dur, auto_stem:true});
+        if (n.alt !== 0) sn.addModifier(new VFL.Accidental(ALT_NAME[String(n.alt)]), 0);
+        if (idx % S.grouping === 0)
+          sn.addModifier(new VFL.Articulation("a>").setPosition(VFL.Modifier.Position.ABOVE), 0);
+        barNotes.push(sn); idx++;
+      }
+      // NEVER hand-build beams — generateBeams owns grouping, per beat
+      const beams = VFL.Beam.generateBeams(barNotes,
+        {groups:[new VFL.Fraction(1,4)], maintain_stem_directions:false});
+      beamGroups.push(...beams);
+      if (tuplet){
+        const per = S.sub;
+        for (let g=0; g+per<=barNotes.length; g+=per)
+          tuplets.push(new VFL.Tuplet(barNotes.slice(g,g+per),
+            {num_notes:per, notes_occupied:per===3?2:4, bracketed:false}));
+      }
+      tickables.push(...barNotes);
+      if (b < barsHere-1) tickables.push(new VFL.BarNote());
+    }
+    const voice = new VFL.Voice({num_beats:4*barsHere, beat_value:4}).setStrict(false);
+    voice.addTickables(tickables);
+    new VFL.Formatter().joinVoices([voice]).format([voice], barsHere*barW+10);
+    voice.draw(ctxv, stave);
+    beamGroups.forEach(bm=>bm.setContext(ctxv).draw());
+    tuplets.forEach(t=>t.setContext(ctxv).draw());
+  }
+  // document order of g.vf-stavenote matches creation order (BarNote emits none)
+  noteEls = [...div.querySelectorAll("svg g.vf-stavenote")];
+  if (totalBars > MAXBARS){
+    const p=document.createElement("div");
+    p.style.cssText="color:#8B1E24;font-size:12px;padding:4px 10px 2px";
+    p.textContent=`Showing the first ${MAXBARS} of ${totalBars} bars (playback runs all of it).`;
+    host.appendChild(p);
+  }
+}
+function litNote(i){
+  noteEls.forEach(g=>{ g.style.fill=""; g.style.stroke=""; });
+  const g = noteEls[i];
+  if (g){ g.style.fill="#B8860B"; g.style.stroke="#B8860B"; }
+}
+
+/* ── keyboard with the GHOST note ───────────────────────────────────────── */
+function drawKeyboard(D){
+  const host=$("kb"); host.innerHTML="";
+  if(!D||D.error) return;
+  const scalePcs=new Set(D.scale.notes.map(pc));
+  const removedPc = D.scale.removed ? pc(D.scale.removed) : -1;
+  const W=34,H=112, startMidi=60, octs=2;
+  const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");
+  svg.setAttribute("height",H+4);
+  const whites=[0,2,4,5,7,9,11], blacks={1:0,3:1,6:3,8:4,10:5};
+  let x=0, wcount=0;
+  const nodes=[];
+  for(let o=0;o<octs;o++) for(const w of whites) {nodes.push({p:(startMidi+o*12+w),w:true,x:(wcount++)*W});}
+  svg.setAttribute("width", wcount*W+2);
+  // whites first
+  nodes.forEach(nd=>{
+    const p=nd.p%12, inScale=scalePcs.has(p), isRem=(p===removedPc);
+    const r=document.createElementNS("http://www.w3.org/2000/svg","rect");
+    r.setAttribute("x",nd.x+1);r.setAttribute("y",1);r.setAttribute("width",W-2);
+    r.setAttribute("height",H);r.setAttribute("rx",3);
+    r.setAttribute("fill", inScale?"#F4EFE4":"#2A2624");
+    r.setAttribute("stroke", isRem?"#8B1E24":"#332E2C");
+    r.setAttribute("stroke-width", isRem?3:1);
+    r.dataset.midi=nd.p; r.classList.add("kbkey");
+    svg.appendChild(r);
+    if(isRem){
+      const t=document.createElementNS("http://www.w3.org/2000/svg","text");
+      t.setAttribute("x",nd.x+W/2);t.setAttribute("y",H-8);t.setAttribute("fill","#8B1E24");
+      t.setAttribute("font-size","15");t.setAttribute("font-weight","800");
+      t.setAttribute("text-anchor","middle");t.textContent="✕";
+      svg.appendChild(t);
+    }
+  });
+  // blacks on top
+  for(let o=0;o<octs;o++) for(const [semi,after] of Object.entries(blacks)){
+    const p=(startMidi+o*12+ +semi), pcv=p%12;
+    const inScale=scalePcs.has(pcv), isRem=(pcv===removedPc);
+    const bx=(o*7+ +after)*W + W-9;
+    const r=document.createElementNS("http://www.w3.org/2000/svg","rect");
+    r.setAttribute("x",bx);r.setAttribute("y",1);r.setAttribute("width",19);
+    r.setAttribute("height",H*0.62);r.setAttribute("rx",2);
+    r.setAttribute("fill", inScale?"#C9A227":"#100E0D");
+    r.setAttribute("stroke", isRem?"#8B1E24":"#000");
+    r.setAttribute("stroke-width", isRem?3:1);
+    r.dataset.midi=p; r.classList.add("kbkey");
+    svg.appendChild(r);
+  }
+  host.appendChild(svg);
+}
+function litKey(m){
+  document.querySelectorAll(".kbkey").forEach(k=>{
+    if (k.dataset.wasFill!==undefined){k.setAttribute("fill",k.dataset.wasFill);delete k.dataset.wasFill;}
+  });
+  document.querySelectorAll(".kbkey").forEach(k=>{
+    if (+k.dataset.midi === m){
+      k.dataset.wasFill=k.getAttribute("fill");
+      k.setAttribute("fill","#C9A227");
+    }
+  });
+}
+
+/* ── banner + chips ─────────────────────────────────────────────────────── */
+function drawBanner(D){
+  const b=$("banner");
+  if (D.error){ b.className="bad"; b.innerHTML=`<div id="verdict">${D.error}</div>`; return; }
+  const {bars,total}=D.R;
+  b.className = bars<=4?"":bars<=8?"warn":"bad";
+  const g=S.grouping, gat=GATI[g]?`${GATI[g]} gati`:`groups of ${g}`;
+  const kk=KONNAKOL[g]||"";
+  const secs = (total * (60/S.bpm) / S.sub);
+  b.innerHTML = `
+    <div class="stat"><b>${bars}</b><span>bars to resolve</span></div>
+    <div class="stat"><b>${total}</b><span>notes</span></div>
+    <div class="stat"><b>${D.R.reps}</b><span>pattern reps</span></div>
+    <div class="stat"><b>${secs.toFixed(0)}s</b><span>at ${S.bpm} bpm</span></div>
+    <div id="verdict"><b>${gat}</b> &middot; ${kk}<br>
+      ${S.includeTop&&PATTERNS[S.pattern].top
+        ? `<span style="color:#E39B3C">Top note is ON, so the pattern is 7 notes — and 7 shares factors with nothing. Turn it off to get the six-note advantage.</span><br>`:""}
+      <em>${bars<=4?"Short and camera-friendly."
+          :bars<=8?"Usable, but long for a live take."
+          :"Too long for camera — try triplet subdivisions for odd groupings."}</em></div>`;
+}
+function drawChips(D){
+  const host=$("scaleline"); host.innerHTML="";
+  if (D.error) return;
+  const degs = (D.scale.deg||"").split(" ");
+  D.scale.notes.forEach((n,i)=>{
+    const d=document.createElement("div"); d.className="nchip"; d.dataset.i=i;
+    d.innerHTML = `${nm(n)}<span class="deg">${degs[i]||""}</span>`;
+    d.onclick=async()=>{await initAudio(); playNote(midi(n)+12, ctx.currentTime, 0.9);};
+    host.appendChild(d);
+  });
+  if (D.scale.removed){
+    const d=document.createElement("div"); d.className="nchip ghost";
+    d.innerHTML=`${nm(D.scale.removed)}<span class="deg">removed</span>`;
+    host.appendChild(d);
+  }
+  const t=document.createElement("div");
+  t.style.cssText="font-size:12.5px;color:var(--muted);margin-left:8px;max-width:430px";
+  t.innerHTML = `<b style="color:var(--cream)">${D.scale.label}</b><br>${D.scale.teach||""}`;
+  host.appendChild(t);
+}
+function drawChords(D){
+  const host=$("chords"); host.innerHTML="";
+  if (D.error) return;
+  const ch = findChords(D.scale.notes);
+  const tri = ch.filter(c=>c.size===3), tet = ch.filter(c=>c.size===4);
+  [["Triads",tri],["Sixths & sevenths",tet]].forEach(([lab,list])=>{
+    if(!list.length) return;
+    const h=document.createElement("div");
+    h.style.cssText="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);width:100%;margin:6px 0 2px";
+    h.textContent=`${lab} — ${list.length}`;
+    host.appendChild(h);
+    list.forEach(c=>{
+      const d=document.createElement("div"); d.className="ch";
+      let ni=0;
+      const paint=()=>{ d.innerHTML=`${c.names[ni].sym}
+        <small>${c.notes.map(nm).join(" ")}${c.names.length>1?" · tap to flip":""}</small>`; };
+      paint();
+      d.onclick=async()=>{
+        await initAudio();
+        const t0=ctx.currentTime+0.02;
+        c.notes.forEach((n,k)=>playNote(midi(n)+12, t0+k*0.055, 1.1, 0.65));
+        ni=(ni+1)%c.names.length; paint();
+      };
+      host.appendChild(d);
+    });
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   5. PLAYBACK
+   ══════════════════════════════════════════════════════════════════════════ */
+/* Audio correctness must NOT depend on requestAnimationFrame — rAF is throttled
+   hard when the tab/pane loses focus, which silently broke looping. So:
+     • a setInterval LOOKAHEAD SCHEDULER owns the audio (queues 3s ahead)
+     • rAF owns only the highlight, and derives its index from ctx.currentTime
+       so dropped frames can never desynchronise anything.
+   Count-in fires once at the start, never on a loop repeat. */
+let raf=null, sched=null, stepDur=0, seqStart=0, queuedUpTo=0, lastLit=-1;
+const LOOKAHEAD = 3.0, TICK_MS = 400;
+
+async function toggle(){
+  if (S.playing){ stop(); return; }
+  try { await initAudio(); } catch(e){ $("err").textContent="Audio failed: "+e.message; return; }
+  if (!DRILL || DRILL.error) return;
+  S.playing=true; $("go").textContent="STOP"; $("go").className="play stop";
+  stepDur = (60/S.bpm)/S.sub;
+  const beat = 60/S.bpm;
+  const countIn = 4*beat;
+  seqStart = ctx.currentTime + 0.3 + countIn;
+  queuedUpTo = 0; lastLit = -1;
+  if (S.click) for (let i=0;i<4;i++) playClick(ctx.currentTime+0.3+i*beat, i===0);
+  pump();                                   // queue the first chunk immediately
+  sched = setInterval(pump, TICK_MS);
+  raf = requestAnimationFrame(tick);
+}
+function stop(){
+  S.playing=false; $("go").textContent="PLAY"; $("go").className="play";
+  if (raf) cancelAnimationFrame(raf); raf=null;
+  if (sched) clearInterval(sched); sched=null;
+  if (ctx && master){
+    master.gain.cancelScheduledValues(ctx.currentTime);
+    master.gain.setTargetAtTime(0, ctx.currentTime, 0.015);
+    setTimeout(()=>{ if(!S.playing) master.gain.setTargetAtTime(0.85, ctx.currentTime, 0.02); },150);
+  }
+  litNote(-1); litKey(-1);
+  document.querySelectorAll("#scaleline .nchip").forEach(c=>c.classList.remove("lit"));
+}
+/* queue every note whose onset falls inside the lookahead window */
+function pump(){
+  if (!S.playing || !DRILL || DRILL.error) return;
+  const D=DRILL, len=D.notes.length, beat=60/S.bpm;
+  const horizon = ctx.currentTime + LOOKAHEAD;
+  while (seqStart + queuedUpTo*stepDur < horizon){
+    const i = queuedUpTo;
+    if (!S.loop && i >= len) break;
+    const when = seqStart + i*stepDur;
+    const n = D.notes[i % len];
+    playNote(midi(n)+12, when, stepDur, (i % S.grouping===0)?0.95:0.7);
+    if (S.click && (i % S.sub === 0))
+      playClick(when, (i % (S.sub*4) === 0));
+    queuedUpTo++;
+    if (queuedUpTo > 100000) break;         // paranoia
+  }
+  if (!S.loop && ctx.currentTime > seqStart + len*stepDur + 0.15) stop();
+}
+/* visuals only — safe to drop frames */
+function tick(){
+  if (!S.playing){ return; }
+  const D=DRILL, len=D.notes.length;
+  const i = Math.floor((ctx.currentTime - seqStart)/stepDur);
+  if (i>=0){
+    const j = S.loop ? (i % len) : Math.min(i, len-1);
+    if (j !== lastLit){
+      lastLit = j;
+      litNote(j); litKey(midi(D.notes[j])+12);
+      document.querySelectorAll("#scaleline .nchip").forEach(c=>c.classList.remove("lit"));
+      const k = D.scale.notes.findIndex(x=>pc(x)===pc(D.notes[j]));
+      const chip = document.querySelector(`#scaleline .nchip[data-i="${k}"]`);
+      if (chip) chip.classList.add("lit");
+    }
+  }
+  raf = requestAnimationFrame(tick);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════ */
+function render(){
+  $("err").textContent="";
+  refreshModes();
+  DRILL = buildDrill();          // build BEFORE reflecting state, or labels lag a render
+  buildUI_state();
+  drawBanner(DRILL); drawChips(DRILL); drawChords(DRILL);
+  try { drawScore(DRILL); } catch(e){ $("err").textContent="Notation: "+e.message; }
+  drawKeyboard(DRILL);
+  if (S.playing){ stop(); }
+}
+function buildUI_state(){
+  const P=PATTERNS[S.pattern], usesTop=!!P.top;
+  const tb=$("top");
+  tb.disabled=!usesTop;
+  tb.parentElement.style.opacity = usesTop?1:0.35;
+  tb.className = "ghostbtn"+(S.includeTop&&usesTop?" on":"");
+  const len = DRILL&&!DRILL.error ? DRILL.base.length : 0;
+  tb.innerHTML = usesTop
+    ? (S.includeTop?`on &middot; ${len} notes`:`off &middot; ${len} notes`)
+    : `n/a`;
+  [["oct",()=>S.octaves],["sub",()=>S.sub],["grp",()=>S.grouping],["res",()=>S.resolve]]
+  .forEach(([id,get])=>{
+    [...$(id).children].forEach(b=>{
+      const v = id==="res"?b.textContent:+b.textContent;
+      b.className = (get()===v)?"on":"";
+    });
+  });
+}
+buildUI(); render();
+</script>
+</body>
+</html>
