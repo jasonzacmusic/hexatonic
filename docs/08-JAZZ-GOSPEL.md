@@ -1,8 +1,20 @@
 # SHADAVA — Jazz, Gospel & Western Theory (verified, with corrections)
 
-> This document exists because a research pass **refuted six things I had already
-> written into the other docs.** All are now fixed, but read §1 before you say
-> anything on camera. ⚠️ = do not state as fact.
+> This document exists because two research passes **refuted nine things I had
+> already written** — six in the other docs (§1), and three more in the first draft
+> of *this* document (the Liszt claim in §5, the Brecker "do not ship" in §5, and the
+> Weiskopf bibliography in §7). All are now fixed.
+>
+> **Read §1 and §5 before you say anything on camera.** ⚠️ = do not state as fact.
+>
+> **The definition of a triad pair**, since it underpins §2 and the v2 module:
+> Weiskopf — *"two triads that do not share any notes"*; Bergonzi — *"two triads that
+> don't have any common tones"*; Bobby Stern — *"2 adjacent triads and therefore
+> comprised of 6 non-repeating notes."* Note the **second criterion** several sources
+> add: the triads should be **adjacent in a parent scale**. Weiskopf's documented
+> applications: F+G over Dm7 · Bb+C over C7sus4 · degrees **4 and 5** for Cmaj7 ·
+> degrees **1 and 2** for Cmaj7#11. General rule: **the omitted note is always the
+> 7th of the lower triad.**
 
 ---
 
@@ -194,6 +206,28 @@ the hexachord = three overlapping tetrachords **and two overlapping pentatonics*
 Verified: {C D E F G A} contains exactly two anhemitonic pentatonic subsets —
 C D E G A and C D F G A. No others.
 
+**(v) Two major triads share no tone at only THREE interval classes** — verified in
+the engine by exhaustive check:
+
+| root interval | resulting set | class |
+|---|---|---|
+| **semitone** (m2 / M7) | C Db E F G Ab | prime (0,1,3,4,7,8), iv `<313431>` |
+| **whole step** (M2 / m7) | C D E F# G A | **6-33**, iv `<143241>` |
+| **tritone** | C Db E Gb G Bb | **6-30** (Petrushka), iv `<224223>` |
+
+Every other interval shares at least one tone. **In particular, `C major + Eb major`
+is NOT a valid triad pair** — they share G, giving five notes (a C7#9 shape), not six.
+Worth encoding as a validation rule so the v2 triad-pair module can't generate junk.
+
+**(vi) The augmented-triad parity rule — provable and complete.** There are only four
+augmented triads: {0,4,8}, {1,5,9}, {2,6,10}, {3,7,11}. Verified exhaustively:
+
+- two of the **same parity** → the **whole-tone scale (6-35)**
+- two of **opposite parity** → the **augmented hexatonic (6-20)**
+
+**No other outcome is possible.** That is a complete, two-line classification of every
+augmented-triad pair in music, and it makes a beautiful teaching card.
+
 ---
 
 ## 4. The word "hexatonic" has four different scopes — disambiguate every time
@@ -231,18 +265,55 @@ Chord content, computed exhaustively:
 behaves as a *tonic-major* colour, not a dominant one. The three maj7 chords a major
 third apart are the three tonic chords of a Giant Steps cycle.
 
-**Players — verified:** **Oliver Nelson's solo on "Stolen Moments"** (*The Blues and
-the Abstract Truth*, Impulse!, 1961) is *the* canonical jazz example — cited to Josh
-Workman, *Guitar Player* 41/7 (July 2007), p. 108. Coltrane and Nelson, late
-1950s–early 60s, same source. Liszt, *A Faust Symphony*, is the celebrated early
-appearance. Scholarly bridge to Cohn: **Rich Pellegrin, "Motive, Collection, and
-Voice Leading in John Coltrane's 'Giant Steps'," *Jazz Perspectives*** — identifies
-a hexatonic core, **Hex(2,3)**, at the centre of "Giant Steps."
+### 🔴 Who actually plays it — the received wisdom is far thinner than it looks
 
-⚠️ **Do NOT ship:** Michael Brecker and Woody Shaw as augmented-scale attributions
-(widely repeated, no documented solo or analysis found). Shostakovich Piano Trio
-No. 2 finale (Wikipedia marks it *citation needed*). Monk/Beiderbecke whole-tone
-claims are uncited on Wikipedia.
+**The single most important sourcing fact in this whole document:** essentially every
+widely-repeated claim about jazz augmented-scale usage — Coltrane, Oliver Nelson,
+Michael Brecker — traces back to **one non-scholarly source**: Josh Workman,
+"Advanced: Secrets of the symmetrical augmented scale," *Guitar Player* 41/7 (July
+2007), p. 108. It could not be accessed. **Do not build the app's authority on it.**
+
+| player | status |
+|---|---|
+| **Oliver Nelson** | ⚠️ **Sources conflict on WHICH TUNE.** Wikipedia (via Workman) says **"Stolen Moments"**; Tom Lippincott says the classic lick is on **"Hoe-Down"**. Both are on *The Blues and the Abstract Truth* (rec. 23 Feb 1961, Van Gelder, Impulse!; with Hubbard, Dolphy, Bill Evans, Chambers, Haynes) and Nelson solos on both. **Name both with the caveat, or name neither.** |
+| **Michael Brecker** | ✅ **Now the best-documented instance — revised from my earlier "do not ship".** Saxophonist **Pat Tucker**, on Brecker's solo on **"Gossip"**: *"in bars 22 to 24 he goes right down the Augmented scale"* (Casa Valdez round-table, 5 Feb 2007). Recording checks out: "Gossip" is track 1 of **Mike Stern, *Time in Place*** (Atlantic; rec. Dec 1987, released 1988), Brecker on tenor. An ear-witness claim from a professional, not peer-reviewed — but *specific*, and verifiable. |
+| **Sonny Rollins** | ✅ **Better attested than the Coltrane claims, and nobody lists it.** **Bob Mover**: Rollins *"extended that augmented scale through a whole section"* of **"Four"** on **Sonny Rollins, *Now's the Time*** (RCA Victor, rec. early 1964, with Herbie Hancock, Ron Carter/Bob Cranshaw, Roy McCurdy). **Add this to the app.** |
+| **John Coltrane** | ⚠️ **Do not conflate two different things.** What is solidly documented is the **three-tonic system** — root motion by major thirds, which *outlines* an augmented triad. **No source documents a specific Coltrane solo as augmented-hexatonic melodic playing.** Scholarship: **David Demsey, "Chromatic Third Relations in the Music of John Coltrane," *Annual Review of Jazz Studies* 5 (1991), pp. 146–47, 158**; Demsey, *John Coltrane Plays Giant Steps* (Hal Leonard, 1996). |
+| **Woody Shaw** | ❌ **Drop.** Wikipedia describes his language as wide 4ths/5ths, pentatonic permutations, polytonality — **no augmented scale**. |
+| **Jerry Bergonzi** | ⚠️ Teaches it (ch. 11), but no documented solo. Not a player-example. |
+
+**A lovely historical link worth using:** Bob Mover reports that **Gary Campbell** —
+the same Gary Campbell who wrote *Triad Pairs for Jazz* — *"turned us all on to
+possibilities of that scale"* in the Brecker circle around the late 1960s–early 70s.
+The triad-pair pedagogy and the augmented-scale practice share one transmission route.
+
+### 🔴 CORRECTION to what I wrote an hour ago: Liszt did NOT use the augmented scale
+
+I stated *"Liszt, A Faust Symphony, is the celebrated early appearance."* **That is
+wrong.** The *Faust Symphony*'s opening theme is built from **augmented TRIADS
+spanning all twelve chromatic pitches** — that is four augmented triads covering the
+aggregate, **not the six-note augmented hexatonic**. Do not say "Liszt used the
+augmented scale."
+
+What *is* verified in the classical repertoire: **Schoenberg, *Ode to Napoleon
+Buonaparte* Op. 41 (1942)** — the source of the "Ode-to-Napoleon" name; the row lets
+G minor, Eb minor and B minor triads emerge. Bartók, Babbitt, Ginastera, Almeida
+Prado, Shostakovich, Webern, Nono and Scriabin are named in sources **without
+specific passages — UNVERIFIED at that level.** (Shostakovich Piano Trio No. 2 is
+marked *citation needed* on Wikipedia.)
+
+⚠️ **Naming trap: there are TWO unrelated "Prometheus" scales.** Ian Ring's database
+calls **6-20 (the augmented hexatonic) "Liszt's Prometheus"**, after Liszt's
+*Prometheus*; **Scriabin's Prometheus scale is 6-34**, a completely different set.
+Never let these merge.
+
+**Also note:** the augmented scale has only **2 modes**, not 6. And where sources say
+"6 augmented triads" (C+, D#+, E+, G+, G#+, B+) they are counting **6 root names for
+2 distinct pitch-class sets** — 2 is the correct set-theoretic count.
+
+Scholarly bridge to Cohn: **Rich Pellegrin, "Motive, Collection, and Voice Leading in
+John Coltrane's 'Giant Steps'," *Jazz Perspectives*** — identifies a hexatonic core,
+**Hex(2,3)**, at the centre of "Giant Steps."
 
 ---
 
@@ -260,11 +331,35 @@ claims are uncited on Wikipedia.
 class, related by T3** (C major blues = A minor blues). And **6-Z47's Z-partner is
 6-Z25** — same interval vector, different set class.
 
-Attributions: "mystic chord" coined by **Arthur Eaglefield Hull, 1916**;
-"Prometheus chord" used by **Leonid Sabaneyev** after Scriabin's Op. 60.
-Petrushka: Stravinsky, **1911**, second tableau (piano version); earlier use in
-**Liszt, *Malédiction*** (c. 1840); key source **Richard Taruskin, "Chez
-Pétrouchka" (1987)**. ⚠️ Who coined "Petrushka chord" is unverified.
+**Whole tone — the solidly verified example is Debussy's "Voiles"**, the second piece
+of *Préludes* Book I, which is *"almost entirely within one whole-tone scale."*
+Monk: **"Four in One"** and "Trinkle-Tinkle". ⚠️ **Date trap: Wikipedia's whole-tone
+article dates "Four in One" to 1948, but its own article on the composition says it
+was first recorded 23 July 1951** (*Genius of Modern Music* sessions). **Use 1951.**
+"Trinkle, Tinkle" (1952) has no Wikipedia article — unverified.
+
+**Mystic chord attributions — and one correction worth making on air.**
+"Mystic chord" was coined by **Arthur Eaglefield Hull, 1916**, from Scriabin's
+Theosophy. **Scriabin himself never used the term** — he called it his *"synthetic
+harmony,"* and some scholars (Jay Reise) use his word instead. "Chord of the pleroma"
+was suggested by **Igor Bèlza** and is *wrongly* attributed to Scriabin. *Prometheus:
+The Poem of Fire*, Op. 60: composed **1910**, premiered **2 March 1911, Moscow**; the
+work is built almost entirely on the matrix sonority **A D♯ G C♯ F♯ B** and ends on
+its only consonance, an F♯ major triad.
+
+**Petrushka:** Stravinsky, **1911**, second tableau (in the piano), with a clarinet
+variant, and transposed to A and Eb at the end of the third tableau. Earlier
+appearances: **Liszt, *Malédiction*** (c. 1840) and **Ravel, *Jeux d'eau*** (1901).
+Key source **Richard Taruskin, "Chez Pétrouchka — Harmony and Tonality 'chez'
+Stravinsky," *19th-Century Music* 10/3 (Spring 1987): 265–86** (pp. 268–69).
+The set is a **subset of the octatonic collection**, which is why Campbell files it
+under the auxiliary diminished scale (*Triad Pairs for Jazz*, p. 126).
+⚠️ Who coined "Petrushka chord" is **unverified — attribute it to nobody.**
+
+⚠️ **On "the blues scale" generally:** Wikipedia is explicit that *"strictly speaking
+there can be no one blues scale"* — blue notes are alternate inflections, and Learn
+Jazz Standards lists five different things called "blues scales." Say so rather than
+presenting one as canonical.
 
 ---
 
@@ -272,11 +367,12 @@ Pétrouchka" (1987)**. ⚠️ Who coined "Petrushka chord" is unverified.
 
 | work | verified details |
 |---|---|
-| **Weiskopf & Ricker, *The Augmented Scale in Jazz*** | Aebersold, **1993** — ⚠️ **this is the Weiskopf title we want, NOT *Beyond the Horn*** |
-| Weiskopf, *Intervallic Improvisation – The Modern Sound* | Aebersold, **2010** (earlier *Intervalic Improvisation*, 1995) |
-| Weiskopf & RosenBerg, *Beyond The Horn* | Aebersold, 2006 — **exercises and etudes, NOT a triad-pair book** |
-| **Gary Campbell, *Triad Pairs for Jazz*** | **Alfred, 2001** |
-| **Bergonzi, *Inside Improvisation Vol. 7: Hexatonics*** | Advance Music; OpenLibrary says **2015**, commonly cited 2006 — ⚠️ flag the year |
+| **Weiskopf & Ricker, *The Augmented Scale in Jazz: A Player's Guide*** | Aebersold, **1993**, ISBN 978-1-56224-031-8, ~60 pp (29 pp exercises + 12 etudes) — ⚠️ **this is the Weiskopf title we want, NOT *Beyond the Horn*** |
+| **Weiskopf, *Intervalic Improvisation: The Modern Sound*** | Aebersold, **1995**, ISBN 978-1-56224-259-6, 136 pp. ⚠️ **His own spelling is "Intervalic" — ONE L.** Most retailers write "Intervallic" under the same ISBN. Reprints dated 2009/2010 cause year confusion; **cite 1995**. |
+| Weiskopf & **Ed Rosenberg**, *Beyond The Horn* | Aebersold, 2006, 244 pp — **interval studies (3rds, 5ths, 6ths, 10ths, octave displacement) + 20 etudes. NOT Ricker, NOT triad pairs.** |
+| Weiskopf & Ricker, *Coltrane: A Player's Guide to His Harmony* | Aebersold, **1991**; reissued as *Giant Steps…*, 2010 (⚠️ whether content is identical is unverified) |
+| **Gary Campbell, *Triad Pairs for Jazz*** | **Alfred, 2001**, 144 pp, ISBN 978-0-7579-0357-1. Sections: *Why Practice Triad Pairs?* p.3 · *Linking Triads* p.54 · *Stacked Triad Pairs* p.91 · *Interchanging Patterns* p.105 · *Solos* p.124. Priority pairs: **major a whole step (his most basic)**, major a half step, major a tritone, minor a half step, minor a tritone. From C melodic minor: **Cm/Dm, Eb+/F, F/G.** |
+| **Bergonzi, *Inside Improvisation Vol. 7: Hexatonics*** | Advance Music, **2006** (2015 reissue causes the year confusion), 290 pp + CD. **16 hexatonics**, categorised by triad quality (major/minor/augmented) × interval (m2, M2, m3, tritone), in slash notation (D/C, B‑/C). His wording is *"**One way** to create a hexatonic scale is to combine two triads that don't have any common tones"* — deliberately not restricted to that method. |
 | **Levine, *The Jazz Theory Book*** | Sher, **1995**. **p. 37**: argues "avoid note" is a poor term, proposes **"handle with care" note**, reluctantly keeps the standard term. Corroborated by Robert Rawlins, *MTO* 6/1 (2000) |
 | **Nettles, *Harmony 1*** | Berklee, 1987, **pp. 34–35**; *Harmony 3*, pp. 15–17 |
 | **Nettles & Graf, *The Chord Scale Theory & Jazz Harmony*** | Advance Music, **1997** (one aggregator says 2000) |

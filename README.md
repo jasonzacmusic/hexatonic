@@ -123,6 +123,14 @@ raga whose scale is exactly C D E G A B both ways.** Safe wording is in
 the opposite (it has the A, it's missing the G). That's exactly the slip a rasika
 would jump on.
 
+One more for the shoot, from a second jazz pass: if you name a player who used the
+augmented scale, the **best-verified examples are Michael Brecker on "Gossip"**
+(Mike Stern, *Time in Place*, 1988) and **Sonny Rollins on "Four"** (*Now's the Time*,
+1964) — not Coltrane, whose documented innovation is root motion in major thirds
+rather than melodic augmented-scale playing. And **don't say Liszt used the augmented
+scale** — I had that wrong; the *Faust Symphony* theme uses augmented *triads* across
+all twelve notes, which is a different thing.
+
 The research also caught **three of my own konnakol syllable sets being wrong**
 (7 is canonically Ta Ka Di Mi Ta Ki Ta, 4+3, not 3+4) and that there are **six
 yatis, not five**. All corrected, all flagged — including a list of things that are
