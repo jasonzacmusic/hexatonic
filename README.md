@@ -33,10 +33,15 @@ legal removals are Ab (the b6 — exactly what you said) and D. Same rule, twice
 ### Four more things came out of the maths
 
 **1. Your major hexatonic and your minor hexatonic are the same six notes.**
-C major no-4 = A minor no-b6 = **G A B C D E**, which is literally Guido
-d'Arezzo's teaching hexachord from around 1025 — *ut re mi fa sol la*. Before
-Western music had seven notes, it had six. **That's your thumbnail and your
-title.** It also means the app stores ONE scale and rotates it, not two.
+C major no-4 = A minor no-b6 = **G A B C D E**, which is the six-note hexachord
+Western music taught sight-singing with for centuries — Guido d'Arezzo's
+*ut re mi fa sol la*, 11th century. Before Western music settled on seven notes,
+it taught six. **That's your thumbnail and your title.** It also means the app
+stores ONE scale and rotates it, not two.
+
+*(I'm still waiting on one research pass to nail the exact Guido citation and the
+gospel/jazz sources — I'd get that verified before you state dates on camera. The
+note-set identity itself is computed and certain.)*
 
 **2. The scale *is* a chord.** Stack all six notes in thirds: **Cmaj13** from C,
 **Am11** from A. Nothing left over. Every note is a chord tone — because the avoid
