@@ -124,7 +124,9 @@ the moat.** Full detail and citations: [06-PRIOR-ART.md](docs/06-PRIOR-ART.md).
 | [docs/02-APP-SPEC.md](docs/02-APP-SPEC.md) | stack, screens, data model, VexFlow rules | Opus |
 | [docs/03-RHYTHM-ENGINE.md](docs/03-RHYTHM-ENGINE.md) | grouping + resolution maths | Opus |
 | [docs/04-YOUTUBE-LIVE.md](docs/04-YOUTUBE-LIVE.md) | 75-min run of show, team roles, promo ladder | you + team |
+| [docs/05-CAN-OPUS-DO-IT.md](docs/05-CAN-OPUS-DO-IT.md) | **honest feasibility: what Opus can and can't carry** | you |
 | [docs/06-PRIOR-ART.md](docs/06-PRIOR-ART.md) | what we may and may not claim | you |
+| [docs/DESIGN-BRIEF-THUMBNAIL.md](docs/DESIGN-BRIEF-THUMBNAIL.md) | ready-to-paste Claude Design briefs | you → Claude Design |
 | [engine/shadava_theory.py](engine/shadava_theory.py) | working engine — the spec Opus ports | Opus |
 | [engine/VERIFIED-OUTPUT.txt](engine/VERIFIED-OUTPUT.txt) | its verified output — these are the tests | Opus |
 
