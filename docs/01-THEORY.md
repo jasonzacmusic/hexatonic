@@ -68,22 +68,60 @@ pentatonic.** One parent set, six rotations.
 > the data-model level makes every later feature (relative-key switching, the
 > mode wheel, transposition) twice as hard and subtly inconsistent.
 
-And note the historical hook: the note-set we are calling "the modern gospel scale" is
-literally the hexachord Guido d'Arezzo used to teach sight-singing in the 11th
-century. **Before Western music had seven notes, it had six.** This app is not a
-novelty — it is a restoration. That's the YouTube hook.
+### The historical hook — and the version that survives scrutiny
+
+The note-set is the hexachord Western musicians learned to sight-sing with for
+centuries: Guido d'Arezzo's *ut re mi fa sol la*.
+
+⚠️ **But do NOT say "before Western music had seven notes, it had six."** I proposed
+that as the title and it does not hold up. **Stefano Mengozzi, *The Renaissance
+Reform of Medieval Music Theory* (Cambridge UP, 2010)** argues that six-syllable
+solmization was only ever a *sight-singing option* and never imposed "sixth-ness"
+onto a diatonic system **already grounded on seven letters**; its promotion to a
+fundamental structure was a later humanist reinterpretation read back onto Guido.
+Also: the **Guidonian hand almost certainly post-dates Guido.**
+
+**Safe, sourced, and still a strong hook:**
+
+> *"For centuries Western musicians learned to sing using a six-note unit — Guido
+> d'Arezzo's ut re mi fa sol la. The notes we're about to play are exactly that
+> hexachord."*
+
+The three historical hexachords: **naturale** on C (C D E F G A), **durum** on G
+(G A B C D E, B♮), **molle** on F (F G A B♭ C D). Guido c. 991–after 1033;
+*Micrologus* c. 1026; *Epistola* c. 1030s. Detail in `docs/08-JAZZ-GOSPEL.md §1.4`.
+
+### Two bonus facts, both independently verified in the engine
+
+**6-32 is one of only FIVE tritone-free hexachord set classes** out of 50 —
+confirmed by enumerating all 924 six-note subsets of the aggregate. The other
+tritone-free one we care about is **6-20, the augmented scale**. Our two headline
+families are in a five-member club.
+
+**`G + Am` is the UNIQUE triad pair anywhere that produces C D E G A B** —
+confirmed by exhaustive search over all maj/min/aug/dim triads in all 12 keys.
+(The only non-triad alternative is Gsus4 + Esus4.) That is a provable, checkable
+hook and it should be a feature in the harmony module.
 
 ---
 
 ## 3. The six modes (this is the "multi-mode" requirement, done properly)
 
+> ⚠️ **NAMING — I got this wrong at first and it is corrected here.** Do **not**
+> call the no-4 collection the "gospel scale": that name means `1 2 b3 3 5 6`
+> (the major blues scale). Do not call it the "Sunday scale" either — that is Peter
+> Martin's term for a different (unverified) six-note scale. And a bare "major
+> hexatonic" more commonly means the **no-7** collection. Use the **modal-
+> intersection** names below; they are sourced (Cecil Sharp's folk-song
+> classification) and they explain themselves. Full detail: `docs/08-JAZZ-GOSPEL.md`.
+
 | # | root | notes | degrees | 3rd? | 5th? | name to ship |
 |---|------|-------|---------|------|------|--------------|
-| 1 | C | C D E G A B | 1 2 3 5 6 7 | ✓ | ✓ | **Ionian Hexatonic** — the "Sunday"/gospel sound |
+| 1 | C | C D E G A B | 1 2 3 5 6 7 | ✓ | ✓ | **Ionian/Lydian Hexatonic** — won't commit to 4 or #4 |
 | 2 | D | D E G A B C | 1 2 4 5 6 b7 | **NO** | ✓ | **Sus Hexatonic** — pure quartal, no 3rd |
 | 3 | E | E G A B C D | 1 b3 4 5 b6 b7 | ✓ | ✓ | **Phrygian Hexatonic** — the dark one |
-| 4 | G | G A B C D E | 1 2 3 4 5 6 | ✓ | ✓ | **Major Hexatonic** — folk / bluegrass / Guidonian |
-| 5 | A | A B C D E G | 1 2 b3 4 5 b7 | ✓ | ✓ | **Minor Hexatonic** — Jason's minor |
+| 4 | G | G A B C D E | 1 2 3 4 5 6 | ✓ | ✓ | **Ionian/Mixolydian Hexatonic** — the Guidonian hexachord |
+| 5 | A | A B C D E G | 1 2 b3 4 5 b7 | ✓ | ✓ | **Dorian/Aeolian Hexatonic** — Jason's minor |
 | 6 | B | B C D E G A | 1 b2 b3 4 b6 b7 | ✓ | **NO** | **Locrian Hexatonic** — no perfect 5th |
 
 Two of these are pedagogically special and the app should say so out loud:
@@ -108,11 +146,30 @@ Stack the same six notes from A:      A  C  E  G  B  D   =  Am11
 All six notes stack into one tertian chord with nothing left over.
 
 **Every note is a chord tone. There is no avoid note — because the avoid note is
-precisely the one we removed.** The 4th is the avoid note over Imaj7; the b6 is
-the avoid note over i-7. Removing them is not simplification, it is *purification*.
+precisely the one we removed.**
 
-This is the theoretical explanation for the "you can't play a wrong note" feeling
-that gospel players describe, and it is the app's core promise to the student.
+⚠️ **Two precision caveats before this goes on camera:**
+
+1. **The avoid-note doctrine is HARMONIC, not melodic.** Every source agrees the
+   note is barred from *voicings and sustained melody notes* but stays fully
+   available as an approach, passing or neighbour tone. Saying "you can't play the
+   4th" misstates it. (Berklee: Nettles *Harmony 1* pp. 34–35; Nettles & Graf 1997;
+   Mulholland & Hojnacki 2013 p. 21. **Mark Levine, *The Jazz Theory Book* p. 37**
+   objects to the term itself and proposes *"handle with care" note* instead.)
+2. **The major case is bulletproof; the minor case is genuinely contested.** F sits
+   a half step above E, the 3rd of Cmaj7 — no one disputes that. But for b6 over
+   i-7, Nettles & Graf list it as Aeolian's avoid note while **PianoGroove
+   explicitly does not**, hearing it as Aeolian's defining colour. There is a live
+   split on Dorian's 6th too.
+
+> **Therefore: lead with the TRITONE argument (Theorem 1), not the avoid note.**
+> Theorem 1 is arithmetic and cannot be argued with. The avoid-note framing is a
+> useful second explanation, but present the minor case as *"many teachers treat the
+> b6 as the avoid note over i-7; some hear it as the colour that makes Aeolian
+> Aeolian."* That honesty costs nothing and protects the whole episode.
+
+This is still the theoretical explanation for the "you can't play a wrong note"
+feeling, and it is the app's core promise to the student.
 
 ---
 
@@ -303,7 +360,27 @@ still come out with *mixed* accidentals (`Ab` whole-half = `Ab Bb B C# D E F G`)
 — that is an unavoidable property of a symmetric scale, not a bug, and the app
 should not try to "fix" it.
 
-Barry Harris still needs a genuine harmony engine — his sixth-diminished scales
-are a **6th chord interleaved with a diminished 7th** to generate drop-2 voicing
-movement, which is harmony, not a scale to run up and down. **Ship 6 first, prove
-the loop, then widen.**
+### Barry Harris — the corrected facts (I first wrote "three"; there are four)
+
+Each is a chord interlocked with the diminished 7th on its **major-7th degree**:
+
+| name | chord | scale on C |
+|---|---|---|
+| Major Sixth Diminished | C6 | C D E F G **Ab** A B |
+| Minor Sixth Diminished | Cm6 | C D Eb F G **Ab** A B |
+| Seventh Diminished | C7 | C D E F G **Ab** Bb B |
+| Seventh Flat Five Diminished | C7b5 | C D E F Gb Ab Bb B |
+
+- **The dominant scale uses Ab.** `C D E F G A Bb B` is the **bebop dominant scale**
+  and is *not* a sixth-diminished scale — its alternate notes give Bm7b5, which is
+  half-diminished and cannot interleave.
+- **Never call these "octatonic."** They are eight-note but provably *not* the
+  symmetric diminished scale (which has 3 transpositions; these have 12). Say
+  "eight-note."
+- **There is no "major 7th diminished scale"** — that phrase names a *chord*.
+- **"Sixth" refers purely to the sixth CHORD. There is no six-note collection
+  anywhere in Barry's system.** That is exactly why his method keeps getting
+  mis-filed under hexatonics; kill the confusion on sight.
+
+It needs a genuine **harmony** engine, not a scale list. **Ship 6 first, prove the
+loop, then widen.** Full sourcing in `docs/08-JAZZ-GOSPEL.md §1.6`.

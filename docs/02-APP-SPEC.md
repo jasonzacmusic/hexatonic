@@ -211,7 +211,9 @@ interface Hexachord {
 interface ModeDef {
   index: number              // 0..5
   name: string               // 'Ionian Hexatonic', 'Minor Hexatonic', ...
-  aka: string[]              // 'Sunday scale', 'gospel', 'Guidonian', ...
+  aka: string[]              // 'major hexatonic (no 4)', 'Guidonian hexachord', ...
+                             // ⚠️ NEVER 'gospel scale' or 'Sunday scale' -- both
+                             // are taken and mean something else. See 08-JAZZ-GOSPEL.md
   degrees: string[]          // ['1','2','3','5','6','7']
   hasThird: boolean
   hasFifth: boolean
@@ -285,9 +287,15 @@ The app is a teaching instrument; the prose is half the product.
   of "so what does this get me."
 - **Per-mode teaching notes.** Especially the two good ones: mode 2 has no third
   (quartal), mode 5 is Dorian/Aeolian-ambiguous (works over m7 *and* m6).
-- **"Where you've heard this."** Gospel/Sunday-morning for the Ionian hexatonic;
-  folk/bluegrass for the Guidonian; the augmented hexatonic for Coltrane-era
-  jazz. Cite actual repertoire — vague claims will be caught.
+- **"Where you've heard this."** ⚠️ Be careful here — a research pass found that
+  **no published repertoire analysis of the no-4 collection in gospel exists.**
+  Present musical examples as **Jason's own pedagogy**, not as cited analysis.
+  What IS citable: **Oliver Nelson's solo on "Stolen Moments"** (*The Blues and the
+  Abstract Truth*, Impulse!, 1961) for the augmented hexatonic; Liszt's *A Faust
+  Symphony* for its early appearance; Cecil Sharp's Appalachian folk-song
+  classification for the diatonic hexachords. **Do not** attribute the augmented
+  scale to Michael Brecker or Woody Shaw — widely repeated, no source found.
+  See `docs/08-JAZZ-GOSPEL.md §5, §7`.
 - **The Guido d'Arezzo history.** "Before Western music had seven notes, it had
   six." One paragraph, sourced.
 

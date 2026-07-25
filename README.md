@@ -33,20 +33,22 @@ legal removals are Ab (the b6 — exactly what you said) and D. Same rule, twice
 ### Four more things came out of the maths
 
 **1. Your major hexatonic and your minor hexatonic are the same six notes.**
-C major no-4 = A minor no-b6 = **G A B C D E**, which is the six-note hexachord
-Western music taught sight-singing with for centuries — Guido d'Arezzo's
-*ut re mi fa sol la*, 11th century. Before Western music settled on seven notes,
-it taught six. **That's your thumbnail and your title.** It also means the app
-stores ONE scale and rotates it, not two.
+C major no-4 = A minor no-b6 = **G A B C D E** — the hexachord Western musicians
+learned to sight-sing with for centuries, Guido d'Arezzo's *ut re mi fa sol la*.
+It also means the app stores ONE scale and rotates it, not two.
 
-*(I'm still waiting on one research pass to nail the exact Guido citation and the
-gospel/jazz sources — I'd get that verified before you state dates on camera. The
-note-set identity itself is computed and certain.)*
+⚠️ **But don't say "before music had 7 notes, it had 6"** — I suggested that as a
+title and the research killed it. The seven letters came first and underlie the
+hexachord; the six syllables were a *sight-singing method*, not a claim about how
+many notes music had. Safe version: *"for centuries musicians learned to sing on a
+six-note unit, and these are exactly those six notes."*
 
 **2. The scale *is* a chord.** Stack all six notes in thirds: **Cmaj13** from C,
 **Am11** from A. Nothing left over. Every note is a chord tone — because the avoid
 note is the note we removed. That's the theoretical reason for the "can't play a
 wrong note" feeling. It's your best line: *"the scale with no wrong notes."*
+(Phrasing caveat in the naming-trap section below — say the 4th is barred from
+*chords and long notes*, not from being played at all.)
 
 **3. You were right about the triads, exactly.** Four tertian triads only:
 **C, Am, Em, G** (I–vi–iii–V). And only three 4-note sets, each with two correct
@@ -128,6 +130,37 @@ still ⚠️ unverified and must not be said as fact.
 
 ---
 
+## 🔴 One naming trap you must know about
+
+**Never call this the "gospel scale."** That name is already taken, and it means a
+*different* scale — `1 2 b3 3 5 6` (C D Eb E G A, the major blues scale). Jonny May
+teaches two courses under that name. I had labelled your scale "Sunday/gospel"
+throughout the first draft and it was wrong; it's fixed everywhere now.
+
+**"Sunday scale" is also taken** — it's Peter Martin's, in Open Studio's *Elements
+of Gospel Piano*. It is six notes, but its actual content is behind a paywall and I
+couldn't verify it. Don't claim it.
+
+And a bare **"major hexatonic"** more commonly means the *no-7* scale (C D E F G A),
+not yours. So always qualify.
+
+**The names to use instead** — these are sourced, from Cecil Sharp's folk-song
+classification, and they explain themselves:
+
+| your scale | ship this name |
+|---|---|
+| 1 2 3 5 6 7 | **Ionian/Lydian Hexatonic** — it refuses to commit to 4 or #4, which is exactly why it works over both maj7 and maj7#11 |
+| 1 2 3 4 5 6 | **Ionian/Mixolydian Hexatonic** (the Guidonian hexachord) |
+| 1 2 b3 4 5 b7 | **Dorian/Aeolian Hexatonic** — your minor |
+
+Your "it's ambiguous between Dorian and Aeolian" instinct turns out to be the actual
+academic naming convention. Nice.
+
+One more: **when you say the 4th is an "avoid note," say it's barred from *chords and
+long notes*, not from playing at all.** That's what the doctrine actually says, and
+Mark Levine himself thought "avoid note" was a bad term. Lead with the **tritone**
+argument instead — that one is arithmetic and nobody can argue with it.
+
 ## The bad news, and why it's actually good news
 
 **"World's first hexatonic app" is false.** There's an iOS app literally called
@@ -164,6 +197,7 @@ the moat.** Full detail and citations: [06-PRIOR-ART.md](docs/06-PRIOR-ART.md).
 | [docs/04-YOUTUBE-LIVE.md](docs/04-YOUTUBE-LIVE.md) | 75-min run of show, team roles, promo ladder | you + team |
 | [docs/05-CAN-OPUS-DO-IT.md](docs/05-CAN-OPUS-DO-IT.md) | **honest feasibility: what Opus can and can't carry** | you |
 | [docs/07-CARNATIC.md](docs/07-CARNATIC.md) | **verified raga names, gati, konnakol, varisai ladder** | you + Opus |
+| [docs/08-JAZZ-GOSPEL.md](docs/08-JAZZ-GOSPEL.md) | **verified Western/jazz theory + the 6 corrections** | you + Opus |
 | [docs/06-PRIOR-ART.md](docs/06-PRIOR-ART.md) | what we may and may not claim | you |
 | [docs/DESIGN-BRIEF-THUMBNAIL.md](docs/DESIGN-BRIEF-THUMBNAIL.md) | ready-to-paste Claude Design briefs | you → Claude Design |
 | [engine/shadava_theory.py](engine/shadava_theory.py) | working engine — the spec Opus ports | Opus |

@@ -181,16 +181,25 @@ def interval_vector(pcs: set[int]) -> list[int]:
     return v
 
 
-FORTE = {  # only the hexachords we actually reference
-    (0, 2, 4, 5, 7, 9): "6-32  'Guidonian / major hexachord'",
-    (0, 1, 4, 5, 8, 9): "6-20  'augmented / hexatonic (Cohn)'",
+# Keyed by PRIME FORM (not by raw pitch classes -- an earlier version of this
+# table was keyed by pcs, so half the lookups silently never matched).
+FORTE = {
+    (0, 2, 4, 5, 7, 9): "6-32  'Guidonian / major / diatonic hexachord'",
+    (0, 1, 4, 5, 8, 9): "6-20  'augmented' / Cohn's hexatonic collection",
     (0, 2, 4, 6, 8, 10): "6-35  'whole-tone'",
-    (0, 1, 3, 4, 6, 9): "6-27",
     (0, 2, 3, 5, 7, 9): "6-33  'Dorian hexachord'",
-    (0, 3, 5, 6, 7, 10): "6-Z49 / blues hexatonic",
-    (0, 1, 2, 6, 7, 8): "6-7   'Petrushka / tritone'",
-    (0, 2, 4, 6, 9, 10): "6-34  'Prometheus / mystic'",
+    (0, 1, 2, 4, 7, 9): "6-Z47 'blues' (minor AND major blues -- same class, T3 apart)",
+    (0, 1, 3, 6, 7, 9): "6-30  'Petrushka / tritone'",
+    (0, 1, 3, 5, 7, 9): "6-34  'Prometheus / mystic'",
+    (0, 1, 3, 4, 6, 9): "6-27",
 }
+# The five TRITONE-FREE hexachord set classes (of 50) -- verified by exhaustive
+# enumeration of all 924 six-note subsets of the aggregate. Our two headline
+# families are both in this five-member club.
+TRITONE_FREE_HEXACHORDS = [
+    (0, 1, 2, 3, 4, 5), (0, 1, 3, 4, 5, 8), (0, 1, 4, 5, 8, 9),
+    (0, 2, 3, 4, 5, 7), (0, 2, 4, 5, 7, 9),
+]
 
 
 # ----------------------------------------------------------------------------
@@ -461,11 +470,11 @@ def sequence_cells(scale: Scale, cell_len: int, step: int = 1,
 def build_library(tonic="C") -> dict[str, Scale]:
     lib = {}
     lib["major_no4"] = hexatonic_by_omission(
-        tonic, MAJOR, 4, "Major Hexatonic (no 4) — 'Sunday / gospel'", "diatonic-hexachord")
+        tonic, MAJOR, 4, "Ionian/Lydian Hexatonic (major no 4)", "diatonic-hexachord")
     lib["major_no7"] = hexatonic_by_omission(
-        tonic, MAJOR, 7, "Major Hexatonic (no 7) — 'Guidonian / folk'", "diatonic-hexachord")
+        tonic, MAJOR, 7, "Ionian/Mixolydian Hexatonic (Guidonian, major no 7)", "diatonic-hexachord")
     lib["minor_nob6"] = hexatonic_by_omission(
-        tonic, NATURAL_MINOR, 6, "Minor Hexatonic (no b6)", "diatonic-hexachord")
+        tonic, NATURAL_MINOR, 6, "Dorian/Aeolian Hexatonic (minor no b6) = raga Pushpalathika", "diatonic-hexachord")
     lib["minor_no2"] = hexatonic_by_omission(
         tonic, NATURAL_MINOR, 2, "Minor Hexatonic (no 2) — Phrygian-neutral", "diatonic-hexachord")
     lib["dorian_no6"] = hexatonic_by_omission(
@@ -716,7 +725,9 @@ fourths/fifths -- the most consonant, most quartal six-note set available.
     print("""
 >>> Every note of the scale is a chord tone. There is no avoid note, because
 >>> the avoid note is precisely the one we removed. This is why it sounds
->>> 'always right' -- the gospel/Sunday sound. You cannot play a wrong note.
+>>> 'always right'. NOTE: the avoid-note doctrine is HARMONIC (barred from
+>>> voicings, fine as a passing tone), and the b6-over-i-7 case is CONTESTED.
+>>> Lead with the TRITONE argument -- that one is arithmetic and cannot be argued.
 """)
 
     # ---- THE SIX MODES ---------------------------------------------------
@@ -730,7 +741,9 @@ fourths/fifths -- the most consonant, most quartal six-note set available.
     print("""
 >>> Mode 4 (on G) = 1 2 3 4 5 6, the folk/Guidonian 'major hexatonic'.
 >>> Mode 5 (on A) = 1 2 b3 4 5 b7, Jason's minor hexatonic.
->>> Mode 1 (on C) = 1 2 3 5 6 7, the gospel 'Sunday' sound.
+>>> Mode 1 (on C) = 1 2 3 5 6 7, the Ionian/LYDIAN hexatonic: it refuses to
+>>>   commit to 4 or #4, which is why it works over Cmaj7 AND Cmaj7#11.
+>>> NOT the 'gospel scale' -- that name means 1 2 b3 3 5 6 (major blues).
 >>> Mode 2 (on D) has NO 3rd  -> a pure sus/quartal mode.
 >>> Mode 6 (on B) has NO 5th  -> the unstable one; useful, rarely a tonic.
 >>> The minor hexatonic contains no 6th at all, so it is Dorian/Aeolian

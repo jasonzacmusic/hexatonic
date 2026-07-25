@@ -29,14 +29,23 @@ possible** — say that on air.
 |---|---|---|
 | 1 | **The Scale With No Wrong Notes (and why nobody teaches it)** | curiosity + benefit |
 | 2 | **Delete One Note. Your Playing Changes Forever.** | mechanism, punchy |
-| 3 | **Why Gospel Players Never Play The 4th** | tribe-specific, high CTR |
-| 4 | **6 Notes Beat 7. Here's The Math.** | contrarian + proof |
-| 5 | **Before Music Had 7 Notes, It Had 6** | history hook |
+| 3 | **The One Note That's Fighting You** | mechanism, no factual risk |
+| 4 | **6 Notes Beat 7. Here's The Math.** | contrarian + provable |
+| 5 | **The Six-Note Scale Musicians Trained On For 600 Years** | history hook |
 
-**Recommendation: #1 as the live title, #3 as the Shorts/Reels cut, #5 as the
-evergreen re-upload title** if you later cut the live into a tutorial. #1 makes a
-promise the theory actually keeps — Theorem 3 proves there are no avoid notes —
-so it is not clickbait, which matters for a channel built on trust.
+⚠️ **Two titles I first proposed are now WITHDRAWN — do not use them:**
+- ~~"Why Gospel Players Never Play The 4th"~~ — the term **"gospel scale" already
+  means a different collection** (`1 2 b3 3 5 6`, the major blues scale). This title
+  would be corrected by a gospel player in the first comment.
+- ~~"Before Music Had 7 Notes, It Had 6"~~ — **historically wrong.** The seven
+  letters predate and underlie the hexachord; six-syllable solmization was a
+  sight-singing device, not a claim that music had six notes (Mengozzi, Cambridge
+  UP 2010). See `docs/08-JAZZ-GOSPEL.md §1.4`.
+
+**Recommendation: #1 as the live title, #3 as the Shorts/Reels cut, #4 as the
+evergreen re-upload title.** #1 makes a promise the theory actually keeps — but see
+the caveat below about how to phrase the avoid-note part. #4 is the safest of all
+because arithmetic cannot be rebutted.
 
 ### Thumbnail concept
 Coloured (normal episode, not Free Style). **A piano keyboard with exactly one key
@@ -59,6 +68,12 @@ A full Claude Design brief for this is in `docs/DESIGN-BRIEF-THUMBNAIL.md`.
 > the same groove, and I'm going to show you the maths for why six notes land on
 > the beat and seven notes don't. Get your instrument. This one is not a video
 > you watch."
+
+⚠️ **Say "fighting you" / "the note that carries the tritone" — not "the note you
+must never play."** The avoid-note doctrine is *harmonic*: the 4th is barred from
+voicings and sustained melody notes, but it's fine as a passing tone. Overstating it
+is the one thing a theory-literate viewer will pull you up on. The **tritone**
+argument is the safe spine of the whole episode — it's arithmetic.
 
 ---
 

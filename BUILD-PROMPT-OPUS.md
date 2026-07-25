@@ -20,6 +20,8 @@ READ THESE FIRST, IN THIS ORDER, BEFORE WRITING ANY CODE:
   docs/07-CARNATIC.md      VERIFIED raga names, gati, konnakol, varisai ladder --
                            and a list of things marked UNVERIFIED that must NOT be
                            stated as fact anywhere in the UI
+  docs/08-JAZZ-GOSPEL.md   VERIFIED Western/jazz theory + SIX CORRECTIONS to earlier
+                           drafts. Read section 1 before writing ANY user-facing copy.
   engine/shadava_theory.py the working reference implementation
   engine/VERIFIED-OUTPUT.txt  its verified output — these ARE the tests
   engine/verified.json     machine-readable form of the same truth tables
@@ -88,6 +90,16 @@ NON-NEGOTIABLES — these are permanent house rules, violating any one is a bug:
      that document marks UNVERIFIED must not appear as a factual claim in the UI.
    - The minor hexatonic IS raga Pushpalathika (mela 22, dhaivata-varjya) and the
      app should say so. Sriranjani is NOT this scale -- it is panchama-varjya.
+   - SCALE NAMES: use the modal-intersection names -- "Ionian/Lydian Hexatonic"
+     (1 2 3 5 6 7), "Ionian/Mixolydian Hexatonic" (1 2 3 4 5 6, the Guidonian
+     hexachord), "Dorian/Aeolian Hexatonic" (1 2 b3 4 5 b7). NEVER label anything
+     "gospel scale" (that name means 1 2 b3 3 5 6, the major blues scale) or
+     "Sunday scale" (Peter Martin's term for a different scale), and never ship a
+     bare "major hexatonic" (ambiguous -- usually means the no-7 collection).
+   - The avoid-note doctrine is HARMONIC, not melodic: the note is barred from
+     voicings and sustained notes, fine as a passing tone. Do not write "never play
+     the 4th". The b6-over-minor case is genuinely contested -- present it as such.
+   - Do NOT write "before music had 7 notes it had 6" -- historically false.
 
 BUILD ORDER — ship in this sequence, do not skip ahead:
 

@@ -112,7 +112,7 @@
         7,
         9
       ],
-      "forte": "6-32  'Guidonian / major hexachord'",
+      "forte": "6-32  'Guidonian / major / diatonic hexachord'",
       "interval_vector": [
         1,
         4,
@@ -205,7 +205,7 @@
         7,
         9
       ],
-      "forte": "6-32  'Guidonian / major hexachord'",
+      "forte": "6-32  'Guidonian / major / diatonic hexachord'",
       "interval_vector": [
         1,
         4,
@@ -220,7 +220,7 @@
   ],
   "scales": {
     "major_no4": {
-      "name": "Major Hexatonic (no 4) \u2014 'Sunday / gospel'",
+      "name": "Ionian/Lydian Hexatonic (major no 4)",
       "notes": [
         "C",
         "D",
@@ -263,7 +263,7 @@
       ]
     },
     "major_no7": {
-      "name": "Major Hexatonic (no 7) \u2014 'Guidonian / folk'",
+      "name": "Ionian/Mixolydian Hexatonic (Guidonian, major no 7)",
       "notes": [
         "C",
         "D",
@@ -306,7 +306,7 @@
       ]
     },
     "minor_nob6": {
-      "name": "Minor Hexatonic (no b6)",
+      "name": "Dorian/Aeolian Hexatonic (minor no b6) = raga Pushpalathika",
       "notes": [
         "C",
         "D",
