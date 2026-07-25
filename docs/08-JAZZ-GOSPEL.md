@@ -1,9 +1,11 @@
 # SHADAVA — Jazz, Gospel & Western Theory (verified, with corrections)
 
-> This document exists because two research passes **refuted nine things I had
-> already written** — six in the other docs (§1), and three more in the first draft
-> of *this* document (the Liszt claim in §5, the Brecker "do not ship" in §5, and the
-> Weiskopf bibliography in §7). All are now fixed.
+> This document exists because **three research passes refuted eleven things I had
+> written** — six in the other docs (§1), and five in earlier drafts of *this*
+> document. Two of those five were corrections that were themselves wrong: I removed
+> Liszt (he belongs — peer-reviewed support exists) and I promoted two ear-witness
+> blog claims about Brecker and Rollins that scholarly sources have now superseded.
+> All fixed. §5 is the section that changed most.
 >
 > **Read §1 and §5 before you say anything on camera.** ⚠️ = do not state as fact.
 >
@@ -273,34 +275,68 @@ Michael Brecker — traces back to **one non-scholarly source**: Josh Workman,
 "Advanced: Secrets of the symmetrical augmented scale," *Guitar Player* 41/7 (July
 2007), p. 108. It could not be accessed. **Do not build the app's authority on it.**
 
-| player | status |
+### ✅ SAFE TO ASSERT — with scholarly citations
+
+| player | what is documented |
 |---|---|
-| **Oliver Nelson** | ⚠️ **Sources conflict on WHICH TUNE.** Wikipedia (via Workman) says **"Stolen Moments"**; Tom Lippincott says the classic lick is on **"Hoe-Down"**. Both are on *The Blues and the Abstract Truth* (rec. 23 Feb 1961, Van Gelder, Impulse!; with Hubbard, Dolphy, Bill Evans, Chambers, Haynes) and Nelson solos on both. **Name both with the caveat, or name neither.** |
-| **Michael Brecker** | ✅ **Now the best-documented instance — revised from my earlier "do not ship".** Saxophonist **Pat Tucker**, on Brecker's solo on **"Gossip"**: *"in bars 22 to 24 he goes right down the Augmented scale"* (Casa Valdez round-table, 5 Feb 2007). Recording checks out: "Gossip" is track 1 of **Mike Stern, *Time in Place*** (Atlantic; rec. Dec 1987, released 1988), Brecker on tenor. An ear-witness claim from a professional, not peer-reviewed — but *specific*, and verifiable. |
-| **Sonny Rollins** | ✅ **Better attested than the Coltrane claims, and nobody lists it.** **Bob Mover**: Rollins *"extended that augmented scale through a whole section"* of **"Four"** on **Sonny Rollins, *Now's the Time*** (RCA Victor, rec. early 1964, with Herbie Hancock, Ron Carter/Bob Cranshaw, Roy McCurdy). **Add this to the app.** |
-| **John Coltrane** | ⚠️ **Do not conflate two different things.** What is solidly documented is the **three-tonic system** — root motion by major thirds, which *outlines* an augmented triad. **No source documents a specific Coltrane solo as augmented-hexatonic melodic playing.** Scholarship: **David Demsey, "Chromatic Third Relations in the Music of John Coltrane," *Annual Review of Jazz Studies* 5 (1991), pp. 146–47, 158**; Demsey, *John Coltrane Plays Giant Steps* (Hal Leonard, 1996). |
-| **Woody Shaw** | ❌ **Drop.** Wikipedia describes his language as wide 4ths/5ths, pentatonic permutations, polytonality — **no augmented scale**. |
-| **Jerry Bergonzi** | ⚠️ Teaches it (ch. 11), but no documented solo. Not a player-example. |
+| **Michael Brecker** | **The strongest case in all of jazz**, and it includes **Brecker's own words.** Ari Poutiainen, *Brecker and Patterns*, MMus thesis, **Sibelius Academy, 1999**, §4.7 — in an interview with Brecker (**18 July 1998**) he named the augmented scale as **one of his favourite symmetrical scales**. Documented tunes: **"Straphangin'"** (Brecker Brothers, 1981 — 3rd chorus, C section, bar 8, B augmented scale, used *functionally* to tonicise Emi7) · **"Fawlty Tenors"** (Steps, *Smokin' in the Pit*, 1981 — same pattern at another pitch) · **"Everything Happens When You're Gone"** (*Don't Try This at Home*, GRP, 1988 — solo intro, "based directly on the Bb augmented scale"). Plus **"Timeline" m. 14** (*Time Is of the Essence*, Verve, 1999) per David Freedy's DMA, Ohio State, 2003 — who calls it a **"Gap Scale"** and spells it exactly as the augmented hexatonic. |
+| **Oliver Nelson** | ✅ **RESOLVED — it is "Hoe-Down", not "Stolen Moments", and it is a COMPOSED LINE IN THE BRIDGE, not a solo.** Two independent sources specify it: Poutiainen (scholarly) — *"Oliver Nelson used this triadic permutation of the augmented scale as a compositional device in the bridge section of 'Hoe-Down'"* — and Bobby Stern. *The Blues and the Abstract Truth*, rec. 23 Feb 1961, Impulse!. The **"Stolen Moments solo"** claim traces **only** to Workman and looks like a title mix-up that Wikipedia propagated. **Say "Hoe-Down", say "the bridge", say "composed".** |
+| **Jerry Bergonzi** | ✅ **REVISED — he is a documented player-example, not just a teacher.** Joel Linscheid, DMA thesis, **New England Conservatory, 2020**, analyses **"Creature Feature"** (*Tenorist*, 2007) — the melody opens on a D augmented scale with fifths stacked above each note, and the solo (mm. 21–22) builds descending augmented triads a semitone apart. Includes an interview with Bergonzi (27 Oct 2019). His **"9-note scale"** = the augmented scale plus a perfect fifth above each note. |
+| **John Coltrane** | ⚠️ **One tune only, and it's the MELODY, and it's speculation.** Jeff Bair, DMA, **UNT, 2003**, p. 68: **Weiskopf *speculates*** that the melody of **"One Down, One Up"** is based on the inverted augmented scale. Bair reports rather than endorses it, and notes the *improvised* excerpts are augmented triads a **whole tone** apart — i.e. **whole-tone** derived, not augmented. Bair adds the experiment *"does not seem to have been extended much past this particular composition."* **Critically: I had the research check Demsey's landmark article — the word "hexatonic" does not appear in it at all.** Coltrane's documented innovation is third-cycle **harmony**. |
+| **Liszt** | ✅ **See the correction below — I was wrong to remove him.** |
 
-**A lovely historical link worth using:** Bob Mover reports that **Gary Campbell** —
-the same Gary Campbell who wrote *Triad Pairs for Jazz* — *"turned us all on to
-possibilities of that scale"* in the Brecker circle around the late 1960s–early 70s.
-The triad-pair pedagogy and the augmented-scale practice share one transmission route.
+### ⚠️ DO NOT ASSERT
+**Woody Shaw** — definitively refuted. Keith Karns's DMA (UNT, 2016) on three versions
+of "The Moontrane" was read in full: the augmented scale is **never mentioned**, and
+Shaw's documented language is **pentatonics and perfect fourths**. No source of any
+kind attributes the augmented scale to him.
+**Sonny Rollins on "Four"** — I offered this an hour ago from an ear-witness blog
+comment. It is a good lead, not a citation; demote it.
+**Michael Brecker on "Gossip"** — likewise an ear-witness blog claim; **superseded by
+the four scholarly Brecker examples above.** Use those instead.
+Also unsupported: **Kenny Garrett, Joe Henderson, Mulgrew Miller, Eric Alexander**;
+augmented-scale patterns in Nelson's *Patterns for Improvisation* (the 1966 date is
+solid, the content claim is not).
 
-### 🔴 CORRECTION to what I wrote an hour ago: Liszt did NOT use the augmented scale
+**Leads worth chasing by ear, forum-only:** Jens Larsen names **Freddie Hubbard** on
+Herbie Hancock's "Survival of the Fittest" (*The Prisoner*, 1969) at ~2:00, and
+**James Spaulding**'s alto solo on Wayne Shorter's "The Soothsayer" — posted with an
+explicit "I forgot which one it is." Unverified.
 
-I stated *"Liszt, A Faust Symphony, is the celebrated early appearance."* **That is
-wrong.** The *Faust Symphony*'s opening theme is built from **augmented TRIADS
-spanning all twelve chromatic pitches** — that is four augmented triads covering the
-aggregate, **not the six-note augmented hexatonic**. Do not say "Liszt used the
-augmented scale."
+**The honest framing, from Poutiainen's own conclusion:** *"Augmented scales are still
+a marginal area in jazz performance. Although used since the 1960s, they have only
+been explored by a minority of musicians."* Say that rather than implying a canon.
 
-What *is* verified in the classical repertoire: **Schoenberg, *Ode to Napoleon
-Buonaparte* Op. 41 (1942)** — the source of the "Ode-to-Napoleon" name; the row lets
-G minor, Eb minor and B minor triads emerge. Bartók, Babbitt, Ginastera, Almeida
-Prado, Shostakovich, Webern, Nono and Scriabin are named in sources **without
-specific passages — UNVERIFIED at that level.** (Shostakovich Piano Trio No. 2 is
-marked *citation needed* on Wikipedia.)
+### 🔴 I OVER-CORRECTED ON LISZT — reinstating him, with a better citation
+
+An hour ago I removed Liszt, reasoning that the *Faust Symphony*'s opening uses
+augmented **triads** spanning all twelve notes rather than the six-note hexatonic.
+**That reasoning was wrong, and there is peer-reviewed analysis against it.**
+
+**Viaccoz, Harasim, Moss & Rohrmeier, "Wavescapes: A visual hierarchical analysis of
+tonality using the discrete Fourier transform," *Musicae Scientiae* 27(2) (2023),
+DOI 10.1177/10298649211034906** — a peer-reviewed journal — analyses **bars 1–22** of
+*A Faust Symphony* (S.108) and concludes the opening is best heard as using the
+**hexatonic scale H₀,₁, composed of the two augmented triads A♭–C–E and C♯–F–A**,
+rather than being organised purely by augmented triads.
+
+**So Liszt IS a valid example, and now a better-sourced one than Wikipedia's own
+uncited sentence.** Lesson worth keeping: my correction was reasoning from
+first principles against an uncited claim — which was the right instinct, but the
+claim happened to be true and the real support was sitting in a 2023 journal.
+
+Other classical: **Schoenberg, *Ode to Napoleon Buonaparte* Op. 41 (1942)** — source
+of the "Ode-to-Napoleon" name. ⚠️ **Shostakovich Piano Trio No. 2: the movement
+attribution is suspect.** Wikipedia says the **Finale** and has been tagged *citation
+needed* since 2012; Christopher Segall's work on hexatonic poles references
+**movement III, mm. 1–9**. Do not repeat "the Finale" without checking the score.
+Bartók, Ginastera, Almeida Prado, Babbitt: Wikipedia's references are a **score** and
+a **dead conference-abstract link** — no work is named. **UNVERIFIED.**
+
+**A historical link worth using:** Bob Mover reports that **Gary Campbell** — the same
+Gary Campbell who wrote *Triad Pairs for Jazz* — *"turned us all on to possibilities
+of that scale"* in the Brecker circle around the late 1960s–early 70s. The triad-pair
+pedagogy and the augmented-scale practice share one transmission route.
 
 ⚠️ **Naming trap: there are TWO unrelated "Prometheus" scales.** Ian Ring's database
 calls **6-20 (the augmented hexatonic) "Liszt's Prometheus"**, after Liszt's
@@ -372,7 +408,12 @@ presenting one as canonical.
 | Weiskopf & **Ed Rosenberg**, *Beyond The Horn* | Aebersold, 2006, 244 pp — **interval studies (3rds, 5ths, 6ths, 10ths, octave displacement) + 20 etudes. NOT Ricker, NOT triad pairs.** |
 | Weiskopf & Ricker, *Coltrane: A Player's Guide to His Harmony* | Aebersold, **1991**; reissued as *Giant Steps…*, 2010 (⚠️ whether content is identical is unverified) |
 | **Gary Campbell, *Triad Pairs for Jazz*** | **Alfred, 2001**, 144 pp, ISBN 978-0-7579-0357-1. Sections: *Why Practice Triad Pairs?* p.3 · *Linking Triads* p.54 · *Stacked Triad Pairs* p.91 · *Interchanging Patterns* p.105 · *Solos* p.124. Priority pairs: **major a whole step (his most basic)**, major a half step, major a tritone, minor a half step, minor a tritone. From C melodic minor: **Cm/Dm, Eb+/F, F/G.** |
-| **Bergonzi, *Inside Improvisation Vol. 7: Hexatonics*** | Advance Music, **2006** (2015 reissue causes the year confusion), 290 pp + CD. **16 hexatonics**, categorised by triad quality (major/minor/augmented) × interval (m2, M2, m3, tritone), in slash notation (D/C, B‑/C). His wording is *"**One way** to create a hexatonic scale is to combine two triads that don't have any common tones"* — deliberately not restricted to that method. |
+| **Bergonzi, *Inside Improvisation Vol. 7: Hexatonics*** | Advance Music, ⚠️ **year genuinely ambiguous — 2004 per Linscheid's bibliography, 2006 per other sources, 2015 reissue. Do not assert one.** ~290 pp + CD. Advance cat. ADV14268. **16 hexatonics**, by triad quality (major/minor/augmented) × interval (m2, M2, m3, tritone), in slash notation (D/C, B‑/C). His wording: *"**One way** to create a hexatonic scale is to combine two triads that don't have any common tones"* — deliberately not restricted. ⚠️ **This book is NOT primarily about the augmented scale** — its "hexatonics" are triad pairs. Bergonzi's documented augmented-scale usage comes from Linscheid's analysis and his own "9-note scale" concept, not from this book. |
+| Oliver Nelson, *Patterns for Improvisation* | **1966** (foreword dated July 1966; date confirmed peer-reviewed via *Journal of Musicology* 40/1, 2023). Now Aebersold, ISBN 978-1-56224-097-4, 64 pp. ⚠️ **Whether it contains augmented-scale patterns is UNVERIFIED — do not assert it.** Not to be confused with Coker's *Patterns for Jazz*. |
+| Poutiainen, *Brecker and Patterns* | MMus thesis, **Sibelius Academy, 1999** — the single best source on Brecker and the augmented scale; contains a **1998 interview with Brecker**. |
+| Bair, *Cyclic Patterns in John Coltrane's Melodic Vocabulary…* | DMA, **UNT, 2003**, DOI 10.12794/metadc4348 — the "One Down, One Up" analysis, pp. 68–71. |
+| Linscheid, *Illuminating the Compositional Process in Jazz* | DMA, **New England Conservatory, 2020** — the Bergonzi "Creature Feature" analysis. |
+| Freedy, *Brecker's Blues* | DMA, **Ohio State, 2003** — "Timeline" m.14; note he calls the collection a **"Gap Scale"**, never "augmented scale", so keyword searches miss it. |
 | **Levine, *The Jazz Theory Book*** | Sher, **1995**. **p. 37**: argues "avoid note" is a poor term, proposes **"handle with care" note**, reluctantly keeps the standard term. Corroborated by Robert Rawlins, *MTO* 6/1 (2000) |
 | **Nettles, *Harmony 1*** | Berklee, 1987, **pp. 34–35**; *Harmony 3*, pp. 15–17 |
 | **Nettles & Graf, *The Chord Scale Theory & Jazz Harmony*** | Advance Music, **1997** (one aggregator says 2000) |

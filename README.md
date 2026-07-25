@@ -123,13 +123,16 @@ raga whose scale is exactly C D E G A B both ways.** Safe wording is in
 the opposite (it has the A, it's missing the G). That's exactly the slip a rasika
 would jump on.
 
-One more for the shoot, from a second jazz pass: if you name a player who used the
-augmented scale, the **best-verified examples are Michael Brecker on "Gossip"**
-(Mike Stern, *Time in Place*, 1988) and **Sonny Rollins on "Four"** (*Now's the Time*,
-1964) — not Coltrane, whose documented innovation is root motion in major thirds
-rather than melodic augmented-scale playing. And **don't say Liszt used the augmented
-scale** — I had that wrong; the *Faust Symphony* theme uses augmented *triads* across
-all twelve notes, which is a different thing.
+One more for the shoot. If you name a player who used the **augmented** scale, the
+properly documented ones are **Michael Brecker** — and we have him saying so himself
+in a 1998 interview, plus four analysed tunes ("Straphangin'", "Fawlty Tenors",
+"Everything Happens When You're Gone", "Timeline") — and **Jerry Bergonzi** on
+"Creature Feature". For **Oliver Nelson** say **"Hoe-Down"**, not "Stolen Moments",
+and say it's a *written line in the bridge*, not a solo; the "Stolen Moments" version
+is a mix-up Wikipedia spread. **Coltrane belongs in a different box:** his documented
+innovation is root motion in major thirds, and the only augmented-*scale* claim is
+about the melody of "One Down, One Up" — and even that is one author's speculation.
+**Don't name Woody Shaw** — that one is refuted outright.
 
 The research also caught **three of my own konnakol syllable sets being wrong**
 (7 is canonically Ta Ka Di Mi Ta Ki Ta, 4+3, not 3+4) and that there are **six
