@@ -10,7 +10,7 @@ import { KEYS, FAMILIES, DIATONIC_MODES } from "@/lib/theory/scales";
 import { PATTERNS } from "@/lib/theory/patterns";
 import { SUBDIVISIONS } from "@/lib/theory/resolution";
 import { midi, pc } from "@/lib/theory/note";
-import { getAudio } from "@/lib/audio/engine";
+import { previewAudio } from "@/lib/audio/engine";
 
 export default function PracticeClient() {
   const d = useDrill();
@@ -295,7 +295,7 @@ export default function PracticeClient() {
           <div className="flex flex-wrap items-center gap-4">
           <button className={`btn ${playing ? "btn-stop" : "btn-primary"} min-w-[132px] px-8 py-3.5 text-base tracking-wider`}
                   onClick={d.toggle}>
-            {d.loadingAudio ? "LOADING…" : playing ? "STOP" : "PLAY"}
+            {d.loadingAudio ? "STARTING…" : playing ? "STOP" : "PLAY"}
           </button>
           <div className="field">
             <label htmlFor="bpm">Tempo <span className="text-gold">{state.bpm}</span></label>
@@ -314,9 +314,9 @@ export default function PracticeClient() {
           </div>
         </div>
         <p className="mt-3 min-h-5 text-sm text-muted" role="status" aria-live="polite">
-          {d.loadingAudio ? "Loading 17 piano samples…"
-            : d.audioReady ? "Piano ready."
-            : "Piano samples load the first time you press Play."}
+          {d.loadingAudio ? "Starting the audio engine…"
+            : d.audioReady ? "Audio ready. Piano samples continue caching in the background."
+            : "Playback starts immediately while piano samples load in the background."}
         </p>
         {d.audioError && <p className="mt-1 text-sm text-amber" role="alert">Audio: {d.audioError}</p>}
       </section>
@@ -325,7 +325,7 @@ export default function PracticeClient() {
         <div className="mx-auto flex max-w-lg items-center gap-2">
           <button className={`btn ${playing ? "btn-stop" : "btn-primary"} min-w-[116px] flex-1 py-3 text-base tracking-wider`}
                   onClick={toggle}>
-            {d.loadingAudio ? "LOADING…" : playing ? "STOP" : "PLAY"}
+            {d.loadingAudio ? "STARTING…" : playing ? "STOP" : "PLAY"}
           </button>
           <button className="btn btn-ghost px-3 py-3" aria-label="Decrease tempo"
                   onClick={() => set("bpm", Math.max(40, state.bpm - 4))}>−</button>
@@ -359,7 +359,7 @@ export default function PracticeClient() {
       <section className="card">
         <Keyboard scale={scale.notes} removed={scale.removed}
                   activeMidi={activeNote ? midi(activeNote) : null} octaves={2}
-                  onNote={(m) => getAudio().preview([m])} />
+                  onNote={(m) => { void previewAudio([m]); }} />
         <div className="mt-4 flex flex-wrap gap-x-7 gap-y-2 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
           <span><i className="mr-2 inline-block h-2.5 w-2.5 rounded-sm bg-gold align-middle" />sounding now</span>
           <span><i className="mr-2 inline-block h-2.5 w-2.5 rounded-sm bg-red align-middle" />the note we removed</span>

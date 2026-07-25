@@ -152,7 +152,7 @@ export default function LiveClient() {
       <div className="card flex flex-wrap items-center gap-4">
         <button onClick={d.toggle}
                 className={`btn ${playing ? "btn-stop" : "btn-primary"} min-w-[174px] px-10 py-4 text-xl tracking-wider`}>
-          {d.loadingAudio ? "LOADING…" : playing ? "STOP" : "PLAY"}
+          {d.loadingAudio ? "STARTING…" : playing ? "STOP" : "PLAY"}
         </button>
         <div className="flex items-center gap-3">
           <span className="font-mono text-xs uppercase tracking-[0.12em] text-muted">tempo</span>
@@ -195,9 +195,9 @@ export default function LiveClient() {
         space play/stop · 3–7 or 9 grouping · ↑↓ key · ←→ mode · [ ] tempo · l loop · c click · n score
       </p>
       <p className="min-h-5 text-sm text-muted" role="status" aria-live="polite">
-        {d.loadingAudio ? "Loading 17 piano samples…"
-          : d.audioReady ? "Piano ready."
-          : "Piano samples load the first time you press Play."}
+        {d.loadingAudio ? "Starting the audio engine…"
+          : d.audioReady ? "Audio ready. Piano samples continue caching in the background."
+          : "Playback starts immediately while piano samples load in the background."}
       </p>
       {d.audioError && <p className="text-amber" role="alert">Audio: {d.audioError}</p>}
     </div>

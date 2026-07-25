@@ -4,7 +4,7 @@ import { midi, notePretty, pc } from "@/lib/theory/note";
 import { ScaleInstance } from "@/lib/theory/scales";
 import { ChordSet, findChords, tertianOnly, susQuartal } from "@/lib/theory/chords";
 import { Resolution, Gati } from "@/lib/theory/resolution";
-import { getAudio } from "@/lib/audio/engine";
+import { previewAudio } from "@/lib/audio/engine";
 import { useMemo, useState } from "react";
 
 /* ── the resolution banner ────────────────────────────────────────────────
@@ -82,7 +82,7 @@ export function ScaleChips({
         return (
           <button
             key={i}
-            onClick={() => { void getAudio().preview([midi(n)]).catch(() => undefined); }}
+            onClick={() => { void previewAudio([midi(n)]); }}
             className={`chip ${lit ? "chip-lit" : ""} ${lg ? "min-w-[74px] px-5 py-3" : "min-w-[58px]"}`}
           >
             <span className={`block font-semibold ${lg ? "text-3xl" : "text-lg"}`}>
@@ -144,7 +144,7 @@ function ChordCard({ chord }: { chord: ChordSet }) {
   return (
     <button
       onClick={() => {
-        void getAudio().preview(name.voicing.map(midi)).catch(() => undefined);
+        void previewAudio(name.voicing.map(midi));
         if (multi) setI((v) => v + 1);
       }}
       className="group rounded-xl border border-line bg-surface2 px-4 py-2.5 text-left transition hover:border-gold/60 hover:bg-white/[0.03]"

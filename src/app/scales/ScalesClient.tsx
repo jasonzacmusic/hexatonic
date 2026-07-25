@@ -5,7 +5,7 @@ import { FAMILIES, DIATONIC_MODES, KEYS, buildScale } from "@/lib/theory/scales"
 import { findChords, tertianOnly } from "@/lib/theory/chords";
 import { skipCycle } from "@/lib/theory/patterns";
 import { midi, notePretty, noteName } from "@/lib/theory/note";
-import { getAudio } from "@/lib/audio/engine";
+import { previewAudio } from "@/lib/audio/engine";
 import Keyboard from "@/components/Keyboard";
 import Link from "next/link";
 
@@ -19,7 +19,7 @@ export default function ScalesClient() {
   const chords = scale.error ? [] : tertianOnly(findChords(scale.notes, [3, 4]));
 
   const play = (gap = 0.2) =>
-    getAudio().preview(scale.notes.map((n) => midi(n)), gap);
+    previewAudio(scale.notes.map((n) => midi(n)), gap);
 
   return (
     <div className="space-y-6 pb-10">
@@ -86,7 +86,7 @@ export default function ScalesClient() {
                     tone={scale.tritones === 0 ? "gold" : undefined} />
             </div>
             <div className="mt-5"><Keyboard scale={scale.notes} removed={scale.removed}
-                                            onNote={(m) => getAudio().preview([m])} /></div>
+                                            onNote={(m) => { void previewAudio([m]); }} /></div>
           </section>
 
           {chords.length > 0 && (
@@ -97,7 +97,7 @@ export default function ScalesClient() {
               <div className="flex flex-wrap gap-2">
                 {chords.map((c, i) => (
                   <button key={i} className="chip hover:border-gold"
-                          onClick={() => getAudio().preview(c.notes.map((n) => midi(n)), 0.05)}>
+                          onClick={() => { void previewAudio(c.notes.map((n) => midi(n)), 0.05); }}>
                     <span className="font-semibold">{c.names.map((n) => n.symbol).join(" = ")}</span>
                     <span className="block font-mono text-[10px] text-muted">{c.noteNames.join(" ")}</span>
                   </button>
@@ -127,8 +127,8 @@ export default function ScalesClient() {
                       {c.allPerfect ? " — all perfect" : ""}
                     </span>
                     <button className="btn btn-ghost ml-auto px-3 py-1 text-xs"
-                            onClick={() => getAudio().preview(
-                              c.pairs.flatMap((p) => [midi(p.from), midi(p.to)]), 0.17)}>
+                            onClick={() => { void previewAudio(
+                              c.pairs.flatMap((p) => [midi(p.from), midi(p.to)]), 0.17); }}>
                       ▶
                     </button>
                   </div>

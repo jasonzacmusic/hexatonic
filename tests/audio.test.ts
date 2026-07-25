@@ -92,6 +92,7 @@ describe("audio transport", () => {
     expect(first).toBe(false);
     expect(second).toBe(true);
     expect(fetch).toHaveBeenCalledTimes(engine.totalSamples);
+    await engine.waitForSampleLoading();
     expect(engine.loadedSamples).toBe(engine.totalSamples);
     expect((engine.context as unknown as FakeAudioContext).gains[0].gain.value).toBe(0.85);
     engine.stop(true);
@@ -108,20 +109,66 @@ describe("audio transport", () => {
     expect(allSources.every((source) => source.stops.length > 0)).toBe(true);
   });
 
-  it("clears a failed load so the next user gesture can retry", async () => {
+  it("keeps playing offline and retries failed samples on the next gesture", async () => {
     const engine = new AudioEngine();
     vi.stubGlobal("fetch", vi.fn(async () => {
       throw new Error("offline");
     }));
-    await expect(engine.init()).rejects.toThrow("offline");
-    expect(engine.ready).toBe(false);
+    await expect(engine.start(opts({ click: false, countInBeats: 0 }))).resolves.toBe(true);
+    await engine.waitForSampleLoading();
+    expect(engine.ready).toBe(true);
     expect(engine.loading).toBe(false);
+    expect(engine.loadedSamples).toBe(0);
+    expect(engine.sampleFailures).toBe(engine.totalSamples);
+    expect(engine.fallbackNoteCount).toBeGreaterThan(0);
+    engine.stop(true);
 
     vi.stubGlobal("fetch", vi.fn(async () => ({
       ok: true, status: 200, arrayBuffer: async () => new ArrayBuffer(1),
     })));
     await expect(engine.init()).resolves.toBeUndefined();
+    await engine.waitForSampleLoading();
     expect(engine.loadedSamples).toBe(engine.totalSamples);
+    expect(engine.sampleFailures).toBe(0);
+  });
+
+  it("does not let one failed piano file break the other sixteen", async () => {
+    const engine = new AudioEngine();
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (url.endsWith("/C2.mp3")) throw new Error("blocked");
+      return { ok: true, status: 200, arrayBuffer: async () => new ArrayBuffer(1) };
+    }));
+    await expect(engine.start(opts({ click: false, countInBeats: 0 }))).resolves.toBe(true);
+    await engine.waitForSampleLoading();
+    expect(engine.loadedSamples).toBe(engine.totalSamples - 1);
+    expect(engine.sampleFailures).toBe(1);
+    expect(engine.playing).toBe(true);
+    engine.stop(true);
+  });
+
+  it("starts on its pitched fallback without waiting for a slow network", async () => {
+    const engine = new AudioEngine();
+    vi.stubGlobal("fetch", vi.fn(() => new Promise(() => {})));
+    await expect(engine.start(opts({ click: false, countInBeats: 0 }))).resolves.toBe(true);
+    const context = engine.context as unknown as FakeAudioContext;
+    const fallback = context.oscillators.filter((source) => source.type === "triangle");
+    expect(engine.loading).toBe(true);
+    expect(engine.loadedSamples).toBe(0);
+    expect(engine.fallbackNoteCount).toBeGreaterThan(0);
+    expect(fallback.length).toBeGreaterThan(0);
+    engine.stop(true);
+    expect(fallback.every((source) => source.stops.length > 1)).toBe(true);
+  });
+
+  it("reports browser-blocked audio instead of pretending to play", async () => {
+    class BlockedAudioContext extends FakeAudioContext {
+      state = "suspended";
+      resume() { return Promise.reject(new Error("gesture required")); }
+    }
+    vi.stubGlobal("window", { AudioContext: BlockedAudioContext });
+    const engine = new AudioEngine();
+    await expect(engine.start(opts())).rejects.toThrow("Audio is blocked by the browser");
+    expect(engine.playing).toBe(false);
   });
 
   it("schedules a 420-note drill without overrunning its finite sequence", async () => {
@@ -129,6 +176,8 @@ describe("audio transport", () => {
     const notes = Array.from({ length: 420 }, (_, index) =>
       note((["C", "D", "E", "G", "A", "B"] as const)[index % 6])
     );
+    await engine.init();
+    await engine.waitForSampleLoading();
     await engine.start(opts({ notes, stepDur: 0.01, countInBeats: 0, click: false }));
     const context = engine.context as unknown as FakeAudioContext;
     for (const time of [1, 2, 3, 4]) {

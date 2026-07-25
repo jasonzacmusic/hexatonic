@@ -11,7 +11,7 @@ import { skipCycle } from "@/lib/theory/patterns";
 import { findChords, tertianOnly } from "@/lib/theory/chords";
 import { solveResolution } from "@/lib/theory/resolution";
 import { midi, noteName, notePretty, Note } from "@/lib/theory/note";
-import { getAudio } from "@/lib/audio/engine";
+import { previewAudio } from "@/lib/audio/engine";
 import Keyboard from "@/components/Keyboard";
 
 function PlayLine({ notes, label, gap = 0.26 }: { notes: Note[]; label: string; gap?: number }) {
@@ -22,8 +22,9 @@ function PlayLine({ notes, label, gap = 0.26 }: { notes: Note[]; label: string; 
       disabled={busy}
       onClick={async () => {
         setBusy(true);
-        await getAudio().preview(notes.map((n) => midi(n)), gap);
-        setTimeout(() => setBusy(false), notes.length * gap * 1000 + 300);
+        const played = await previewAudio(notes.map((n) => midi(n)), gap);
+        if (played) setTimeout(() => setBusy(false), notes.length * gap * 1000 + 300);
+        else setBusy(false);
       }}
     >
       ▶ {label}
@@ -151,7 +152,7 @@ export default function LearnClient() {
         <div className="flex flex-wrap gap-2">
           {triads.map((c, i) => (
             <button key={i} className="chip hover:border-gold"
-                    onClick={() => getAudio().preview(c.notes.map((n) => midi(n)), 0.05)}>
+                    onClick={() => { void previewAudio(c.notes.map((n) => midi(n)), 0.05); }}>
               <span className="font-semibold">{c.names[0].symbol}</span>
               <span className="block font-mono text-[10px] text-muted">{c.noteNames.join(" ")}</span>
             </button>
@@ -160,7 +161,7 @@ export default function LearnClient() {
         <div className="flex flex-wrap gap-2">
           {tetrads.map((c, i) => (
             <button key={i} className="chip hover:border-gold"
-                    onClick={() => getAudio().preview(c.notes.map((n) => midi(n)), 0.05)}>
+                    onClick={() => { void previewAudio(c.notes.map((n) => midi(n)), 0.05); }}>
               <span className="font-semibold">{c.names.map((n) => n.symbol).join(" = ")}</span>
               <span className="block font-mono text-[10px] text-muted">{c.noteNames.join(" ")}</span>
             </button>

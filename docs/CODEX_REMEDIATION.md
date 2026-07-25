@@ -79,3 +79,40 @@ Three audit items also remain:
    but a cyclic representation would be cleaner.
 3. GitHub `main` is not protected. CI is now present, but repository branch
    protection is an administrator setting rather than an application-code fix.
+
+## Follow-up playback hardening
+
+The first repair fixed the confirmed silent-master and leaked-click defects, but
+one professional-standard failure remained: playback still waited for all 17
+piano files, and one failed response rejected the entire transport.
+
+The follow-up repair makes audio network-independent:
+
+- Play starts its count-in immediately while required piano samples load first
+  and the rest continue in the background.
+- Each sample succeeds or fails independently. One missing file cannot mute the
+  other sixteen.
+- Until a nearby piano sample is ready, the engine uses a short, exact-pitch
+  triangle fallback at the correct MIDI frequency rather than going silent.
+- Missing samples are retried on later Play or preview gestures and replace the
+  fallback automatically once decoded.
+- Browser-blocked AudioContext state produces an honest instruction instead of
+  showing a false playing state.
+- Note, scale and chord preview controls use one rejection-safe path, so a
+  browser or network error cannot leak an unhandled promise or leave a button
+  permanently busy.
+
+The suite now passes 71 tests. New coverage proves complete network loss,
+single-file loss, progressive retry, fallback pitch, fallback cancellation and
+blocked-browser handling.
+
+Browser fault injection independently confirmed the same behavior in the
+production build:
+
+- With only `C2.mp3` blocked, Play remained active, the healthy piano samples
+  sounded through the 0.85 master bus, and no audio alert or console error
+  appeared.
+- With all 17 piano requests blocked, the count-in and notes still ran. The
+  fallback produced the exact C4, D4, E4, G4, A4 and B4 frequencies.
+- After restoring the network without reloading the app, the next Play retried
+  the missing files and automatically returned to piano sample playback.
