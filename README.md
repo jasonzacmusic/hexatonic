@@ -16,6 +16,9 @@ Immediate alias (skips DNS): **https://hexatonic.vercel.app**
 
 **Repo:** https://github.com/jasonzacmusic/hexatonic
 
+> The app is **built and shipped**. There is no build prompt any more — the two
+> live documents are the audit prompt and the roadmap, below.
+
 **Handing it to Codex?** → [CODEX-AUDIT-PROMPT.md](CODEX-AUDIT-PROMPT.md) — one copy-paste block.
 **What's still unbuilt?** → [docs/09-ROADMAP.md](docs/09-ROADMAP.md) — every feature from the original brief, with status.
 
@@ -225,12 +228,10 @@ the moat.** Full detail and citations: [06-PRIOR-ART.md](docs/06-PRIOR-ART.md).
 
 | file | what it is | who reads it |
 |---|---|---|
-| **[BUILD-PROMPT-OPUS.md](BUILD-PROMPT-OPUS.md)** | **the copy-paste block for Opus** | you → Opus |
 | [docs/01-THEORY.md](docs/01-THEORY.md) | the five theorems, verified | Opus |
 | [docs/02-APP-SPEC.md](docs/02-APP-SPEC.md) | stack, screens, data model, VexFlow rules | Opus |
 | [docs/03-RHYTHM-ENGINE.md](docs/03-RHYTHM-ENGINE.md) | grouping + resolution maths | Opus |
 | [docs/04-YOUTUBE-LIVE.md](docs/04-YOUTUBE-LIVE.md) | 75-min run of show, team roles, promo ladder | you + team |
-| [docs/05-CAN-OPUS-DO-IT.md](docs/05-CAN-OPUS-DO-IT.md) | **honest feasibility: what Opus can and can't carry** | you |
 | [docs/07-CARNATIC.md](docs/07-CARNATIC.md) | **verified raga names, gati, konnakol, varisai ladder** | you + Opus |
 | [docs/08-JAZZ-GOSPEL.md](docs/08-JAZZ-GOSPEL.md) | **verified Western/jazz theory + the 6 corrections** | you + Opus |
 | [docs/06-PRIOR-ART.md](docs/06-PRIOR-ART.md) | what we may and may not claim | you |
@@ -248,13 +249,25 @@ cd "/Users/jasonzac/Documents/Claude/shadava/engine" && /usr/bin/python3 shadava
 
 ## Your next three moves
 
-1. **Paste Block A** from [BUILD-PROMPT-OPUS.md](BUILD-PROMPT-OPUS.md) into Opus.
-   It's self-contained and points at everything else.
-2. **Pick a shoot date.** The run of show is written; the promo ladder starts 7
-   days out.
-3. **Decide the name** — SHADAVA, or something plainer for a Western audience.
-   My vote is SHADAVA: it's yours, it comes with the roadmap built in, and
-   "hexatonic" is already taken on the App Store.
+1. **Hand it to Codex.** Paste the block in
+   [CODEX-AUDIT-PROMPT.md](CODEX-AUDIT-PROMPT.md) — it audits the app, has freedom
+   to improve the design, and builds the next roadmap items.
+2. **Pick a shoot date.** The 75-minute run of show is written in
+   [docs/04-YOUTUBE-LIVE.md](docs/04-YOUTUBE-LIVE.md); the promo ladder starts 7 days out.
+   ⚠️ Two title suggestions in there were withdrawn as factually wrong — the file says which.
+3. **Sit at the piano with [/live](https://hexatonic.nathanielschool.com/live)** before
+   you book the date. Presenter mode is the one thing I can't test for you.
+
+## The two biggest gaps
+
+Both are things you asked for in the first conversation that don't exist yet, and
+both are in [docs/09-ROADMAP.md](docs/09-ROADMAP.md):
+
+- **Improvisation.** You asked for "the gospel usage, the improvisational usage for
+  jazz musicians." There is no improvisation surface at all — no drones, no vamps,
+  no voicings. The app teaches you to run patterns, not to play.
+- **Barry Harris.** Not built. The roadmap explains why it needs a harmony engine
+  rather than another scale list, and records his method correctly.
 
 **The one thing to hold onto:** the app's value isn't the scale list. It's the
 resolution solver plus the gati ladder. Build outward from that.
