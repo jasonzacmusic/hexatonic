@@ -270,6 +270,40 @@ architecture question:
     generating drop-2 voicing movement, not merely a scale. These deserve their
     own module and their own vocabulary; do not file them under "scales."
 
-The `omit_degree` / `steps` model covers 5, 6 and 7 with no code changes.
-Octatonic needs one new generator and the Barry Harris module needs a genuine
-harmony engine. **Ship 6 first, prove the loop, then widen.**
+The `omit_degree` / `steps` model covers 5, 6 and 7 with no code changes —
+verified in the engine (`ROADMAP PROOF 2`):
+
+```
+Audava (5)    C D E G A       iv=<032140>  0 tritones
+Shadava (6)   C D E G A B     iv=<143250>  0 tritones
+Sampurna (7)  C D E F G A B   iv=<254361>  1 tritone
+```
+
+**Triad pairs also fall out free** (`ROADMAP PROOF 1`). Any two triads with no
+shared notes generate a hexatonic: C+D (whole step) is the Weiskopf/Campbell
+workhorse, C+F# (tritone) is the Petrushka set, C+Db sits inside the augmented
+family. One function generates all of them, so the jazz triad-pair feature is
+**data, not new architecture.**
+
+### ⚠️ One real constraint discovered — read this before building octatonic
+
+**Eight notes will not fit in seven letters, so exactly one letter must repeat —
+and which one cannot be fixed globally.** A letter template that spells C
+octatonic cleanly (`C D Eb F Gb Ab A B`) gives **Eb a double flat** (`Bbb`).
+
+The correct algorithm, now implemented in `octatonic()`:
+1. try every legal position for the doubled letter;
+2. score each candidate by `sum(alt²)` so double accidentals are punished hard;
+3. **tie-break towards the key's own accidental direction** — flat keys spell
+   `Gb`, sharp keys spell `F#`. Without step 3 the tie resolves arbitrarily and
+   you get sharps in flat keys.
+
+Verified: **0 of 24 root/kind combinations need a double accidental.** Some roots
+still come out with *mixed* accidentals (`Ab` whole-half = `Ab Bb B C# D E F G`)
+— that is an unavoidable property of a symmetric scale, not a bug, and the app
+should not try to "fix" it.
+
+Barry Harris still needs a genuine harmony engine — his sixth-diminished scales
+are a **6th chord interleaved with a diminished 7th** to generate drop-2 voicing
+movement, which is harmony, not a scale to run up and down. **Ship 6 first, prove
+the loop, then widen.**

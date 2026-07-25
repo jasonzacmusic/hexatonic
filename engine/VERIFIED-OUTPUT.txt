@@ -347,6 +347,41 @@ SEQUENCE ENGINE sample — C major hexatonic, cells of 4, 2 octaves
    D5 E5 G5 A5
 
 ==============================================================================
+ROADMAP PROOF 1 — triad pairs generate hexatonics (the jazz route)
+==============================================================================
+Two triads with no shared notes = a six-note scale. C major + X major:
+
+pair                root interval   notes                 set class     TT
+------------------------------------------------------------------------------------
+C + Db              semitone        0 1 4 5 7 8           [0, 1, 3, 4, 7, 8]1
+C + D               whole step      0 2 4 6 7 9           [0, 2, 3, 5, 7, 9]1
+C + F#              tritone         0 1 4 6 7 10          [0, 1, 3, 6, 7, 9]3
+
+>>> C+D (whole step) is the Weiskopf/Campbell workhorse -- it is a Lydian-flavour
+>>> hexatonic. C+F# (tritone) is the Petrushka set. C+Db (semitone) is inside the
+>>> augmented family. ONE function generates all of them, so the triad-pair
+>>> feature is data, not new architecture. Ship it in v2 as promised.
+
+
+==============================================================================
+ROADMAP PROOF 2 — the same engine does 5, 7 and 8 notes
+==============================================================================
+Audava (5) / Shadava (6) / Sampurna (7) by omitting 2 / 1 / 0 degrees:
+
+  Audava - major pentatonic       C D E G A           iv=<032140>  TT=0
+  Shadava - major hexatonic       C D E G A B         iv=<143250>  TT=0
+  Sampurna - major scale          C D E F G A B       iv=<254361>  TT=1
+  C octatonic (whole-half)        C D Eb F F# G# A B  iv=<448444>  TT=4
+  C octatonic (half-whole)        C C# D# E F# G A Bb iv=<448444>  TT=4
+
+>>> One omission model covers 5, 6 and 7 with NO code change. Octatonic needs
+>>> one extra generator (above). Barry Harris does NOT belong here -- his
+>>> sixth-diminished scales are a HARMONY device (a 6th chord interleaved with a
+>>> diminished 7th, generating drop-2 voicing movement), not a scale to run.
+>>> Give it its own module and its own vocabulary or it will be taught wrongly.
+
+
+==============================================================================
 MULTI-KEY PROOF — the same scale in all 12 keys, correctly spelled
 ==============================================================================
   C major hexatonic     C D E G A B               vex: c/4 d/4 e/4 g/4 a/4 b/4
