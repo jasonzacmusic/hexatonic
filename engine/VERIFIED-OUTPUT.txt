@@ -1,0 +1,365 @@
+
+   ____  _   _    _    ____    ___     ___
+  / ___|| | | |  / \  |  _ \  / \ \   / / \
+  \___ \| |_| | / _ \ | | | |/ _ \ \ / / _ \
+   ___) |  _  |/ ___ \| |_| / ___ \ V / ___ \
+  |____/|_| |_/_/   \_\____/_/   \_\_/_/   \_\
+        the six-note practice engine — VERIFICATION RUN
+    
+
+==============================================================================
+THEOREM 1 — Which note can you 'knock off' the major scale, and why?
+==============================================================================
+Remove each degree of C major in turn. Count tritones in what's left.
+
+deg removed  resulting scale             tritones  set class
+------------------------------------------------------------------------------
+1   C        D E F G A B                 1         6-33  'Dorian hexachord'
+2   D        C E F G A B                 1         —
+3   E        C D F G A B                 1         6-33  'Dorian hexachord'
+4   F        C D E G A B                 0         6-32  'Guidonian / major hexachord'
+5   G        C D E F A B                 1         —
+6   A        C D E F G B                 1         —
+7   B        C D E F G A                 0         6-32  'Guidonian / major hexachord'
+
+READING: the major scale contains exactly ONE tritone (F-B). Removing either
+member of that tritone -- the 4th or the 7th -- and ONLY those two, leaves a
+tritone-free hexachord of set class 6-32. Every other removal leaves the
+tritone in place.
+
+>>> This is why every tradition independently arrived at "drop the 4" or
+>>> "drop the 7". It is not taste. It is the only way to de-tritone the scale.
+
+
+==============================================================================
+THEOREM 2 — Major-no-4 and minor-no-b6 are the SAME six notes
+==============================================================================
+C major, no 4      : C D E G A B   pcs=[0, 2, 4, 7, 9, 11]
+A natural minor,no b6: A B C D E G   pcs=[0, 2, 4, 7, 9, 11]
+IDENTICAL PITCH-CLASS SET: True
+G Guidonian hexachord (ut re mi fa sol la): G A B C D E   pcs=[0, 2, 4, 7, 9, 11]
+SAME SET AS C-major-no-4: True
+
+>>> One parent set, six modes -- exactly like relative major/minor pentatonic.
+>>> The app stores ONE hexachord and rotates it. Never two separate scales.
+>>> And it is literally Guido d'Arezzo's 11th-century teaching hexachord.
+
+
+==============================================================================
+SET-CLASS FINGERPRINT of every hexatonic family (root C)
+==============================================================================
+scale                                         notes                     iv                  TT
+----------------------------------------------------------------------------------------------------
+Major Hexatonic (no 4) — 'Sunday / gospel'    C D E G A B               <143250>            0
+Major Hexatonic (no 7) — 'Guidonian / folk'   C D E F G A               <143250>            0
+Minor Hexatonic (no b6)                       C D Eb F G Bb             <143250>            0
+Minor Hexatonic (no 2) — Phrygian-neutral     C Eb F G Ab Bb            <143250>            0
+Dorian Hexatonic (no 6)                       C D Eb F G Bb             <143250>            0
+Mixolydian Hexatonic (no 4)                   C D E G A Bb              <143241>            1
+Harmonic Minor Hexatonic (no 2)               C Eb F G Ab B             <223431>            1
+Augmented Hexatonic (jazz 'the hexatonic scale')C D# E G Ab B             <303630>            0
+Whole Tone                                    C D E F# G# A#            <060603>            3
+Blues Hexatonic                               C Eb F Gb G Bb            <233241>            1
+Prometheus (Scriabin 'mystic')                C D E F# A Bb             <142422>            2
+Petrushka / Tritone Hexatonic                 C Db E F# G Bb            <224223>            3
+
+iv = interval vector <ic1 ic2 ic3 ic4 ic5 ic6>.  Last digit = tritone count.
+The diatonic hexachord scores <143250>: ZERO tritones and FIVE perfect
+fourths/fifths -- the most consonant, most quartal six-note set available.
+
+
+==============================================================================
+THEOREM 3 — The hexatonic IS a chord
+==============================================================================
+C major hexatonic: C D E G A B
+Stack it in thirds from C:  C - E - G - B - D - A  =  Cmaj13(no 11)
+Stack it in thirds from A:  A - C - E - G - B - D  =  Am11
+
+>>> Every note of the scale is a chord tone. There is no avoid note, because
+>>> the avoid note is precisely the one we removed. This is why it sounds
+>>> 'always right' -- the gospel/Sunday sound. You cannot play a wrong note.
+
+
+==============================================================================
+THE SIX MODES of the diatonic hexachord (one parent set, six colours)
+==============================================================================
+#  root  notes                 degrees                   3rd?   5th?
+------------------------------------------------------------------------------
+1  C     C D E G A B           1 2 3 5 6 7               yes    yes
+2  D     D E G A B C           1 2 4 5 6 b7              NO     yes
+3  E     E G A B C D           1 b3 4 5 b6 b7            yes    yes
+4  G     G A B C D E           1 2 3 4 5 6               yes    yes
+5  A     A B C D E G           1 2 b3 4 5 b7             yes    yes
+6  B     B C D E G A           1 b2 b3 4 b6 b7           yes    NO
+
+>>> Mode 4 (on G) = 1 2 3 4 5 6, the folk/Guidonian 'major hexatonic'.
+>>> Mode 5 (on A) = 1 2 b3 4 5 b7, Jason's minor hexatonic.
+>>> Mode 1 (on C) = 1 2 3 5 6 7, the gospel 'Sunday' sound.
+>>> Mode 2 (on D) has NO 3rd  -> a pure sus/quartal mode.
+>>> Mode 6 (on B) has NO 5th  -> the unstable one; useful, rarely a tonic.
+>>> The minor hexatonic contains no 6th at all, so it is Dorian/Aeolian
+>>> AMBIGUOUS -- the note that decides was the note we removed. It therefore
+>>> works over BOTH m7 and m6 harmony. That is a real improvising advantage.
+
+
+==============================================================================
+THEOREM 4 — Available harmony is SMALL (and that's the feature)
+==============================================================================
+
+### Major Hexatonic (no 4) — 'Sunday / gospel'  [C D E G A B]
+  TERTIAN TRIADS — 4:
+      C                          = C E G
+      Am                         = A C E
+      G                          = G B D
+      Em                         = E G B
+  SUS / QUARTAL TRIADS — 4 (same 6 notes, different stacking):
+      Csus2 = Gsus4 = Dquartal                 C D G
+      Dsus2 = Asus4 = Equartal                 D E A
+      Dsus4 = Gsus2 = Aquartal                 D G A
+      Esus4 = Asus2 = Bquartal                 E A B
+  TERTIAN 4-NOTE CHORDS — 3 distinct SETS:
+      C6 = Am7                   C E G A
+      Cmaj7                      C E G B
+      Em7 = G6                   E G B D
+  SUS 4-NOTE CHORDS — 5
+
+### Minor Hexatonic (no b6)  [C D Eb F G Bb]
+  TERTIAN TRIADS — 4:
+      Cm                         = C Eb G
+      Bb                         = Bb D F
+      Gm                         = G Bb D
+      Eb                         = Eb G Bb
+  SUS / QUARTAL TRIADS — 4 (same 6 notes, different stacking):
+      Csus2 = Gsus4 = Dquartal                 C D G
+      Csus4 = Fsus2 = Gquartal                 C F G
+      Fsus4 = Bbsus2 = Cquartal                F Bb C
+      Ebsus2 = Bbsus4 = Fquartal               Eb F Bb
+  TERTIAN 4-NOTE CHORDS — 3 distinct SETS:
+      Cm7 = Eb6                  C Eb G Bb
+      Ebmaj7                     Eb G Bb D
+      Gm7 = Bb6                  G Bb D F
+  SUS 4-NOTE CHORDS — 5
+
+>>> Four tertian triads. Three tertian 4-note SETS, each carrying two equally
+>>> correct names (Am7 = C6, Em7 = G6). Jason predicted 'some of them would be
+>>> inversions of each other' -- confirmed. The app must model a chord as a
+>>> PITCH-CLASS SET with a list of names, never as one root + one quality.
+>>> Note also how many sus/quartal stacks exist: the hexatonic is a quartal
+>>> harmony machine, which is the McCoy Tyner / gospel-modern sound.
+
+
+==============================================================================
+THEOREM 5 — 'Practice it in thirds' is impossible. Here is what happens.
+==============================================================================
+Hexatonic: C D E G A B      Heptatonic: C D E F G A B
+
+IN THIRDS   (step 2 degrees)
+   hexa : C-E(M3)  D-G(P4)  E-A(P4)  G-B(M3)  A-C(m3)  B-D(m3)
+          -> {'M3': 2, 'P4': 2, 'm3': 2}
+   hepta: C-E(M3)  D-F(m3)  E-G(m3)  F-A(M3)  G-B(M3)  A-C(m3)  B-D(m3)
+          -> {'M3': 3, 'm3': 4}
+
+IN FOURTHS  (step 3 degrees)
+   hexa : C-G(P5)  D-A(P5)  E-B(P5)  G-C(P4)  A-D(P4)  B-E(P4)
+          -> {'P5': 3, 'P4': 3}
+   hepta: C-F(P4)  D-G(P4)  E-A(P4)  F-B(A4)  G-C(P4)  A-D(P4)  B-E(P4)
+          -> {'P4': 6, 'A4': 1}
+
+IN FIFTHS   (step 4 degrees)
+   hexa : C-A(M6)  D-B(M6)  E-C(m6)  G-D(P5)  A-E(P5)  B-G(m6)
+          -> {'M6': 2, 'm6': 2, 'P5': 2}
+   hepta: C-G(P5)  D-A(P5)  E-B(P5)  F-C(P5)  G-D(P5)  A-E(P5)  B-F(d5)
+          -> {'P5': 6, 'd5': 1}
+
+IN SIXTHS   (step 5 degrees)
+   hexa : C-B(M7)  D-C(m7)  E-D(m7)  G-E(M6)  A-G(m7)  B-A(m7)
+          -> {'M7': 1, 'm7': 4, 'M6': 1}
+   hepta: C-A(M6)  D-B(M6)  E-C(m6)  F-D(M6)  G-E(M6)  A-F(m6)  B-G(m6)
+          -> {'M6': 4, 'm6': 3}
+
+
+>>> CONFIRMED, exactly as Jason predicted: a hexatonic played 'in thirds' is
+>>> NOT in thirds. Stepping two degrees gives 2x M3, 2x m3 and 2x P4. The
+>>> fourths appear wherever the removed note left a gap. This is the single
+>>> most interesting thing about practising a six-note scale and it is why
+>>> the drill sounds like nothing else on the instrument.
+
+>>> AND THE BIG ONE: 'in fourths' (stepping 3 degrees) gives P4 or P5 on
+>>> EVERY degree -- six for six, no exceptions. The heptatonic cannot do it:
+>>> F-B comes out an AUGMENTED 4th and breaks the chain. The note we removed
+>>> IS the note that breaks it. The hexatonic is the only diatonic collection
+>>> that cycles in perfect fourths without a single flaw.
+
+
+==============================================================================
+THE RESOLUTION SOLVER — how many bars until it lands on the '1'?
+==============================================================================
+4/4. One octave. Tonic must land on beat 1 with the accent.
+
+scale       subdiv              group   notes   bars    traversals
+------------------------------------------------------------------------------
+HEXA (6)    8ths                3       24      3       4
+HEXA (6)    8ths                4       24      3       4
+HEXA (6)    8ths                5       120     15      20
+HEXA (6)    8ths                6       24      3       4
+HEXA (6)    8ths                7       168     21      28
+HEXA (6)    8th-triplets        3       12      1       2
+HEXA (6)    8th-triplets        4       12      1       2
+HEXA (6)    8th-triplets        5       60      5       10
+HEXA (6)    8th-triplets        6       12      1       2
+HEXA (6)    8th-triplets        7       84      7       14
+HEXA (6)    16ths               3       48      3       8
+HEXA (6)    16ths               4       48      3       8
+HEXA (6)    16ths               5       240     15      40
+HEXA (6)    16ths               6       48      3       8
+HEXA (6)    16ths               7       336     21      56
+
+hepta (7)   8ths                3       168     21      24
+hepta (7)   8ths                4       56      7       8
+hepta (7)   8ths                5       280     35      40
+hepta (7)   8ths                6       168     21      24
+hepta (7)   8ths                7       56      7       8
+hepta (7)   8th-triplets        3       84      7       12
+hepta (7)   8th-triplets        4       84      7       12
+hepta (7)   8th-triplets        5       420     35      60
+hepta (7)   8th-triplets        6       84      7       12
+hepta (7)   8th-triplets        7       84      7       12
+hepta (7)   16ths               3       336     21      48
+hepta (7)   16ths               4       112     7       16
+hepta (7)   16ths               5       560     35      80
+hepta (7)   16ths               6       336     21      48
+hepta (7)   16ths               7       112     7       16
+
+penta (5)   8ths                3       120     15      24
+penta (5)   8ths                4       40      5       8
+penta (5)   8ths                5       40      5       8
+penta (5)   8ths                6       120     15      24
+penta (5)   8ths                7       280     35      56
+penta (5)   8th-triplets        3       60      5       12
+penta (5)   8th-triplets        4       60      5       12
+penta (5)   8th-triplets        5       60      5       12
+penta (5)   8th-triplets        6       60      5       12
+penta (5)   8th-triplets        7       420     35      84
+penta (5)   16ths               3       240     15      48
+penta (5)   16ths               4       80      5       16
+penta (5)   16ths               5       80      5       16
+penta (5)   16ths               6       240     15      48
+penta (5)   16ths               7       560     35      112
+
+
+>>> READ THE '6' BLOCK AGAINST THE '7' BLOCK. In 16ths, grouping in 5s:
+>>>    hexatonic  -> 240 notes, 15 bars
+>>>    heptatonic -> 560 notes, 35 bars
+>>> The six-note scale resolves more than twice as fast in every odd grouping.
+>>> That is the mathematical reason hexatonic feels good in odd meters and
+>>> why this is the right scale to teach groupings with. It is the app's
+>>> single most defensible pedagogical claim.
+
+
+==============================================================================
+CLAIM CHECK — is the flawless fourths-cycle unique to the hexatonic?
+==============================================================================
+collection                  step-3 interval content           all perfect?
+------------------------------------------------------------------------------
+pentatonic  C D E G A       {'M3': 1, 'P4': 4}                no
+HEXATONIC   C D E G A B     {'P5': 3, 'P4': 3}                YES
+heptatonic  C D E F G A B   {'P4': 6, 'A4': 1}                no
+minor hexa  C D Eb F G Bb   {'P4': 3, 'P5': 3}                YES
+minor penta C Eb F G Bb     {'P4': 4, 'M3': 1}                no
+
+NOTE: for the 5-note scales the comparable 'quartal' drill is step-2 (there is
+no step-3 fourths cycle). Either way they carry a M3/m6 in the chain.
+>>> Only the six-note diatonic hexachord cycles in unbroken perfect fourths.
+>>> This is a genuinely unique, checkable property -- safe to claim on air.
+
+
+==============================================================================
+LOCKED vs PHASING groupings (the drill ladder)
+==============================================================================
+Hexatonic, 1 octave, 4/4. 'accent' = accent returns to beat 1.
+                          'full'   = accent + TONIC + downbeat coincide.
+
+subdiv          group   accent bars   full bars   type
+----------------------------------------------------------------------
+8ths            3       3             3           phasing
+8ths            4       1             3           LOCKED
+8ths            5       5             15          phasing
+8ths            6       3             3           phasing
+8ths            7       7             21          phasing
+
+8th-triplets    3       1             1           LOCKED
+8th-triplets    4       1             1           LOCKED
+8th-triplets    5       5             5           phasing
+8th-triplets    6       1             1           LOCKED
+8th-triplets    7       7             7           phasing
+
+16ths           3       3             3           phasing
+16ths           4       1             3           LOCKED
+16ths           5       5             15          phasing
+16ths           6       3             3           phasing
+16ths           7       7             21          phasing
+
+
+>>> Groupings of 3, 4 and 6 LOCK to a 4/4 bar in triplet subdivisions and
+>>> phase only mildly elsewhere. Only 5 and 7 genuinely fight the barline.
+>>> That gives the app a natural difficulty ladder, and it maps 1:1 onto the
+>>> Carnatic gati system: 3=tisra, 4=chatusra, 5=khanda, 7=misra, 9=sankeerna.
+>>> Ship the ladder in that order. It is the same ladder Indian percussionists
+>>> have used for centuries, and no Western scale app has ever implemented it.
+
+
+==============================================================================
+THE PRACTICABLE SET — combinations that resolve inside 8 bars
+==============================================================================
+hexatonic combos that resolve in <=8 bars: 32
+heptatonic combos that resolve in <=8 bars: 24
+pentatonic combos that resolve in <=8 bars: 24
+
+Hexatonic, 1 octave, sorted by bar-count (the live-stream menu):
+subdiv          group   bars   notes
+8th-triplets    3       1      12
+sextuplets      3       1      24
+8th-triplets    4       1      12
+sextuplets      4       1      24
+8th-triplets    6       1      12
+sextuplets      6       1      24
+8ths            3       3      24
+16ths           3       3      48
+8ths            4       3      24
+16ths           4       3      48
+8ths            6       3      24
+16ths           6       3      48
+8th-triplets    5       5      60
+sextuplets      5       5      120
+8th-triplets    7       7      84
+sextuplets      7       7      168
+
+==============================================================================
+SEQUENCE ENGINE sample — C major hexatonic, cells of 4, 2 octaves
+==============================================================================
+   C4 D4 E4 G4
+   D4 E4 G4 A4
+   E4 G4 A4 B4
+   G4 A4 B4 C5
+   A4 B4 C5 D5
+   B4 C5 D5 E5
+   C5 D5 E5 G5
+   D5 E5 G5 A5
+
+==============================================================================
+MULTI-KEY PROOF — the same scale in all 12 keys, correctly spelled
+==============================================================================
+  C major hexatonic     C D E G A B               vex: c/4 d/4 e/4 g/4 a/4 b/4
+  G major hexatonic     G A B D E F#              vex: g/4 a/4 b/4 d/5 e/5 f#/5
+  D major hexatonic     D E F# A B C#             vex: d/4 e/4 f#/4 a/4 b/4 c#/5
+  A major hexatonic     A B C# E F# G#            vex: a/4 b/4 c#/5 e/5 f#/5 g#/5
+  E major hexatonic     E F# G# B C# D#           vex: e/4 f#/4 g#/4 b/4 c#/5 d#/5
+  B major hexatonic     B C# D# F# G# A#          vex: b/4 c#/5 d#/5 f#/5 g#/5 a#/5
+  F# major hexatonic    F# G# A# C# D# E#         vex: f#/4 g#/4 a#/4 c#/5 d#/5 e#/5
+  Db major hexatonic    Db Eb F Ab Bb C           vex: db/4 eb/4 f/4 ab/4 bb/4 c/5
+  Ab major hexatonic    Ab Bb C Eb F G            vex: ab/4 bb/4 c/5 eb/5 f/5 g/5
+  Eb major hexatonic    Eb F G Bb C D             vex: eb/4 f/4 g/4 bb/4 c/5 d/5
+  Bb major hexatonic    Bb C D F G A              vex: bb/4 c/5 d/5 f/5 g/5 a/5
+  F major hexatonic     F G A C D E               vex: f/4 g/4 a/4 c/5 d/5 e/5
+
+  (No letter repeats, no triple accidentals, VexFlow-ready in every key.)

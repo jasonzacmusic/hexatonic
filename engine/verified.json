@@ -1,0 +1,8790 @@
+{
+  "omission_survey": [
+    {
+      "removed_degree": 1,
+      "removed_note": "C",
+      "notes": [
+        "D",
+        "E",
+        "F",
+        "G",
+        "A",
+        "B"
+      ],
+      "prime_form": [
+        0,
+        2,
+        3,
+        5,
+        7,
+        9
+      ],
+      "forte": "6-33  'Dorian hexachord'",
+      "interval_vector": [
+        1,
+        4,
+        3,
+        2,
+        4,
+        1
+      ],
+      "tritones": 1,
+      "is_6_32": false
+    },
+    {
+      "removed_degree": 2,
+      "removed_note": "D",
+      "notes": [
+        "C",
+        "E",
+        "F",
+        "G",
+        "A",
+        "B"
+      ],
+      "prime_form": [
+        0,
+        1,
+        3,
+        5,
+        7,
+        8
+      ],
+      "forte": "\u2014",
+      "interval_vector": [
+        2,
+        3,
+        2,
+        3,
+        4,
+        1
+      ],
+      "tritones": 1,
+      "is_6_32": false
+    },
+    {
+      "removed_degree": 3,
+      "removed_note": "E",
+      "notes": [
+        "C",
+        "D",
+        "F",
+        "G",
+        "A",
+        "B"
+      ],
+      "prime_form": [
+        0,
+        2,
+        3,
+        5,
+        7,
+        9
+      ],
+      "forte": "6-33  'Dorian hexachord'",
+      "interval_vector": [
+        1,
+        4,
+        3,
+        2,
+        4,
+        1
+      ],
+      "tritones": 1,
+      "is_6_32": false
+    },
+    {
+      "removed_degree": 4,
+      "removed_note": "F",
+      "notes": [
+        "C",
+        "D",
+        "E",
+        "G",
+        "A",
+        "B"
+      ],
+      "prime_form": [
+        0,
+        2,
+        4,
+        5,
+        7,
+        9
+      ],
+      "forte": "6-32  'Guidonian / major hexachord'",
+      "interval_vector": [
+        1,
+        4,
+        3,
+        2,
+        5,
+        0
+      ],
+      "tritones": 0,
+      "is_6_32": true
+    },
+    {
+      "removed_degree": 5,
+      "removed_note": "G",
+      "notes": [
+        "C",
+        "D",
+        "E",
+        "F",
+        "A",
+        "B"
+      ],
+      "prime_form": [
+        0,
+        1,
+        3,
+        5,
+        6,
+        8
+      ],
+      "forte": "\u2014",
+      "interval_vector": [
+        2,
+        3,
+        3,
+        2,
+        4,
+        1
+      ],
+      "tritones": 1,
+      "is_6_32": false
+    },
+    {
+      "removed_degree": 6,
+      "removed_note": "A",
+      "notes": [
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "B"
+      ],
+      "prime_form": [
+        0,
+        1,
+        3,
+        5,
+        6,
+        8
+      ],
+      "forte": "\u2014",
+      "interval_vector": [
+        2,
+        3,
+        3,
+        2,
+        4,
+        1
+      ],
+      "tritones": 1,
+      "is_6_32": false
+    },
+    {
+      "removed_degree": 7,
+      "removed_note": "B",
+      "notes": [
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "A"
+      ],
+      "prime_form": [
+        0,
+        2,
+        4,
+        5,
+        7,
+        9
+      ],
+      "forte": "6-32  'Guidonian / major hexachord'",
+      "interval_vector": [
+        1,
+        4,
+        3,
+        2,
+        5,
+        0
+      ],
+      "tritones": 0,
+      "is_6_32": true
+    }
+  ],
+  "scales": {
+    "major_no4": {
+      "name": "Major Hexatonic (no 4) \u2014 'Sunday / gospel'",
+      "notes": [
+        "C",
+        "D",
+        "E",
+        "G",
+        "A",
+        "B"
+      ],
+      "pcs": [
+        0,
+        2,
+        4,
+        7,
+        9,
+        11
+      ],
+      "steps": [
+        2,
+        2,
+        3,
+        2,
+        2,
+        1
+      ],
+      "prime_form": [
+        0,
+        2,
+        4,
+        5,
+        7,
+        9
+      ],
+      "interval_vector": [
+        1,
+        4,
+        3,
+        2,
+        5,
+        0
+      ]
+    },
+    "major_no7": {
+      "name": "Major Hexatonic (no 7) \u2014 'Guidonian / folk'",
+      "notes": [
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "A"
+      ],
+      "pcs": [
+        0,
+        2,
+        4,
+        5,
+        7,
+        9
+      ],
+      "steps": [
+        2,
+        2,
+        1,
+        2,
+        2,
+        3
+      ],
+      "prime_form": [
+        0,
+        2,
+        4,
+        5,
+        7,
+        9
+      ],
+      "interval_vector": [
+        1,
+        4,
+        3,
+        2,
+        5,
+        0
+      ]
+    },
+    "minor_nob6": {
+      "name": "Minor Hexatonic (no b6)",
+      "notes": [
+        "C",
+        "D",
+        "Eb",
+        "F",
+        "G",
+        "Bb"
+      ],
+      "pcs": [
+        0,
+        2,
+        3,
+        5,
+        7,
+        10
+      ],
+      "steps": [
+        2,
+        1,
+        2,
+        2,
+        3,
+        2
+      ],
+      "prime_form": [
+        0,
+        2,
+        4,
+        5,
+        7,
+        9
+      ],
+      "interval_vector": [
+        1,
+        4,
+        3,
+        2,
+        5,
+        0
+      ]
+    },
+    "minor_no2": {
+      "name": "Minor Hexatonic (no 2) \u2014 Phrygian-neutral",
+      "notes": [
+        "C",
+        "Eb",
+        "F",
+        "G",
+        "Ab",
+        "Bb"
+      ],
+      "pcs": [
+        0,
+        3,
+        5,
+        7,
+        8,
+        10
+      ],
+      "steps": [
+        3,
+        2,
+        2,
+        1,
+        2,
+        2
+      ],
+      "prime_form": [
+        0,
+        2,
+        4,
+        5,
+        7,
+        9
+      ],
+      "interval_vector": [
+        1,
+        4,
+        3,
+        2,
+        5,
+        0
+      ]
+    },
+    "dorian_no6": {
+      "name": "Dorian Hexatonic (no 6)",
+      "notes": [
+        "C",
+        "D",
+        "Eb",
+        "F",
+        "G",
+        "Bb"
+      ],
+      "pcs": [
+        0,
+        2,
+        3,
+        5,
+        7,
+        10
+      ],
+      "steps": [
+        2,
+        1,
+        2,
+        2,
+        3,
+        2
+      ],
+      "prime_form": [
+        0,
+        2,
+        4,
+        5,
+        7,
+        9
+      ],
+      "interval_vector": [
+        1,
+        4,
+        3,
+        2,
+        5,
+        0
+      ]
+    },
+    "mixolydian_no4": {
+      "name": "Mixolydian Hexatonic (no 4)",
+      "notes": [
+        "C",
+        "D",
+        "E",
+        "G",
+        "A",
+        "Bb"
+      ],
+      "pcs": [
+        0,
+        2,
+        4,
+        7,
+        9,
+        10
+      ],
+      "steps": [
+        2,
+        2,
+        3,
+        2,
+        1,
+        2
+      ],
+      "prime_form": [
+        0,
+        2,
+        3,
+        5,
+        7,
+        9
+      ],
+      "interval_vector": [
+        1,
+        4,
+        3,
+        2,
+        4,
+        1
+      ]
+    },
+    "harmonic_minor_no2": {
+      "name": "Harmonic Minor Hexatonic (no 2)",
+      "notes": [
+        "C",
+        "Eb",
+        "F",
+        "G",
+        "Ab",
+        "B"
+      ],
+      "pcs": [
+        0,
+        3,
+        5,
+        7,
+        8,
+        11
+      ],
+      "steps": [
+        3,
+        2,
+        2,
+        1,
+        3,
+        1
+      ],
+      "prime_form": [
+        0,
+        1,
+        3,
+        5,
+        8,
+        9
+      ],
+      "interval_vector": [
+        2,
+        2,
+        3,
+        4,
+        3,
+        1
+      ]
+    },
+    "augmented": {
+      "name": "Augmented Hexatonic (jazz 'the hexatonic scale')",
+      "notes": [
+        "C",
+        "D#",
+        "E",
+        "G",
+        "Ab",
+        "B"
+      ],
+      "pcs": [
+        0,
+        3,
+        4,
+        7,
+        8,
+        11
+      ],
+      "steps": [
+        3,
+        1,
+        3,
+        1,
+        3,
+        1
+      ],
+      "prime_form": [
+        0,
+        1,
+        4,
+        5,
+        8,
+        9
+      ],
+      "interval_vector": [
+        3,
+        0,
+        3,
+        6,
+        3,
+        0
+      ]
+    },
+    "whole_tone": {
+      "name": "Whole Tone",
+      "notes": [
+        "C",
+        "D",
+        "E",
+        "F#",
+        "G#",
+        "A#"
+      ],
+      "pcs": [
+        0,
+        2,
+        4,
+        6,
+        8,
+        10
+      ],
+      "steps": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "prime_form": [
+        0,
+        2,
+        4,
+        6,
+        8,
+        10
+      ],
+      "interval_vector": [
+        0,
+        6,
+        0,
+        6,
+        0,
+        3
+      ]
+    },
+    "blues": {
+      "name": "Blues Hexatonic",
+      "notes": [
+        "C",
+        "Eb",
+        "F",
+        "Gb",
+        "G",
+        "Bb"
+      ],
+      "pcs": [
+        0,
+        3,
+        5,
+        6,
+        7,
+        10
+      ],
+      "steps": [
+        3,
+        2,
+        1,
+        1,
+        3,
+        2
+      ],
+      "prime_form": [
+        0,
+        1,
+        2,
+        4,
+        7,
+        9
+      ],
+      "interval_vector": [
+        2,
+        3,
+        3,
+        2,
+        4,
+        1
+      ]
+    },
+    "prometheus": {
+      "name": "Prometheus (Scriabin 'mystic')",
+      "notes": [
+        "C",
+        "D",
+        "E",
+        "F#",
+        "A",
+        "Bb"
+      ],
+      "pcs": [
+        0,
+        2,
+        4,
+        6,
+        9,
+        10
+      ],
+      "steps": [
+        2,
+        2,
+        2,
+        3,
+        1,
+        2
+      ],
+      "prime_form": [
+        0,
+        1,
+        3,
+        5,
+        7,
+        9
+      ],
+      "interval_vector": [
+        1,
+        4,
+        2,
+        4,
+        2,
+        2
+      ]
+    },
+    "tritone": {
+      "name": "Petrushka / Tritone Hexatonic",
+      "notes": [
+        "C",
+        "Db",
+        "E",
+        "F#",
+        "G",
+        "Bb"
+      ],
+      "pcs": [
+        0,
+        1,
+        4,
+        6,
+        7,
+        10
+      ],
+      "steps": [
+        1,
+        3,
+        2,
+        1,
+        3,
+        2
+      ],
+      "prime_form": [
+        0,
+        1,
+        3,
+        6,
+        7,
+        9
+      ],
+      "interval_vector": [
+        2,
+        2,
+        4,
+        2,
+        2,
+        3
+      ]
+    }
+  },
+  "skip_cycles": {
+    "major_no4": {
+      "1": {
+        "skip": 1,
+        "intervals": [
+          "M2",
+          "M2",
+          "m3",
+          "M2",
+          "M2",
+          "m2"
+        ],
+        "tally": {
+          "M2": 4,
+          "m3": 1,
+          "m2": 1
+        },
+        "unique": [
+          "M2",
+          "m3",
+          "m2"
+        ]
+      },
+      "2": {
+        "skip": 2,
+        "intervals": [
+          "M3",
+          "P4",
+          "P4",
+          "M3",
+          "m3",
+          "m3"
+        ],
+        "tally": {
+          "M3": 2,
+          "P4": 2,
+          "m3": 2
+        },
+        "unique": [
+          "M3",
+          "P4",
+          "m3"
+        ]
+      },
+      "3": {
+        "skip": 3,
+        "intervals": [
+          "P5",
+          "P5",
+          "P5",
+          "P4",
+          "P4",
+          "P4"
+        ],
+        "tally": {
+          "P5": 3,
+          "P4": 3
+        },
+        "unique": [
+          "P5",
+          "P4"
+        ]
+      },
+      "4": {
+        "skip": 4,
+        "intervals": [
+          "M6",
+          "M6",
+          "m6",
+          "P5",
+          "P5",
+          "m6"
+        ],
+        "tally": {
+          "M6": 2,
+          "m6": 2,
+          "P5": 2
+        },
+        "unique": [
+          "M6",
+          "m6",
+          "P5"
+        ]
+      }
+    },
+    "major_no7": {
+      "1": {
+        "skip": 1,
+        "intervals": [
+          "M2",
+          "M2",
+          "m2",
+          "M2",
+          "M2",
+          "m3"
+        ],
+        "tally": {
+          "M2": 4,
+          "m2": 1,
+          "m3": 1
+        },
+        "unique": [
+          "M2",
+          "m2",
+          "m3"
+        ]
+      },
+      "2": {
+        "skip": 2,
+        "intervals": [
+          "M3",
+          "m3",
+          "m3",
+          "M3",
+          "P4",
+          "P4"
+        ],
+        "tally": {
+          "M3": 2,
+          "m3": 2,
+          "P4": 2
+        },
+        "unique": [
+          "M3",
+          "m3",
+          "P4"
+        ]
+      },
+      "3": {
+        "skip": 3,
+        "intervals": [
+          "P4",
+          "P4",
+          "P4",
+          "P5",
+          "P5",
+          "P5"
+        ],
+        "tally": {
+          "P4": 3,
+          "P5": 3
+        },
+        "unique": [
+          "P4",
+          "P5"
+        ]
+      },
+      "4": {
+        "skip": 4,
+        "intervals": [
+          "P5",
+          "P5",
+          "m6",
+          "M6",
+          "M6",
+          "m6"
+        ],
+        "tally": {
+          "P5": 2,
+          "m6": 2,
+          "M6": 2
+        },
+        "unique": [
+          "P5",
+          "m6",
+          "M6"
+        ]
+      }
+    },
+    "minor_nob6": {
+      "1": {
+        "skip": 1,
+        "intervals": [
+          "M2",
+          "m2",
+          "M2",
+          "M2",
+          "m3",
+          "M2"
+        ],
+        "tally": {
+          "M2": 4,
+          "m2": 1,
+          "m3": 1
+        },
+        "unique": [
+          "M2",
+          "m2",
+          "m3"
+        ]
+      },
+      "2": {
+        "skip": 2,
+        "intervals": [
+          "m3",
+          "m3",
+          "M3",
+          "P4",
+          "P4",
+          "M3"
+        ],
+        "tally": {
+          "m3": 2,
+          "M3": 2,
+          "P4": 2
+        },
+        "unique": [
+          "m3",
+          "M3",
+          "P4"
+        ]
+      },
+      "3": {
+        "skip": 3,
+        "intervals": [
+          "P4",
+          "P4",
+          "P5",
+          "P5",
+          "P5",
+          "P4"
+        ],
+        "tally": {
+          "P4": 3,
+          "P5": 3
+        },
+        "unique": [
+          "P4",
+          "P5"
+        ]
+      },
+      "4": {
+        "skip": 4,
+        "intervals": [
+          "P5",
+          "m6",
+          "M6",
+          "M6",
+          "m6",
+          "P5"
+        ],
+        "tally": {
+          "P5": 2,
+          "m6": 2,
+          "M6": 2
+        },
+        "unique": [
+          "P5",
+          "m6",
+          "M6"
+        ]
+      }
+    },
+    "minor_no2": {
+      "1": {
+        "skip": 1,
+        "intervals": [
+          "m3",
+          "M2",
+          "M2",
+          "m2",
+          "M2",
+          "M2"
+        ],
+        "tally": {
+          "m3": 1,
+          "M2": 4,
+          "m2": 1
+        },
+        "unique": [
+          "M2",
+          "m3",
+          "m2"
+        ]
+      },
+      "2": {
+        "skip": 2,
+        "intervals": [
+          "P4",
+          "M3",
+          "m3",
+          "m3",
+          "M3",
+          "P4"
+        ],
+        "tally": {
+          "P4": 2,
+          "M3": 2,
+          "m3": 2
+        },
+        "unique": [
+          "P4",
+          "M3",
+          "m3"
+        ]
+      },
+      "3": {
+        "skip": 3,
+        "intervals": [
+          "P5",
+          "P4",
+          "P4",
+          "P4",
+          "P5",
+          "P5"
+        ],
+        "tally": {
+          "P5": 3,
+          "P4": 3
+        },
+        "unique": [
+          "P5",
+          "P4"
+        ]
+      },
+      "4": {
+        "skip": 4,
+        "intervals": [
+          "m6",
+          "P5",
+          "P5",
+          "m6",
+          "M6",
+          "M6"
+        ],
+        "tally": {
+          "m6": 2,
+          "P5": 2,
+          "M6": 2
+        },
+        "unique": [
+          "m6",
+          "P5",
+          "M6"
+        ]
+      }
+    },
+    "dorian_no6": {
+      "1": {
+        "skip": 1,
+        "intervals": [
+          "M2",
+          "m2",
+          "M2",
+          "M2",
+          "m3",
+          "M2"
+        ],
+        "tally": {
+          "M2": 4,
+          "m2": 1,
+          "m3": 1
+        },
+        "unique": [
+          "M2",
+          "m2",
+          "m3"
+        ]
+      },
+      "2": {
+        "skip": 2,
+        "intervals": [
+          "m3",
+          "m3",
+          "M3",
+          "P4",
+          "P4",
+          "M3"
+        ],
+        "tally": {
+          "m3": 2,
+          "M3": 2,
+          "P4": 2
+        },
+        "unique": [
+          "m3",
+          "M3",
+          "P4"
+        ]
+      },
+      "3": {
+        "skip": 3,
+        "intervals": [
+          "P4",
+          "P4",
+          "P5",
+          "P5",
+          "P5",
+          "P4"
+        ],
+        "tally": {
+          "P4": 3,
+          "P5": 3
+        },
+        "unique": [
+          "P4",
+          "P5"
+        ]
+      },
+      "4": {
+        "skip": 4,
+        "intervals": [
+          "P5",
+          "m6",
+          "M6",
+          "M6",
+          "m6",
+          "P5"
+        ],
+        "tally": {
+          "P5": 2,
+          "m6": 2,
+          "M6": 2
+        },
+        "unique": [
+          "P5",
+          "m6",
+          "M6"
+        ]
+      }
+    },
+    "mixolydian_no4": {
+      "1": {
+        "skip": 1,
+        "intervals": [
+          "M2",
+          "M2",
+          "m3",
+          "M2",
+          "m2",
+          "M2"
+        ],
+        "tally": {
+          "M2": 4,
+          "m3": 1,
+          "m2": 1
+        },
+        "unique": [
+          "M2",
+          "m3",
+          "m2"
+        ]
+      },
+      "2": {
+        "skip": 2,
+        "intervals": [
+          "M3",
+          "P4",
+          "P4",
+          "m3",
+          "m3",
+          "M3"
+        ],
+        "tally": {
+          "M3": 2,
+          "P4": 2,
+          "m3": 2
+        },
+        "unique": [
+          "M3",
+          "P4",
+          "m3"
+        ]
+      },
+      "3": {
+        "skip": 3,
+        "intervals": [
+          "P5",
+          "P5",
+          "d5",
+          "P4",
+          "P4",
+          "A4"
+        ],
+        "tally": {
+          "P5": 2,
+          "d5": 1,
+          "P4": 2,
+          "A4": 1
+        },
+        "unique": [
+          "P5",
+          "P4",
+          "d5",
+          "A4"
+        ]
+      },
+      "4": {
+        "skip": 4,
+        "intervals": [
+          "M6",
+          "m6",
+          "m6",
+          "P5",
+          "P5",
+          "M6"
+        ],
+        "tally": {
+          "M6": 2,
+          "m6": 2,
+          "P5": 2
+        },
+        "unique": [
+          "M6",
+          "m6",
+          "P5"
+        ]
+      }
+    },
+    "harmonic_minor_no2": {
+      "1": {
+        "skip": 1,
+        "intervals": [
+          "m3",
+          "M2",
+          "M2",
+          "m2",
+          "A2",
+          "m2"
+        ],
+        "tally": {
+          "m3": 1,
+          "M2": 2,
+          "m2": 2,
+          "A2": 1
+        },
+        "unique": [
+          "M2",
+          "m2",
+          "m3",
+          "A2"
+        ]
+      },
+      "2": {
+        "skip": 2,
+        "intervals": [
+          "P4",
+          "M3",
+          "m3",
+          "M3",
+          "M3",
+          "d4"
+        ],
+        "tally": {
+          "P4": 1,
+          "M3": 3,
+          "m3": 1,
+          "d4": 1
+        },
+        "unique": [
+          "M3",
+          "P4",
+          "m3",
+          "d4"
+        ]
+      },
+      "3": {
+        "skip": 3,
+        "intervals": [
+          "P5",
+          "P4",
+          "A4",
+          "P4",
+          "P5",
+          "d5"
+        ],
+        "tally": {
+          "P5": 2,
+          "P4": 2,
+          "A4": 1,
+          "d5": 1
+        },
+        "unique": [
+          "P5",
+          "P4",
+          "A4",
+          "d5"
+        ]
+      },
+      "4": {
+        "skip": 4,
+        "intervals": [
+          "m6",
+          "A5",
+          "P5",
+          "m6",
+          "M6",
+          "m6"
+        ],
+        "tally": {
+          "m6": 3,
+          "A5": 1,
+          "P5": 1,
+          "M6": 1
+        },
+        "unique": [
+          "m6",
+          "A5",
+          "P5",
+          "M6"
+        ]
+      }
+    },
+    "augmented": {
+      "1": {
+        "skip": 1,
+        "intervals": [
+          "A2",
+          "m2",
+          "m3",
+          "m2",
+          "A2",
+          "m2"
+        ],
+        "tally": {
+          "A2": 2,
+          "m2": 3,
+          "m3": 1
+        },
+        "unique": [
+          "m2",
+          "A2",
+          "m3"
+        ]
+      },
+      "2": {
+        "skip": 2,
+        "intervals": [
+          "M3",
+          "d4",
+          "d4",
+          "M3",
+          "M3",
+          "M3"
+        ],
+        "tally": {
+          "M3": 4,
+          "d4": 2
+        },
+        "unique": [
+          "M3",
+          "d4"
+        ]
+      },
+      "3": {
+        "skip": 3,
+        "intervals": [
+          "P5",
+          "?4/5",
+          "P5",
+          "P4",
+          "?3/7",
+          "P4"
+        ],
+        "tally": {
+          "P5": 2,
+          "?4/5": 1,
+          "P4": 2,
+          "?3/7": 1
+        },
+        "unique": [
+          "P5",
+          "P4",
+          "?4/5",
+          "?3/7"
+        ]
+      },
+      "4": {
+        "skip": 4,
+        "intervals": [
+          "m6",
+          "m6",
+          "m6",
+          "A5",
+          "A5",
+          "m6"
+        ],
+        "tally": {
+          "m6": 4,
+          "A5": 2
+        },
+        "unique": [
+          "m6",
+          "A5"
+        ]
+      }
+    },
+    "whole_tone": {
+      "1": {
+        "skip": 1,
+        "intervals": [
+          "M2",
+          "M2",
+          "M2",
+          "M2",
+          "M2",
+          "d3"
+        ],
+        "tally": {
+          "M2": 5,
+          "d3": 1
+        },
+        "unique": [
+          "M2",
+          "d3"
+        ]
+      },
+      "2": {
+        "skip": 2,
+        "intervals": [
+          "M3",
+          "M3",
+          "M3",
+          "M3",
+          "d4",
+          "d4"
+        ],
+        "tally": {
+          "M3": 4,
+          "d4": 2
+        },
+        "unique": [
+          "M3",
+          "d4"
+        ]
+      },
+      "3": {
+        "skip": 3,
+        "intervals": [
+          "A4",
+          "A4",
+          "A4",
+          "d5",
+          "d5",
+          "d5"
+        ],
+        "tally": {
+          "A4": 3,
+          "d5": 3
+        },
+        "unique": [
+          "A4",
+          "d5"
+        ]
+      },
+      "4": {
+        "skip": 4,
+        "intervals": [
+          "A5",
+          "A5",
+          "m6",
+          "m6",
+          "m6",
+          "m6"
+        ],
+        "tally": {
+          "A5": 2,
+          "m6": 4
+        },
+        "unique": [
+          "m6",
+          "A5"
+        ]
+      }
+    },
+    "blues": {
+      "1": {
+        "skip": 1,
+        "intervals": [
+          "m3",
+          "M2",
+          "m2",
+          "A1",
+          "m3",
+          "M2"
+        ],
+        "tally": {
+          "m3": 2,
+          "M2": 2,
+          "m2": 1,
+          "A1": 1
+        },
+        "unique": [
+          "m3",
+          "M2",
+          "m2",
+          "A1"
+        ]
+      },
+      "2": {
+        "skip": 2,
+        "intervals": [
+          "P4",
+          "m3",
+          "M2",
+          "M3",
+          "P4",
+          "P4"
+        ],
+        "tally": {
+          "P4": 3,
+          "m3": 1,
+          "M2": 1,
+          "M3": 1
+        },
+        "unique": [
+          "P4",
+          "m3",
+          "M2",
+          "M3"
+        ]
+      },
+      "3": {
+        "skip": 3,
+        "intervals": [
+          "d5",
+          "M3",
+          "P4",
+          "A4",
+          "m6",
+          "P5"
+        ],
+        "tally": {
+          "d5": 1,
+          "M3": 1,
+          "P4": 1,
+          "A4": 1,
+          "m6": 1,
+          "P5": 1
+        },
+        "unique": [
+          "d5",
+          "M3",
+          "P4",
+          "A4",
+          "m6",
+          "P5"
+        ]
+      },
+      "4": {
+        "skip": 4,
+        "intervals": [
+          "P5",
+          "P5",
+          "P5",
+          "M6",
+          "m7",
+          "m6"
+        ],
+        "tally": {
+          "P5": 3,
+          "M6": 1,
+          "m7": 1,
+          "m6": 1
+        },
+        "unique": [
+          "P5",
+          "M6",
+          "m7",
+          "m6"
+        ]
+      }
+    },
+    "prometheus": {
+      "1": {
+        "skip": 1,
+        "intervals": [
+          "M2",
+          "M2",
+          "M2",
+          "m3",
+          "m2",
+          "M2"
+        ],
+        "tally": {
+          "M2": 4,
+          "m3": 1,
+          "m2": 1
+        },
+        "unique": [
+          "M2",
+          "m3",
+          "m2"
+        ]
+      },
+      "2": {
+        "skip": 2,
+        "intervals": [
+          "M3",
+          "M3",
+          "P4",
+          "d4",
+          "m3",
+          "M3"
+        ],
+        "tally": {
+          "M3": 3,
+          "P4": 1,
+          "d4": 1,
+          "m3": 1
+        },
+        "unique": [
+          "M3",
+          "P4",
+          "d4",
+          "m3"
+        ]
+      },
+      "3": {
+        "skip": 3,
+        "intervals": [
+          "A4",
+          "P5",
+          "d5",
+          "d5",
+          "P4",
+          "A4"
+        ],
+        "tally": {
+          "A4": 2,
+          "P5": 1,
+          "d5": 2,
+          "P4": 1
+        },
+        "unique": [
+          "A4",
+          "d5",
+          "P5",
+          "P4"
+        ]
+      },
+      "4": {
+        "skip": 4,
+        "intervals": [
+          "M6",
+          "m6",
+          "m6",
+          "m6",
+          "P5",
+          "A5"
+        ],
+        "tally": {
+          "M6": 1,
+          "m6": 3,
+          "P5": 1,
+          "A5": 1
+        },
+        "unique": [
+          "m6",
+          "M6",
+          "P5",
+          "A5"
+        ]
+      }
+    },
+    "tritone": {
+      "1": {
+        "skip": 1,
+        "intervals": [
+          "m2",
+          "A2",
+          "M2",
+          "m2",
+          "m3",
+          "M2"
+        ],
+        "tally": {
+          "m2": 2,
+          "A2": 1,
+          "M2": 2,
+          "m3": 1
+        },
+        "unique": [
+          "m2",
+          "M2",
+          "A2",
+          "m3"
+        ]
+      },
+      "2": {
+        "skip": 2,
+        "intervals": [
+          "M3",
+          "A3",
+          "m3",
+          "d4",
+          "P4",
+          "m3"
+        ],
+        "tally": {
+          "M3": 1,
+          "A3": 1,
+          "m3": 2,
+          "d4": 1,
+          "P4": 1
+        },
+        "unique": [
+          "m3",
+          "M3",
+          "A3",
+          "d4",
+          "P4"
+        ]
+      },
+      "3": {
+        "skip": 3,
+        "intervals": [
+          "A4",
+          "A4",
+          "d5",
+          "d5",
+          "d5",
+          "A4"
+        ],
+        "tally": {
+          "A4": 3,
+          "d5": 3
+        },
+        "unique": [
+          "A4",
+          "d5"
+        ]
+      },
+      "4": {
+        "skip": 4,
+        "intervals": [
+          "P5",
+          "M6",
+          "m6",
+          "d6",
+          "M6",
+          "A5"
+        ],
+        "tally": {
+          "P5": 1,
+          "M6": 2,
+          "m6": 1,
+          "d6": 1,
+          "A5": 1
+        },
+        "unique": [
+          "M6",
+          "P5",
+          "m6",
+          "d6",
+          "A5"
+        ]
+      }
+    }
+  },
+  "chords": {
+    "major_no4": {
+      "3": [
+        {
+          "pcset": [
+            0,
+            4,
+            7
+          ],
+          "notes": [
+            "C",
+            "E",
+            "G"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "C"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "tertian",
+              "symbol": "C",
+              "notes": [
+                "C",
+                "E",
+                "G"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            4,
+            9
+          ],
+          "notes": [
+            "A",
+            "C",
+            "E"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Am"
+          ],
+          "spellings": [
+            {
+              "root": "A",
+              "family": "tertian",
+              "symbol": "Am",
+              "notes": [
+                "A",
+                "C",
+                "E"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            2,
+            7,
+            11
+          ],
+          "notes": [
+            "G",
+            "B",
+            "D"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "G"
+          ],
+          "spellings": [
+            {
+              "root": "G",
+              "family": "tertian",
+              "symbol": "G",
+              "notes": [
+                "G",
+                "B",
+                "D"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            4,
+            7,
+            11
+          ],
+          "notes": [
+            "E",
+            "G",
+            "B"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Em"
+          ],
+          "spellings": [
+            {
+              "root": "E",
+              "family": "tertian",
+              "symbol": "Em",
+              "notes": [
+                "E",
+                "G",
+                "B"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            2,
+            7
+          ],
+          "notes": [
+            "C",
+            "D",
+            "G"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "Csus2",
+            "Gsus4",
+            "Dquartal"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "sus",
+              "symbol": "Csus2",
+              "notes": [
+                "C",
+                "D",
+                "G"
+              ]
+            },
+            {
+              "root": "G",
+              "family": "sus",
+              "symbol": "Gsus4",
+              "notes": [
+                "G",
+                "C",
+                "D"
+              ]
+            },
+            {
+              "root": "D",
+              "family": "quartal",
+              "symbol": "Dquartal",
+              "notes": [
+                "D",
+                "G",
+                "C"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            2,
+            4,
+            9
+          ],
+          "notes": [
+            "D",
+            "E",
+            "A"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "Dsus2",
+            "Asus4",
+            "Equartal"
+          ],
+          "spellings": [
+            {
+              "root": "D",
+              "family": "sus",
+              "symbol": "Dsus2",
+              "notes": [
+                "D",
+                "E",
+                "A"
+              ]
+            },
+            {
+              "root": "A",
+              "family": "sus",
+              "symbol": "Asus4",
+              "notes": [
+                "A",
+                "D",
+                "E"
+              ]
+            },
+            {
+              "root": "E",
+              "family": "quartal",
+              "symbol": "Equartal",
+              "notes": [
+                "E",
+                "A",
+                "D"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            2,
+            7,
+            9
+          ],
+          "notes": [
+            "D",
+            "G",
+            "A"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "Dsus4",
+            "Gsus2",
+            "Aquartal"
+          ],
+          "spellings": [
+            {
+              "root": "D",
+              "family": "sus",
+              "symbol": "Dsus4",
+              "notes": [
+                "D",
+                "G",
+                "A"
+              ]
+            },
+            {
+              "root": "G",
+              "family": "sus",
+              "symbol": "Gsus2",
+              "notes": [
+                "G",
+                "A",
+                "D"
+              ]
+            },
+            {
+              "root": "A",
+              "family": "quartal",
+              "symbol": "Aquartal",
+              "notes": [
+                "A",
+                "D",
+                "G"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            4,
+            9,
+            11
+          ],
+          "notes": [
+            "E",
+            "A",
+            "B"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "Esus4",
+            "Asus2",
+            "Bquartal"
+          ],
+          "spellings": [
+            {
+              "root": "E",
+              "family": "sus",
+              "symbol": "Esus4",
+              "notes": [
+                "E",
+                "A",
+                "B"
+              ]
+            },
+            {
+              "root": "A",
+              "family": "sus",
+              "symbol": "Asus2",
+              "notes": [
+                "A",
+                "B",
+                "E"
+              ]
+            },
+            {
+              "root": "B",
+              "family": "quartal",
+              "symbol": "Bquartal",
+              "notes": [
+                "B",
+                "E",
+                "A"
+              ]
+            }
+          ]
+        }
+      ],
+      "4": [
+        {
+          "pcset": [
+            0,
+            4,
+            7,
+            9
+          ],
+          "notes": [
+            "C",
+            "E",
+            "G",
+            "A"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "C6",
+            "Am7"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "tertian",
+              "symbol": "C6",
+              "notes": [
+                "C",
+                "E",
+                "G",
+                "A"
+              ]
+            },
+            {
+              "root": "A",
+              "family": "tertian",
+              "symbol": "Am7",
+              "notes": [
+                "A",
+                "C",
+                "E",
+                "G"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            4,
+            7,
+            11
+          ],
+          "notes": [
+            "C",
+            "E",
+            "G",
+            "B"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Cmaj7"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "tertian",
+              "symbol": "Cmaj7",
+              "notes": [
+                "C",
+                "E",
+                "G",
+                "B"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            2,
+            4,
+            7,
+            11
+          ],
+          "notes": [
+            "E",
+            "G",
+            "B",
+            "D"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Em7",
+            "G6"
+          ],
+          "spellings": [
+            {
+              "root": "E",
+              "family": "tertian",
+              "symbol": "Em7",
+              "notes": [
+                "E",
+                "G",
+                "B",
+                "D"
+              ]
+            },
+            {
+              "root": "G",
+              "family": "tertian",
+              "symbol": "G6",
+              "notes": [
+                "G",
+                "B",
+                "D",
+                "E"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            2,
+            4,
+            9
+          ],
+          "notes": [
+            "D",
+            "E",
+            "A",
+            "C"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "D7sus2"
+          ],
+          "spellings": [
+            {
+              "root": "D",
+              "family": "sus",
+              "symbol": "D7sus2",
+              "notes": [
+                "D",
+                "E",
+                "A",
+                "C"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            2,
+            7,
+            9
+          ],
+          "notes": [
+            "D",
+            "G",
+            "A",
+            "C"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "D7sus4",
+            "Gquartal4"
+          ],
+          "spellings": [
+            {
+              "root": "D",
+              "family": "sus",
+              "symbol": "D7sus4",
+              "notes": [
+                "D",
+                "G",
+                "A",
+                "C"
+              ]
+            },
+            {
+              "root": "G",
+              "family": "quartal",
+              "symbol": "Gquartal4",
+              "notes": [
+                "G",
+                "A",
+                "C",
+                "D"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            2,
+            4,
+            7,
+            9
+          ],
+          "notes": [
+            "A",
+            "D",
+            "E",
+            "G"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "A7sus4",
+            "Dquartal4"
+          ],
+          "spellings": [
+            {
+              "root": "A",
+              "family": "sus",
+              "symbol": "A7sus4",
+              "notes": [
+                "A",
+                "D",
+                "E",
+                "G"
+              ]
+            },
+            {
+              "root": "D",
+              "family": "quartal",
+              "symbol": "Dquartal4",
+              "notes": [
+                "D",
+                "E",
+                "G",
+                "A"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            2,
+            4,
+            9,
+            11
+          ],
+          "notes": [
+            "E",
+            "A",
+            "B",
+            "D"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "E7sus4",
+            "Aquartal4"
+          ],
+          "spellings": [
+            {
+              "root": "E",
+              "family": "sus",
+              "symbol": "E7sus4",
+              "notes": [
+                "E",
+                "A",
+                "B",
+                "D"
+              ]
+            },
+            {
+              "root": "A",
+              "family": "quartal",
+              "symbol": "Aquartal4",
+              "notes": [
+                "A",
+                "B",
+                "D",
+                "E"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            4,
+            7,
+            9,
+            11
+          ],
+          "notes": [
+            "A",
+            "B",
+            "E",
+            "G"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "A7sus2"
+          ],
+          "spellings": [
+            {
+              "root": "A",
+              "family": "sus",
+              "symbol": "A7sus2",
+              "notes": [
+                "A",
+                "B",
+                "E",
+                "G"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "major_no7": {
+      "3": [
+        {
+          "pcset": [
+            0,
+            4,
+            7
+          ],
+          "notes": [
+            "C",
+            "E",
+            "G"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "C"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "tertian",
+              "symbol": "C",
+              "notes": [
+                "C",
+                "E",
+                "G"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            4,
+            9
+          ],
+          "notes": [
+            "A",
+            "C",
+            "E"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Am"
+          ],
+          "spellings": [
+            {
+              "root": "A",
+              "family": "tertian",
+              "symbol": "Am",
+              "notes": [
+                "A",
+                "C",
+                "E"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            5,
+            9
+          ],
+          "notes": [
+            "F",
+            "A",
+            "C"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "F"
+          ],
+          "spellings": [
+            {
+              "root": "F",
+              "family": "tertian",
+              "symbol": "F",
+              "notes": [
+                "F",
+                "A",
+                "C"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            2,
+            5,
+            9
+          ],
+          "notes": [
+            "D",
+            "F",
+            "A"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Dm"
+          ],
+          "spellings": [
+            {
+              "root": "D",
+              "family": "tertian",
+              "symbol": "Dm",
+              "notes": [
+                "D",
+                "F",
+                "A"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            2,
+            7
+          ],
+          "notes": [
+            "C",
+            "D",
+            "G"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "Csus2",
+            "Gsus4",
+            "Dquartal"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "sus",
+              "symbol": "Csus2",
+              "notes": [
+                "C",
+                "D",
+                "G"
+              ]
+            },
+            {
+              "root": "G",
+              "family": "sus",
+              "symbol": "Gsus4",
+              "notes": [
+                "G",
+                "C",
+                "D"
+              ]
+            },
+            {
+              "root": "D",
+              "family": "quartal",
+              "symbol": "Dquartal",
+              "notes": [
+                "D",
+                "G",
+                "C"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            5,
+            7
+          ],
+          "notes": [
+            "C",
+            "F",
+            "G"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "Csus4",
+            "Fsus2",
+            "Gquartal"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "sus",
+              "symbol": "Csus4",
+              "notes": [
+                "C",
+                "F",
+                "G"
+              ]
+            },
+            {
+              "root": "F",
+              "family": "sus",
+              "symbol": "Fsus2",
+              "notes": [
+                "F",
+                "G",
+                "C"
+              ]
+            },
+            {
+              "root": "G",
+              "family": "quartal",
+              "symbol": "Gquartal",
+              "notes": [
+                "G",
+                "C",
+                "F"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            2,
+            4,
+            9
+          ],
+          "notes": [
+            "D",
+            "E",
+            "A"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "Dsus2",
+            "Asus4",
+            "Equartal"
+          ],
+          "spellings": [
+            {
+              "root": "D",
+              "family": "sus",
+              "symbol": "Dsus2",
+              "notes": [
+                "D",
+                "E",
+                "A"
+              ]
+            },
+            {
+              "root": "A",
+              "family": "sus",
+              "symbol": "Asus4",
+              "notes": [
+                "A",
+                "D",
+                "E"
+              ]
+            },
+            {
+              "root": "E",
+              "family": "quartal",
+              "symbol": "Equartal",
+              "notes": [
+                "E",
+                "A",
+                "D"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            2,
+            7,
+            9
+          ],
+          "notes": [
+            "D",
+            "G",
+            "A"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "Dsus4",
+            "Gsus2",
+            "Aquartal"
+          ],
+          "spellings": [
+            {
+              "root": "D",
+              "family": "sus",
+              "symbol": "Dsus4",
+              "notes": [
+                "D",
+                "G",
+                "A"
+              ]
+            },
+            {
+              "root": "G",
+              "family": "sus",
+              "symbol": "Gsus2",
+              "notes": [
+                "G",
+                "A",
+                "D"
+              ]
+            },
+            {
+              "root": "A",
+              "family": "quartal",
+              "symbol": "Aquartal",
+              "notes": [
+                "A",
+                "D",
+                "G"
+              ]
+            }
+          ]
+        }
+      ],
+      "4": [
+        {
+          "pcset": [
+            0,
+            2,
+            5,
+            9
+          ],
+          "notes": [
+            "D",
+            "F",
+            "A",
+            "C"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Dm7",
+            "F6"
+          ],
+          "spellings": [
+            {
+              "root": "D",
+              "family": "tertian",
+              "symbol": "Dm7",
+              "notes": [
+                "D",
+                "F",
+                "A",
+                "C"
+              ]
+            },
+            {
+              "root": "F",
+              "family": "tertian",
+              "symbol": "F6",
+              "notes": [
+                "F",
+                "A",
+                "C",
+                "D"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            4,
+            5,
+            9
+          ],
+          "notes": [
+            "F",
+            "A",
+            "C",
+            "E"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Fmaj7"
+          ],
+          "spellings": [
+            {
+              "root": "F",
+              "family": "tertian",
+              "symbol": "Fmaj7",
+              "notes": [
+                "F",
+                "A",
+                "C",
+                "E"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            4,
+            7,
+            9
+          ],
+          "notes": [
+            "C",
+            "E",
+            "G",
+            "A"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "C6",
+            "Am7"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "tertian",
+              "symbol": "C6",
+              "notes": [
+                "C",
+                "E",
+                "G",
+                "A"
+              ]
+            },
+            {
+              "root": "A",
+              "family": "tertian",
+              "symbol": "Am7",
+              "notes": [
+                "A",
+                "C",
+                "E",
+                "G"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            2,
+            4,
+            9
+          ],
+          "notes": [
+            "D",
+            "E",
+            "A",
+            "C"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "D7sus2"
+          ],
+          "spellings": [
+            {
+              "root": "D",
+              "family": "sus",
+              "symbol": "D7sus2",
+              "notes": [
+                "D",
+                "E",
+                "A",
+                "C"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            2,
+            5,
+            7
+          ],
+          "notes": [
+            "G",
+            "C",
+            "D",
+            "F"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "G7sus4",
+            "Cquartal4"
+          ],
+          "spellings": [
+            {
+              "root": "G",
+              "family": "sus",
+              "symbol": "G7sus4",
+              "notes": [
+                "G",
+                "C",
+                "D",
+                "F"
+              ]
+            },
+            {
+              "root": "C",
+              "family": "quartal",
+              "symbol": "Cquartal4",
+              "notes": [
+                "C",
+                "D",
+                "F",
+                "G"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            2,
+            7,
+            9
+          ],
+          "notes": [
+            "D",
+            "G",
+            "A",
+            "C"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "D7sus4",
+            "Gquartal4"
+          ],
+          "spellings": [
+            {
+              "root": "D",
+              "family": "sus",
+              "symbol": "D7sus4",
+              "notes": [
+                "D",
+                "G",
+                "A",
+                "C"
+              ]
+            },
+            {
+              "root": "G",
+              "family": "quartal",
+              "symbol": "Gquartal4",
+              "notes": [
+                "G",
+                "A",
+                "C",
+                "D"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            2,
+            4,
+            7,
+            9
+          ],
+          "notes": [
+            "A",
+            "D",
+            "E",
+            "G"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "A7sus4",
+            "Dquartal4"
+          ],
+          "spellings": [
+            {
+              "root": "A",
+              "family": "sus",
+              "symbol": "A7sus4",
+              "notes": [
+                "A",
+                "D",
+                "E",
+                "G"
+              ]
+            },
+            {
+              "root": "D",
+              "family": "quartal",
+              "symbol": "Dquartal4",
+              "notes": [
+                "D",
+                "E",
+                "G",
+                "A"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            2,
+            5,
+            7,
+            9
+          ],
+          "notes": [
+            "G",
+            "A",
+            "D",
+            "F"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "G7sus2"
+          ],
+          "spellings": [
+            {
+              "root": "G",
+              "family": "sus",
+              "symbol": "G7sus2",
+              "notes": [
+                "G",
+                "A",
+                "D",
+                "F"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "minor_nob6": {
+      "3": [
+        {
+          "pcset": [
+            0,
+            3,
+            7
+          ],
+          "notes": [
+            "C",
+            "Eb",
+            "G"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Cm"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "tertian",
+              "symbol": "Cm",
+              "notes": [
+                "C",
+                "Eb",
+                "G"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            2,
+            5,
+            10
+          ],
+          "notes": [
+            "Bb",
+            "D",
+            "F"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Bb"
+          ],
+          "spellings": [
+            {
+              "root": "Bb",
+              "family": "tertian",
+              "symbol": "Bb",
+              "notes": [
+                "Bb",
+                "D",
+                "F"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            2,
+            7,
+            10
+          ],
+          "notes": [
+            "G",
+            "Bb",
+            "D"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Gm"
+          ],
+          "spellings": [
+            {
+              "root": "G",
+              "family": "tertian",
+              "symbol": "Gm",
+              "notes": [
+                "G",
+                "Bb",
+                "D"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            3,
+            7,
+            10
+          ],
+          "notes": [
+            "Eb",
+            "G",
+            "Bb"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Eb"
+          ],
+          "spellings": [
+            {
+              "root": "Eb",
+              "family": "tertian",
+              "symbol": "Eb",
+              "notes": [
+                "Eb",
+                "G",
+                "Bb"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            2,
+            7
+          ],
+          "notes": [
+            "C",
+            "D",
+            "G"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "Csus2",
+            "Gsus4",
+            "Dquartal"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "sus",
+              "symbol": "Csus2",
+              "notes": [
+                "C",
+                "D",
+                "G"
+              ]
+            },
+            {
+              "root": "G",
+              "family": "sus",
+              "symbol": "Gsus4",
+              "notes": [
+                "G",
+                "C",
+                "D"
+              ]
+            },
+            {
+              "root": "D",
+              "family": "quartal",
+              "symbol": "Dquartal",
+              "notes": [
+                "D",
+                "G",
+                "C"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            5,
+            7
+          ],
+          "notes": [
+            "C",
+            "F",
+            "G"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "Csus4",
+            "Fsus2",
+            "Gquartal"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "sus",
+              "symbol": "Csus4",
+              "notes": [
+                "C",
+                "F",
+                "G"
+              ]
+            },
+            {
+              "root": "F",
+              "family": "sus",
+              "symbol": "Fsus2",
+              "notes": [
+                "F",
+                "G",
+                "C"
+              ]
+            },
+            {
+              "root": "G",
+              "family": "quartal",
+              "symbol": "Gquartal",
+              "notes": [
+                "G",
+                "C",
+                "F"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            5,
+            10
+          ],
+          "notes": [
+            "F",
+            "Bb",
+            "C"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "Fsus4",
+            "Bbsus2",
+            "Cquartal"
+          ],
+          "spellings": [
+            {
+              "root": "F",
+              "family": "sus",
+              "symbol": "Fsus4",
+              "notes": [
+                "F",
+                "Bb",
+                "C"
+              ]
+            },
+            {
+              "root": "Bb",
+              "family": "sus",
+              "symbol": "Bbsus2",
+              "notes": [
+                "Bb",
+                "C",
+                "F"
+              ]
+            },
+            {
+              "root": "C",
+              "family": "quartal",
+              "symbol": "Cquartal",
+              "notes": [
+                "C",
+                "F",
+                "Bb"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            3,
+            5,
+            10
+          ],
+          "notes": [
+            "Eb",
+            "F",
+            "Bb"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "Ebsus2",
+            "Bbsus4",
+            "Fquartal"
+          ],
+          "spellings": [
+            {
+              "root": "Eb",
+              "family": "sus",
+              "symbol": "Ebsus2",
+              "notes": [
+                "Eb",
+                "F",
+                "Bb"
+              ]
+            },
+            {
+              "root": "Bb",
+              "family": "sus",
+              "symbol": "Bbsus4",
+              "notes": [
+                "Bb",
+                "Eb",
+                "F"
+              ]
+            },
+            {
+              "root": "F",
+              "family": "quartal",
+              "symbol": "Fquartal",
+              "notes": [
+                "F",
+                "Bb",
+                "Eb"
+              ]
+            }
+          ]
+        }
+      ],
+      "4": [
+        {
+          "pcset": [
+            0,
+            3,
+            7,
+            10
+          ],
+          "notes": [
+            "C",
+            "Eb",
+            "G",
+            "Bb"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Cm7",
+            "Eb6"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "tertian",
+              "symbol": "Cm7",
+              "notes": [
+                "C",
+                "Eb",
+                "G",
+                "Bb"
+              ]
+            },
+            {
+              "root": "Eb",
+              "family": "tertian",
+              "symbol": "Eb6",
+              "notes": [
+                "Eb",
+                "G",
+                "Bb",
+                "C"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            2,
+            3,
+            7,
+            10
+          ],
+          "notes": [
+            "Eb",
+            "G",
+            "Bb",
+            "D"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Ebmaj7"
+          ],
+          "spellings": [
+            {
+              "root": "Eb",
+              "family": "tertian",
+              "symbol": "Ebmaj7",
+              "notes": [
+                "Eb",
+                "G",
+                "Bb",
+                "D"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            2,
+            5,
+            7,
+            10
+          ],
+          "notes": [
+            "G",
+            "Bb",
+            "D",
+            "F"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Gm7",
+            "Bb6"
+          ],
+          "spellings": [
+            {
+              "root": "G",
+              "family": "tertian",
+              "symbol": "Gm7",
+              "notes": [
+                "G",
+                "Bb",
+                "D",
+                "F"
+              ]
+            },
+            {
+              "root": "Bb",
+              "family": "tertian",
+              "symbol": "Bb6",
+              "notes": [
+                "Bb",
+                "D",
+                "F",
+                "G"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            2,
+            5,
+            7
+          ],
+          "notes": [
+            "G",
+            "C",
+            "D",
+            "F"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "G7sus4",
+            "Cquartal4"
+          ],
+          "spellings": [
+            {
+              "root": "G",
+              "family": "sus",
+              "symbol": "G7sus4",
+              "notes": [
+                "G",
+                "C",
+                "D",
+                "F"
+              ]
+            },
+            {
+              "root": "C",
+              "family": "quartal",
+              "symbol": "Cquartal4",
+              "notes": [
+                "C",
+                "D",
+                "F",
+                "G"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            2,
+            7,
+            10
+          ],
+          "notes": [
+            "C",
+            "D",
+            "G",
+            "Bb"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "C7sus2"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "sus",
+              "symbol": "C7sus2",
+              "notes": [
+                "C",
+                "D",
+                "G",
+                "Bb"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            3,
+            5,
+            7
+          ],
+          "notes": [
+            "F",
+            "G",
+            "C",
+            "Eb"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "F7sus2"
+          ],
+          "spellings": [
+            {
+              "root": "F",
+              "family": "sus",
+              "symbol": "F7sus2",
+              "notes": [
+                "F",
+                "G",
+                "C",
+                "Eb"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            3,
+            5,
+            10
+          ],
+          "notes": [
+            "F",
+            "Bb",
+            "C",
+            "Eb"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "F7sus4",
+            "Bbquartal4"
+          ],
+          "spellings": [
+            {
+              "root": "F",
+              "family": "sus",
+              "symbol": "F7sus4",
+              "notes": [
+                "F",
+                "Bb",
+                "C",
+                "Eb"
+              ]
+            },
+            {
+              "root": "Bb",
+              "family": "quartal",
+              "symbol": "Bbquartal4",
+              "notes": [
+                "Bb",
+                "C",
+                "Eb",
+                "F"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            5,
+            7,
+            10
+          ],
+          "notes": [
+            "C",
+            "F",
+            "G",
+            "Bb"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "C7sus4",
+            "Fquartal4"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "sus",
+              "symbol": "C7sus4",
+              "notes": [
+                "C",
+                "F",
+                "G",
+                "Bb"
+              ]
+            },
+            {
+              "root": "F",
+              "family": "quartal",
+              "symbol": "Fquartal4",
+              "notes": [
+                "F",
+                "G",
+                "Bb",
+                "C"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "minor_no2": {
+      "3": [
+        {
+          "pcset": [
+            0,
+            3,
+            7
+          ],
+          "notes": [
+            "C",
+            "Eb",
+            "G"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Cm"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "tertian",
+              "symbol": "Cm",
+              "notes": [
+                "C",
+                "Eb",
+                "G"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            3,
+            8
+          ],
+          "notes": [
+            "Ab",
+            "C",
+            "Eb"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Ab"
+          ],
+          "spellings": [
+            {
+              "root": "Ab",
+              "family": "tertian",
+              "symbol": "Ab",
+              "notes": [
+                "Ab",
+                "C",
+                "Eb"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            5,
+            8
+          ],
+          "notes": [
+            "F",
+            "Ab",
+            "C"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Fm"
+          ],
+          "spellings": [
+            {
+              "root": "F",
+              "family": "tertian",
+              "symbol": "Fm",
+              "notes": [
+                "F",
+                "Ab",
+                "C"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            3,
+            7,
+            10
+          ],
+          "notes": [
+            "Eb",
+            "G",
+            "Bb"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Eb"
+          ],
+          "spellings": [
+            {
+              "root": "Eb",
+              "family": "tertian",
+              "symbol": "Eb",
+              "notes": [
+                "Eb",
+                "G",
+                "Bb"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            5,
+            7
+          ],
+          "notes": [
+            "C",
+            "F",
+            "G"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "Csus4",
+            "Fsus2",
+            "Gquartal"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "sus",
+              "symbol": "Csus4",
+              "notes": [
+                "C",
+                "F",
+                "G"
+              ]
+            },
+            {
+              "root": "F",
+              "family": "sus",
+              "symbol": "Fsus2",
+              "notes": [
+                "F",
+                "G",
+                "C"
+              ]
+            },
+            {
+              "root": "G",
+              "family": "quartal",
+              "symbol": "Gquartal",
+              "notes": [
+                "G",
+                "C",
+                "F"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            5,
+            10
+          ],
+          "notes": [
+            "F",
+            "Bb",
+            "C"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "Fsus4",
+            "Bbsus2",
+            "Cquartal"
+          ],
+          "spellings": [
+            {
+              "root": "F",
+              "family": "sus",
+              "symbol": "Fsus4",
+              "notes": [
+                "F",
+                "Bb",
+                "C"
+              ]
+            },
+            {
+              "root": "Bb",
+              "family": "sus",
+              "symbol": "Bbsus2",
+              "notes": [
+                "Bb",
+                "C",
+                "F"
+              ]
+            },
+            {
+              "root": "C",
+              "family": "quartal",
+              "symbol": "Cquartal",
+              "notes": [
+                "C",
+                "F",
+                "Bb"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            3,
+            5,
+            10
+          ],
+          "notes": [
+            "Eb",
+            "F",
+            "Bb"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "Ebsus2",
+            "Bbsus4",
+            "Fquartal"
+          ],
+          "spellings": [
+            {
+              "root": "Eb",
+              "family": "sus",
+              "symbol": "Ebsus2",
+              "notes": [
+                "Eb",
+                "F",
+                "Bb"
+              ]
+            },
+            {
+              "root": "Bb",
+              "family": "sus",
+              "symbol": "Bbsus4",
+              "notes": [
+                "Bb",
+                "Eb",
+                "F"
+              ]
+            },
+            {
+              "root": "F",
+              "family": "quartal",
+              "symbol": "Fquartal",
+              "notes": [
+                "F",
+                "Bb",
+                "Eb"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            3,
+            8,
+            10
+          ],
+          "notes": [
+            "Eb",
+            "Ab",
+            "Bb"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "Ebsus4",
+            "Absus2",
+            "Bbquartal"
+          ],
+          "spellings": [
+            {
+              "root": "Eb",
+              "family": "sus",
+              "symbol": "Ebsus4",
+              "notes": [
+                "Eb",
+                "Ab",
+                "Bb"
+              ]
+            },
+            {
+              "root": "Ab",
+              "family": "sus",
+              "symbol": "Absus2",
+              "notes": [
+                "Ab",
+                "Bb",
+                "Eb"
+              ]
+            },
+            {
+              "root": "Bb",
+              "family": "quartal",
+              "symbol": "Bbquartal",
+              "notes": [
+                "Bb",
+                "Eb",
+                "Ab"
+              ]
+            }
+          ]
+        }
+      ],
+      "4": [
+        {
+          "pcset": [
+            0,
+            3,
+            5,
+            8
+          ],
+          "notes": [
+            "F",
+            "Ab",
+            "C",
+            "Eb"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Fm7",
+            "Ab6"
+          ],
+          "spellings": [
+            {
+              "root": "F",
+              "family": "tertian",
+              "symbol": "Fm7",
+              "notes": [
+                "F",
+                "Ab",
+                "C",
+                "Eb"
+              ]
+            },
+            {
+              "root": "Ab",
+              "family": "tertian",
+              "symbol": "Ab6",
+              "notes": [
+                "Ab",
+                "C",
+                "Eb",
+                "F"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            3,
+            7,
+            8
+          ],
+          "notes": [
+            "Ab",
+            "C",
+            "Eb",
+            "G"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Abmaj7"
+          ],
+          "spellings": [
+            {
+              "root": "Ab",
+              "family": "tertian",
+              "symbol": "Abmaj7",
+              "notes": [
+                "Ab",
+                "C",
+                "Eb",
+                "G"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            3,
+            7,
+            10
+          ],
+          "notes": [
+            "C",
+            "Eb",
+            "G",
+            "Bb"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Cm7",
+            "Eb6"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "tertian",
+              "symbol": "Cm7",
+              "notes": [
+                "C",
+                "Eb",
+                "G",
+                "Bb"
+              ]
+            },
+            {
+              "root": "Eb",
+              "family": "tertian",
+              "symbol": "Eb6",
+              "notes": [
+                "Eb",
+                "G",
+                "Bb",
+                "C"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            3,
+            5,
+            7
+          ],
+          "notes": [
+            "F",
+            "G",
+            "C",
+            "Eb"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "F7sus2"
+          ],
+          "spellings": [
+            {
+              "root": "F",
+              "family": "sus",
+              "symbol": "F7sus2",
+              "notes": [
+                "F",
+                "G",
+                "C",
+                "Eb"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            3,
+            5,
+            10
+          ],
+          "notes": [
+            "F",
+            "Bb",
+            "C",
+            "Eb"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "F7sus4",
+            "Bbquartal4"
+          ],
+          "spellings": [
+            {
+              "root": "F",
+              "family": "sus",
+              "symbol": "F7sus4",
+              "notes": [
+                "F",
+                "Bb",
+                "C",
+                "Eb"
+              ]
+            },
+            {
+              "root": "Bb",
+              "family": "quartal",
+              "symbol": "Bbquartal4",
+              "notes": [
+                "Bb",
+                "C",
+                "Eb",
+                "F"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            5,
+            7,
+            10
+          ],
+          "notes": [
+            "C",
+            "F",
+            "G",
+            "Bb"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "C7sus4",
+            "Fquartal4"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "sus",
+              "symbol": "C7sus4",
+              "notes": [
+                "C",
+                "F",
+                "G",
+                "Bb"
+              ]
+            },
+            {
+              "root": "F",
+              "family": "quartal",
+              "symbol": "Fquartal4",
+              "notes": [
+                "F",
+                "G",
+                "Bb",
+                "C"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            5,
+            8,
+            10
+          ],
+          "notes": [
+            "Bb",
+            "C",
+            "F",
+            "Ab"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "Bb7sus2"
+          ],
+          "spellings": [
+            {
+              "root": "Bb",
+              "family": "sus",
+              "symbol": "Bb7sus2",
+              "notes": [
+                "Bb",
+                "C",
+                "F",
+                "Ab"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            3,
+            5,
+            8,
+            10
+          ],
+          "notes": [
+            "Bb",
+            "Eb",
+            "F",
+            "Ab"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "Bb7sus4",
+            "Ebquartal4"
+          ],
+          "spellings": [
+            {
+              "root": "Bb",
+              "family": "sus",
+              "symbol": "Bb7sus4",
+              "notes": [
+                "Bb",
+                "Eb",
+                "F",
+                "Ab"
+              ]
+            },
+            {
+              "root": "Eb",
+              "family": "quartal",
+              "symbol": "Ebquartal4",
+              "notes": [
+                "Eb",
+                "F",
+                "Ab",
+                "Bb"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "dorian_no6": {
+      "3": [
+        {
+          "pcset": [
+            0,
+            3,
+            7
+          ],
+          "notes": [
+            "C",
+            "Eb",
+            "G"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Cm"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "tertian",
+              "symbol": "Cm",
+              "notes": [
+                "C",
+                "Eb",
+                "G"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            2,
+            5,
+            10
+          ],
+          "notes": [
+            "Bb",
+            "D",
+            "F"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Bb"
+          ],
+          "spellings": [
+            {
+              "root": "Bb",
+              "family": "tertian",
+              "symbol": "Bb",
+              "notes": [
+                "Bb",
+                "D",
+                "F"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            2,
+            7,
+            10
+          ],
+          "notes": [
+            "G",
+            "Bb",
+            "D"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Gm"
+          ],
+          "spellings": [
+            {
+              "root": "G",
+              "family": "tertian",
+              "symbol": "Gm",
+              "notes": [
+                "G",
+                "Bb",
+                "D"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            3,
+            7,
+            10
+          ],
+          "notes": [
+            "Eb",
+            "G",
+            "Bb"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Eb"
+          ],
+          "spellings": [
+            {
+              "root": "Eb",
+              "family": "tertian",
+              "symbol": "Eb",
+              "notes": [
+                "Eb",
+                "G",
+                "Bb"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            2,
+            7
+          ],
+          "notes": [
+            "C",
+            "D",
+            "G"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "Csus2",
+            "Gsus4",
+            "Dquartal"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "sus",
+              "symbol": "Csus2",
+              "notes": [
+                "C",
+                "D",
+                "G"
+              ]
+            },
+            {
+              "root": "G",
+              "family": "sus",
+              "symbol": "Gsus4",
+              "notes": [
+                "G",
+                "C",
+                "D"
+              ]
+            },
+            {
+              "root": "D",
+              "family": "quartal",
+              "symbol": "Dquartal",
+              "notes": [
+                "D",
+                "G",
+                "C"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            5,
+            7
+          ],
+          "notes": [
+            "C",
+            "F",
+            "G"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "Csus4",
+            "Fsus2",
+            "Gquartal"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "sus",
+              "symbol": "Csus4",
+              "notes": [
+                "C",
+                "F",
+                "G"
+              ]
+            },
+            {
+              "root": "F",
+              "family": "sus",
+              "symbol": "Fsus2",
+              "notes": [
+                "F",
+                "G",
+                "C"
+              ]
+            },
+            {
+              "root": "G",
+              "family": "quartal",
+              "symbol": "Gquartal",
+              "notes": [
+                "G",
+                "C",
+                "F"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            5,
+            10
+          ],
+          "notes": [
+            "F",
+            "Bb",
+            "C"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "Fsus4",
+            "Bbsus2",
+            "Cquartal"
+          ],
+          "spellings": [
+            {
+              "root": "F",
+              "family": "sus",
+              "symbol": "Fsus4",
+              "notes": [
+                "F",
+                "Bb",
+                "C"
+              ]
+            },
+            {
+              "root": "Bb",
+              "family": "sus",
+              "symbol": "Bbsus2",
+              "notes": [
+                "Bb",
+                "C",
+                "F"
+              ]
+            },
+            {
+              "root": "C",
+              "family": "quartal",
+              "symbol": "Cquartal",
+              "notes": [
+                "C",
+                "F",
+                "Bb"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            3,
+            5,
+            10
+          ],
+          "notes": [
+            "Eb",
+            "F",
+            "Bb"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "Ebsus2",
+            "Bbsus4",
+            "Fquartal"
+          ],
+          "spellings": [
+            {
+              "root": "Eb",
+              "family": "sus",
+              "symbol": "Ebsus2",
+              "notes": [
+                "Eb",
+                "F",
+                "Bb"
+              ]
+            },
+            {
+              "root": "Bb",
+              "family": "sus",
+              "symbol": "Bbsus4",
+              "notes": [
+                "Bb",
+                "Eb",
+                "F"
+              ]
+            },
+            {
+              "root": "F",
+              "family": "quartal",
+              "symbol": "Fquartal",
+              "notes": [
+                "F",
+                "Bb",
+                "Eb"
+              ]
+            }
+          ]
+        }
+      ],
+      "4": [
+        {
+          "pcset": [
+            0,
+            3,
+            7,
+            10
+          ],
+          "notes": [
+            "C",
+            "Eb",
+            "G",
+            "Bb"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Cm7",
+            "Eb6"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "tertian",
+              "symbol": "Cm7",
+              "notes": [
+                "C",
+                "Eb",
+                "G",
+                "Bb"
+              ]
+            },
+            {
+              "root": "Eb",
+              "family": "tertian",
+              "symbol": "Eb6",
+              "notes": [
+                "Eb",
+                "G",
+                "Bb",
+                "C"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            2,
+            3,
+            7,
+            10
+          ],
+          "notes": [
+            "Eb",
+            "G",
+            "Bb",
+            "D"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Ebmaj7"
+          ],
+          "spellings": [
+            {
+              "root": "Eb",
+              "family": "tertian",
+              "symbol": "Ebmaj7",
+              "notes": [
+                "Eb",
+                "G",
+                "Bb",
+                "D"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            2,
+            5,
+            7,
+            10
+          ],
+          "notes": [
+            "G",
+            "Bb",
+            "D",
+            "F"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Gm7",
+            "Bb6"
+          ],
+          "spellings": [
+            {
+              "root": "G",
+              "family": "tertian",
+              "symbol": "Gm7",
+              "notes": [
+                "G",
+                "Bb",
+                "D",
+                "F"
+              ]
+            },
+            {
+              "root": "Bb",
+              "family": "tertian",
+              "symbol": "Bb6",
+              "notes": [
+                "Bb",
+                "D",
+                "F",
+                "G"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            2,
+            5,
+            7
+          ],
+          "notes": [
+            "G",
+            "C",
+            "D",
+            "F"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "G7sus4",
+            "Cquartal4"
+          ],
+          "spellings": [
+            {
+              "root": "G",
+              "family": "sus",
+              "symbol": "G7sus4",
+              "notes": [
+                "G",
+                "C",
+                "D",
+                "F"
+              ]
+            },
+            {
+              "root": "C",
+              "family": "quartal",
+              "symbol": "Cquartal4",
+              "notes": [
+                "C",
+                "D",
+                "F",
+                "G"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            2,
+            7,
+            10
+          ],
+          "notes": [
+            "C",
+            "D",
+            "G",
+            "Bb"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "C7sus2"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "sus",
+              "symbol": "C7sus2",
+              "notes": [
+                "C",
+                "D",
+                "G",
+                "Bb"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            3,
+            5,
+            7
+          ],
+          "notes": [
+            "F",
+            "G",
+            "C",
+            "Eb"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "F7sus2"
+          ],
+          "spellings": [
+            {
+              "root": "F",
+              "family": "sus",
+              "symbol": "F7sus2",
+              "notes": [
+                "F",
+                "G",
+                "C",
+                "Eb"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            3,
+            5,
+            10
+          ],
+          "notes": [
+            "F",
+            "Bb",
+            "C",
+            "Eb"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "F7sus4",
+            "Bbquartal4"
+          ],
+          "spellings": [
+            {
+              "root": "F",
+              "family": "sus",
+              "symbol": "F7sus4",
+              "notes": [
+                "F",
+                "Bb",
+                "C",
+                "Eb"
+              ]
+            },
+            {
+              "root": "Bb",
+              "family": "quartal",
+              "symbol": "Bbquartal4",
+              "notes": [
+                "Bb",
+                "C",
+                "Eb",
+                "F"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            5,
+            7,
+            10
+          ],
+          "notes": [
+            "C",
+            "F",
+            "G",
+            "Bb"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "C7sus4",
+            "Fquartal4"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "sus",
+              "symbol": "C7sus4",
+              "notes": [
+                "C",
+                "F",
+                "G",
+                "Bb"
+              ]
+            },
+            {
+              "root": "F",
+              "family": "quartal",
+              "symbol": "Fquartal4",
+              "notes": [
+                "F",
+                "G",
+                "Bb",
+                "C"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "mixolydian_no4": {
+      "3": [
+        {
+          "pcset": [
+            0,
+            4,
+            7
+          ],
+          "notes": [
+            "C",
+            "E",
+            "G"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "C"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "tertian",
+              "symbol": "C",
+              "notes": [
+                "C",
+                "E",
+                "G"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            4,
+            9
+          ],
+          "notes": [
+            "A",
+            "C",
+            "E"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Am"
+          ],
+          "spellings": [
+            {
+              "root": "A",
+              "family": "tertian",
+              "symbol": "Am",
+              "notes": [
+                "A",
+                "C",
+                "E"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            2,
+            7,
+            10
+          ],
+          "notes": [
+            "G",
+            "Bb",
+            "D"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Gm"
+          ],
+          "spellings": [
+            {
+              "root": "G",
+              "family": "tertian",
+              "symbol": "Gm",
+              "notes": [
+                "G",
+                "Bb",
+                "D"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            4,
+            7,
+            10
+          ],
+          "notes": [
+            "E",
+            "G",
+            "Bb"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Edim"
+          ],
+          "spellings": [
+            {
+              "root": "E",
+              "family": "tertian",
+              "symbol": "Edim",
+              "notes": [
+                "E",
+                "G",
+                "Bb"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            2,
+            7
+          ],
+          "notes": [
+            "C",
+            "D",
+            "G"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "Csus2",
+            "Gsus4",
+            "Dquartal"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "sus",
+              "symbol": "Csus2",
+              "notes": [
+                "C",
+                "D",
+                "G"
+              ]
+            },
+            {
+              "root": "G",
+              "family": "sus",
+              "symbol": "Gsus4",
+              "notes": [
+                "G",
+                "C",
+                "D"
+              ]
+            },
+            {
+              "root": "D",
+              "family": "quartal",
+              "symbol": "Dquartal",
+              "notes": [
+                "D",
+                "G",
+                "C"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            2,
+            4,
+            9
+          ],
+          "notes": [
+            "D",
+            "E",
+            "A"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "Dsus2",
+            "Asus4",
+            "Equartal"
+          ],
+          "spellings": [
+            {
+              "root": "D",
+              "family": "sus",
+              "symbol": "Dsus2",
+              "notes": [
+                "D",
+                "E",
+                "A"
+              ]
+            },
+            {
+              "root": "A",
+              "family": "sus",
+              "symbol": "Asus4",
+              "notes": [
+                "A",
+                "D",
+                "E"
+              ]
+            },
+            {
+              "root": "E",
+              "family": "quartal",
+              "symbol": "Equartal",
+              "notes": [
+                "E",
+                "A",
+                "D"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            2,
+            7,
+            9
+          ],
+          "notes": [
+            "D",
+            "G",
+            "A"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "Dsus4",
+            "Gsus2",
+            "Aquartal"
+          ],
+          "spellings": [
+            {
+              "root": "D",
+              "family": "sus",
+              "symbol": "Dsus4",
+              "notes": [
+                "D",
+                "G",
+                "A"
+              ]
+            },
+            {
+              "root": "G",
+              "family": "sus",
+              "symbol": "Gsus2",
+              "notes": [
+                "G",
+                "A",
+                "D"
+              ]
+            },
+            {
+              "root": "A",
+              "family": "quartal",
+              "symbol": "Aquartal",
+              "notes": [
+                "A",
+                "D",
+                "G"
+              ]
+            }
+          ]
+        }
+      ],
+      "4": [
+        {
+          "pcset": [
+            0,
+            4,
+            7,
+            9
+          ],
+          "notes": [
+            "C",
+            "E",
+            "G",
+            "A"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "C6",
+            "Am7"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "tertian",
+              "symbol": "C6",
+              "notes": [
+                "C",
+                "E",
+                "G",
+                "A"
+              ]
+            },
+            {
+              "root": "A",
+              "family": "tertian",
+              "symbol": "Am7",
+              "notes": [
+                "A",
+                "C",
+                "E",
+                "G"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            4,
+            7,
+            10
+          ],
+          "notes": [
+            "C",
+            "E",
+            "G",
+            "Bb"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "C7"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "tertian",
+              "symbol": "C7",
+              "notes": [
+                "C",
+                "E",
+                "G",
+                "Bb"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            2,
+            4,
+            7,
+            10
+          ],
+          "notes": [
+            "E",
+            "G",
+            "Bb",
+            "D"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Em7b5",
+            "Gm6"
+          ],
+          "spellings": [
+            {
+              "root": "E",
+              "family": "tertian",
+              "symbol": "Em7b5",
+              "notes": [
+                "E",
+                "G",
+                "Bb",
+                "D"
+              ]
+            },
+            {
+              "root": "G",
+              "family": "tertian",
+              "symbol": "Gm6",
+              "notes": [
+                "G",
+                "Bb",
+                "D",
+                "E"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            2,
+            4,
+            9
+          ],
+          "notes": [
+            "D",
+            "E",
+            "A",
+            "C"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "D7sus2"
+          ],
+          "spellings": [
+            {
+              "root": "D",
+              "family": "sus",
+              "symbol": "D7sus2",
+              "notes": [
+                "D",
+                "E",
+                "A",
+                "C"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            2,
+            7,
+            9
+          ],
+          "notes": [
+            "D",
+            "G",
+            "A",
+            "C"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "D7sus4",
+            "Gquartal4"
+          ],
+          "spellings": [
+            {
+              "root": "D",
+              "family": "sus",
+              "symbol": "D7sus4",
+              "notes": [
+                "D",
+                "G",
+                "A",
+                "C"
+              ]
+            },
+            {
+              "root": "G",
+              "family": "quartal",
+              "symbol": "Gquartal4",
+              "notes": [
+                "G",
+                "A",
+                "C",
+                "D"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            2,
+            7,
+            10
+          ],
+          "notes": [
+            "C",
+            "D",
+            "G",
+            "Bb"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "C7sus2"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "sus",
+              "symbol": "C7sus2",
+              "notes": [
+                "C",
+                "D",
+                "G",
+                "Bb"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            2,
+            4,
+            7,
+            9
+          ],
+          "notes": [
+            "A",
+            "D",
+            "E",
+            "G"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "A7sus4",
+            "Dquartal4"
+          ],
+          "spellings": [
+            {
+              "root": "A",
+              "family": "sus",
+              "symbol": "A7sus4",
+              "notes": [
+                "A",
+                "D",
+                "E",
+                "G"
+              ]
+            },
+            {
+              "root": "D",
+              "family": "quartal",
+              "symbol": "Dquartal4",
+              "notes": [
+                "D",
+                "E",
+                "G",
+                "A"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "harmonic_minor_no2": {
+      "3": [
+        {
+          "pcset": [
+            0,
+            3,
+            7
+          ],
+          "notes": [
+            "C",
+            "Eb",
+            "G"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Cm"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "tertian",
+              "symbol": "Cm",
+              "notes": [
+                "C",
+                "Eb",
+                "G"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            3,
+            8
+          ],
+          "notes": [
+            "Ab",
+            "C",
+            "Eb"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Ab"
+          ],
+          "spellings": [
+            {
+              "root": "Ab",
+              "family": "tertian",
+              "symbol": "Ab",
+              "notes": [
+                "Ab",
+                "C",
+                "Eb"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            5,
+            8
+          ],
+          "notes": [
+            "F",
+            "Ab",
+            "C"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Fm"
+          ],
+          "spellings": [
+            {
+              "root": "F",
+              "family": "tertian",
+              "symbol": "Fm",
+              "notes": [
+                "F",
+                "Ab",
+                "C"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            3,
+            7,
+            11
+          ],
+          "notes": [
+            "Eb",
+            "G",
+            "B"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Ebaug",
+            "Gaug",
+            "Baug"
+          ],
+          "spellings": [
+            {
+              "root": "Eb",
+              "family": "tertian",
+              "symbol": "Ebaug",
+              "notes": [
+                "Eb",
+                "G",
+                "B"
+              ]
+            },
+            {
+              "root": "G",
+              "family": "tertian",
+              "symbol": "Gaug",
+              "notes": [
+                "G",
+                "B",
+                "Eb"
+              ]
+            },
+            {
+              "root": "B",
+              "family": "tertian",
+              "symbol": "Baug",
+              "notes": [
+                "B",
+                "Eb",
+                "G"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            3,
+            8,
+            11
+          ],
+          "notes": [
+            "Ab",
+            "B",
+            "Eb"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Abm"
+          ],
+          "spellings": [
+            {
+              "root": "Ab",
+              "family": "tertian",
+              "symbol": "Abm",
+              "notes": [
+                "Ab",
+                "B",
+                "Eb"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            5,
+            8,
+            11
+          ],
+          "notes": [
+            "F",
+            "Ab",
+            "B"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Fdim"
+          ],
+          "spellings": [
+            {
+              "root": "F",
+              "family": "tertian",
+              "symbol": "Fdim",
+              "notes": [
+                "F",
+                "Ab",
+                "B"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            5,
+            7
+          ],
+          "notes": [
+            "C",
+            "F",
+            "G"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "Csus4",
+            "Fsus2",
+            "Gquartal"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "sus",
+              "symbol": "Csus4",
+              "notes": [
+                "C",
+                "F",
+                "G"
+              ]
+            },
+            {
+              "root": "F",
+              "family": "sus",
+              "symbol": "Fsus2",
+              "notes": [
+                "F",
+                "G",
+                "C"
+              ]
+            },
+            {
+              "root": "G",
+              "family": "quartal",
+              "symbol": "Gquartal",
+              "notes": [
+                "G",
+                "C",
+                "F"
+              ]
+            }
+          ]
+        }
+      ],
+      "4": [
+        {
+          "pcset": [
+            0,
+            3,
+            5,
+            8
+          ],
+          "notes": [
+            "F",
+            "Ab",
+            "C",
+            "Eb"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Fm7",
+            "Ab6"
+          ],
+          "spellings": [
+            {
+              "root": "F",
+              "family": "tertian",
+              "symbol": "Fm7",
+              "notes": [
+                "F",
+                "Ab",
+                "C",
+                "Eb"
+              ]
+            },
+            {
+              "root": "Ab",
+              "family": "tertian",
+              "symbol": "Ab6",
+              "notes": [
+                "Ab",
+                "C",
+                "Eb",
+                "F"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            3,
+            7,
+            8
+          ],
+          "notes": [
+            "Ab",
+            "C",
+            "Eb",
+            "G"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Abmaj7"
+          ],
+          "spellings": [
+            {
+              "root": "Ab",
+              "family": "tertian",
+              "symbol": "Abmaj7",
+              "notes": [
+                "Ab",
+                "C",
+                "Eb",
+                "G"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            3,
+            7,
+            11
+          ],
+          "notes": [
+            "C",
+            "Eb",
+            "G",
+            "B"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "CmMaj7"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "tertian",
+              "symbol": "CmMaj7",
+              "notes": [
+                "C",
+                "Eb",
+                "G",
+                "B"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            3,
+            5,
+            8,
+            11
+          ],
+          "notes": [
+            "F",
+            "Ab",
+            "B",
+            "Eb"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Fm7b5",
+            "Abm6"
+          ],
+          "spellings": [
+            {
+              "root": "F",
+              "family": "tertian",
+              "symbol": "Fm7b5",
+              "notes": [
+                "F",
+                "Ab",
+                "B",
+                "Eb"
+              ]
+            },
+            {
+              "root": "Ab",
+              "family": "tertian",
+              "symbol": "Abm6",
+              "notes": [
+                "Ab",
+                "B",
+                "Eb",
+                "F"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            3,
+            7,
+            8,
+            11
+          ],
+          "notes": [
+            "Ab",
+            "B",
+            "Eb",
+            "G"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "AbmMaj7"
+          ],
+          "spellings": [
+            {
+              "root": "Ab",
+              "family": "tertian",
+              "symbol": "AbmMaj7",
+              "notes": [
+                "Ab",
+                "B",
+                "Eb",
+                "G"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            3,
+            5,
+            7
+          ],
+          "notes": [
+            "F",
+            "G",
+            "C",
+            "Eb"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "F7sus2"
+          ],
+          "spellings": [
+            {
+              "root": "F",
+              "family": "sus",
+              "symbol": "F7sus2",
+              "notes": [
+                "F",
+                "G",
+                "C",
+                "Eb"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "augmented": {
+      "3": [
+        {
+          "pcset": [
+            0,
+            3,
+            7
+          ],
+          "notes": [
+            "C",
+            "D#",
+            "G"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Cm"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "tertian",
+              "symbol": "Cm",
+              "notes": [
+                "C",
+                "D#",
+                "G"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            3,
+            8
+          ],
+          "notes": [
+            "Ab",
+            "C",
+            "D#"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Ab"
+          ],
+          "spellings": [
+            {
+              "root": "Ab",
+              "family": "tertian",
+              "symbol": "Ab",
+              "notes": [
+                "Ab",
+                "C",
+                "D#"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            4,
+            7
+          ],
+          "notes": [
+            "C",
+            "E",
+            "G"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "C"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "tertian",
+              "symbol": "C",
+              "notes": [
+                "C",
+                "E",
+                "G"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            4,
+            8
+          ],
+          "notes": [
+            "C",
+            "E",
+            "Ab"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Caug",
+            "Eaug",
+            "Abaug"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "tertian",
+              "symbol": "Caug",
+              "notes": [
+                "C",
+                "E",
+                "Ab"
+              ]
+            },
+            {
+              "root": "E",
+              "family": "tertian",
+              "symbol": "Eaug",
+              "notes": [
+                "E",
+                "Ab",
+                "C"
+              ]
+            },
+            {
+              "root": "Ab",
+              "family": "tertian",
+              "symbol": "Abaug",
+              "notes": [
+                "Ab",
+                "C",
+                "E"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            3,
+            7,
+            11
+          ],
+          "notes": [
+            "D#",
+            "G",
+            "B"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "D#aug",
+            "Gaug",
+            "Baug"
+          ],
+          "spellings": [
+            {
+              "root": "D#",
+              "family": "tertian",
+              "symbol": "D#aug",
+              "notes": [
+                "D#",
+                "G",
+                "B"
+              ]
+            },
+            {
+              "root": "G",
+              "family": "tertian",
+              "symbol": "Gaug",
+              "notes": [
+                "G",
+                "B",
+                "D#"
+              ]
+            },
+            {
+              "root": "B",
+              "family": "tertian",
+              "symbol": "Baug",
+              "notes": [
+                "B",
+                "D#",
+                "G"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            3,
+            8,
+            11
+          ],
+          "notes": [
+            "Ab",
+            "B",
+            "D#"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Abm"
+          ],
+          "spellings": [
+            {
+              "root": "Ab",
+              "family": "tertian",
+              "symbol": "Abm",
+              "notes": [
+                "Ab",
+                "B",
+                "D#"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            4,
+            7,
+            11
+          ],
+          "notes": [
+            "E",
+            "G",
+            "B"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Em"
+          ],
+          "spellings": [
+            {
+              "root": "E",
+              "family": "tertian",
+              "symbol": "Em",
+              "notes": [
+                "E",
+                "G",
+                "B"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            4,
+            8,
+            11
+          ],
+          "notes": [
+            "E",
+            "Ab",
+            "B"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "E"
+          ],
+          "spellings": [
+            {
+              "root": "E",
+              "family": "tertian",
+              "symbol": "E",
+              "notes": [
+                "E",
+                "Ab",
+                "B"
+              ]
+            }
+          ]
+        }
+      ],
+      "4": [
+        {
+          "pcset": [
+            0,
+            3,
+            4,
+            8
+          ],
+          "notes": [
+            "E",
+            "Ab",
+            "C",
+            "D#"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Emaj7#5"
+          ],
+          "spellings": [
+            {
+              "root": "E",
+              "family": "tertian",
+              "symbol": "Emaj7#5",
+              "notes": [
+                "E",
+                "Ab",
+                "C",
+                "D#"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            3,
+            7,
+            8
+          ],
+          "notes": [
+            "Ab",
+            "C",
+            "D#",
+            "G"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Abmaj7"
+          ],
+          "spellings": [
+            {
+              "root": "Ab",
+              "family": "tertian",
+              "symbol": "Abmaj7",
+              "notes": [
+                "Ab",
+                "C",
+                "D#",
+                "G"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            3,
+            7,
+            11
+          ],
+          "notes": [
+            "C",
+            "D#",
+            "G",
+            "B"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "CmMaj7"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "tertian",
+              "symbol": "CmMaj7",
+              "notes": [
+                "C",
+                "D#",
+                "G",
+                "B"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            4,
+            7,
+            8
+          ],
+          "notes": [
+            "Ab",
+            "C",
+            "E",
+            "G"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Abmaj7#5"
+          ],
+          "spellings": [
+            {
+              "root": "Ab",
+              "family": "tertian",
+              "symbol": "Abmaj7#5",
+              "notes": [
+                "Ab",
+                "C",
+                "E",
+                "G"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            4,
+            7,
+            11
+          ],
+          "notes": [
+            "C",
+            "E",
+            "G",
+            "B"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Cmaj7"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "tertian",
+              "symbol": "Cmaj7",
+              "notes": [
+                "C",
+                "E",
+                "G",
+                "B"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            4,
+            8,
+            11
+          ],
+          "notes": [
+            "C",
+            "E",
+            "Ab",
+            "B"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Cmaj7#5"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "tertian",
+              "symbol": "Cmaj7#5",
+              "notes": [
+                "C",
+                "E",
+                "Ab",
+                "B"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            3,
+            4,
+            7,
+            11
+          ],
+          "notes": [
+            "E",
+            "G",
+            "B",
+            "D#"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "EmMaj7"
+          ],
+          "spellings": [
+            {
+              "root": "E",
+              "family": "tertian",
+              "symbol": "EmMaj7",
+              "notes": [
+                "E",
+                "G",
+                "B",
+                "D#"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            3,
+            4,
+            8,
+            11
+          ],
+          "notes": [
+            "E",
+            "Ab",
+            "B",
+            "D#"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Emaj7"
+          ],
+          "spellings": [
+            {
+              "root": "E",
+              "family": "tertian",
+              "symbol": "Emaj7",
+              "notes": [
+                "E",
+                "Ab",
+                "B",
+                "D#"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            3,
+            7,
+            8,
+            11
+          ],
+          "notes": [
+            "Ab",
+            "B",
+            "D#",
+            "G"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "AbmMaj7"
+          ],
+          "spellings": [
+            {
+              "root": "Ab",
+              "family": "tertian",
+              "symbol": "AbmMaj7",
+              "notes": [
+                "Ab",
+                "B",
+                "D#",
+                "G"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "whole_tone": {
+      "3": [
+        {
+          "pcset": [
+            0,
+            4,
+            8
+          ],
+          "notes": [
+            "C",
+            "E",
+            "G#"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Caug",
+            "Eaug",
+            "G#aug"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "tertian",
+              "symbol": "Caug",
+              "notes": [
+                "C",
+                "E",
+                "G#"
+              ]
+            },
+            {
+              "root": "E",
+              "family": "tertian",
+              "symbol": "Eaug",
+              "notes": [
+                "E",
+                "G#",
+                "C"
+              ]
+            },
+            {
+              "root": "G#",
+              "family": "tertian",
+              "symbol": "G#aug",
+              "notes": [
+                "G#",
+                "C",
+                "E"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            2,
+            6,
+            10
+          ],
+          "notes": [
+            "D",
+            "F#",
+            "A#"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Daug",
+            "F#aug",
+            "A#aug"
+          ],
+          "spellings": [
+            {
+              "root": "D",
+              "family": "tertian",
+              "symbol": "Daug",
+              "notes": [
+                "D",
+                "F#",
+                "A#"
+              ]
+            },
+            {
+              "root": "F#",
+              "family": "tertian",
+              "symbol": "F#aug",
+              "notes": [
+                "F#",
+                "A#",
+                "D"
+              ]
+            },
+            {
+              "root": "A#",
+              "family": "tertian",
+              "symbol": "A#aug",
+              "notes": [
+                "A#",
+                "D",
+                "F#"
+              ]
+            }
+          ]
+        }
+      ],
+      "4": []
+    },
+    "blues": {
+      "3": [
+        {
+          "pcset": [
+            0,
+            3,
+            6
+          ],
+          "notes": [
+            "C",
+            "Eb",
+            "Gb"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Cdim"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "tertian",
+              "symbol": "Cdim",
+              "notes": [
+                "C",
+                "Eb",
+                "Gb"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            3,
+            7
+          ],
+          "notes": [
+            "C",
+            "Eb",
+            "G"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Cm"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "tertian",
+              "symbol": "Cm",
+              "notes": [
+                "C",
+                "Eb",
+                "G"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            3,
+            6,
+            10
+          ],
+          "notes": [
+            "Eb",
+            "Gb",
+            "Bb"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Ebm"
+          ],
+          "spellings": [
+            {
+              "root": "Eb",
+              "family": "tertian",
+              "symbol": "Ebm",
+              "notes": [
+                "Eb",
+                "Gb",
+                "Bb"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            3,
+            7,
+            10
+          ],
+          "notes": [
+            "Eb",
+            "G",
+            "Bb"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Eb"
+          ],
+          "spellings": [
+            {
+              "root": "Eb",
+              "family": "tertian",
+              "symbol": "Eb",
+              "notes": [
+                "Eb",
+                "G",
+                "Bb"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            5,
+            7
+          ],
+          "notes": [
+            "C",
+            "F",
+            "G"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "Csus4",
+            "Fsus2",
+            "Gquartal"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "sus",
+              "symbol": "Csus4",
+              "notes": [
+                "C",
+                "F",
+                "G"
+              ]
+            },
+            {
+              "root": "F",
+              "family": "sus",
+              "symbol": "Fsus2",
+              "notes": [
+                "F",
+                "G",
+                "C"
+              ]
+            },
+            {
+              "root": "G",
+              "family": "quartal",
+              "symbol": "Gquartal",
+              "notes": [
+                "G",
+                "C",
+                "F"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            5,
+            10
+          ],
+          "notes": [
+            "F",
+            "Bb",
+            "C"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "Fsus4",
+            "Bbsus2",
+            "Cquartal"
+          ],
+          "spellings": [
+            {
+              "root": "F",
+              "family": "sus",
+              "symbol": "Fsus4",
+              "notes": [
+                "F",
+                "Bb",
+                "C"
+              ]
+            },
+            {
+              "root": "Bb",
+              "family": "sus",
+              "symbol": "Bbsus2",
+              "notes": [
+                "Bb",
+                "C",
+                "F"
+              ]
+            },
+            {
+              "root": "C",
+              "family": "quartal",
+              "symbol": "Cquartal",
+              "notes": [
+                "C",
+                "F",
+                "Bb"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            3,
+            5,
+            10
+          ],
+          "notes": [
+            "Eb",
+            "F",
+            "Bb"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "Ebsus2",
+            "Bbsus4",
+            "Fquartal"
+          ],
+          "spellings": [
+            {
+              "root": "Eb",
+              "family": "sus",
+              "symbol": "Ebsus2",
+              "notes": [
+                "Eb",
+                "F",
+                "Bb"
+              ]
+            },
+            {
+              "root": "Bb",
+              "family": "sus",
+              "symbol": "Bbsus4",
+              "notes": [
+                "Bb",
+                "Eb",
+                "F"
+              ]
+            },
+            {
+              "root": "F",
+              "family": "quartal",
+              "symbol": "Fquartal",
+              "notes": [
+                "F",
+                "Bb",
+                "Eb"
+              ]
+            }
+          ]
+        }
+      ],
+      "4": [
+        {
+          "pcset": [
+            0,
+            3,
+            6,
+            10
+          ],
+          "notes": [
+            "C",
+            "Eb",
+            "Gb",
+            "Bb"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Cm7b5",
+            "Ebm6"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "tertian",
+              "symbol": "Cm7b5",
+              "notes": [
+                "C",
+                "Eb",
+                "Gb",
+                "Bb"
+              ]
+            },
+            {
+              "root": "Eb",
+              "family": "tertian",
+              "symbol": "Ebm6",
+              "notes": [
+                "Eb",
+                "Gb",
+                "Bb",
+                "C"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            3,
+            7,
+            10
+          ],
+          "notes": [
+            "C",
+            "Eb",
+            "G",
+            "Bb"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Cm7",
+            "Eb6"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "tertian",
+              "symbol": "Cm7",
+              "notes": [
+                "C",
+                "Eb",
+                "G",
+                "Bb"
+              ]
+            },
+            {
+              "root": "Eb",
+              "family": "tertian",
+              "symbol": "Eb6",
+              "notes": [
+                "Eb",
+                "G",
+                "Bb",
+                "C"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            3,
+            5,
+            7
+          ],
+          "notes": [
+            "F",
+            "G",
+            "C",
+            "Eb"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "F7sus2"
+          ],
+          "spellings": [
+            {
+              "root": "F",
+              "family": "sus",
+              "symbol": "F7sus2",
+              "notes": [
+                "F",
+                "G",
+                "C",
+                "Eb"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            3,
+            5,
+            10
+          ],
+          "notes": [
+            "F",
+            "Bb",
+            "C",
+            "Eb"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "F7sus4",
+            "Bbquartal4"
+          ],
+          "spellings": [
+            {
+              "root": "F",
+              "family": "sus",
+              "symbol": "F7sus4",
+              "notes": [
+                "F",
+                "Bb",
+                "C",
+                "Eb"
+              ]
+            },
+            {
+              "root": "Bb",
+              "family": "quartal",
+              "symbol": "Bbquartal4",
+              "notes": [
+                "Bb",
+                "C",
+                "Eb",
+                "F"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            5,
+            7,
+            10
+          ],
+          "notes": [
+            "C",
+            "F",
+            "G",
+            "Bb"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "C7sus4",
+            "Fquartal4"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "sus",
+              "symbol": "C7sus4",
+              "notes": [
+                "C",
+                "F",
+                "G",
+                "Bb"
+              ]
+            },
+            {
+              "root": "F",
+              "family": "quartal",
+              "symbol": "Fquartal4",
+              "notes": [
+                "F",
+                "G",
+                "Bb",
+                "C"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "prometheus": {
+      "3": [
+        {
+          "pcset": [
+            0,
+            4,
+            9
+          ],
+          "notes": [
+            "A",
+            "C",
+            "E"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Am"
+          ],
+          "spellings": [
+            {
+              "root": "A",
+              "family": "tertian",
+              "symbol": "Am",
+              "notes": [
+                "A",
+                "C",
+                "E"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            6,
+            9
+          ],
+          "notes": [
+            "F#",
+            "A",
+            "C"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "F#dim"
+          ],
+          "spellings": [
+            {
+              "root": "F#",
+              "family": "tertian",
+              "symbol": "F#dim",
+              "notes": [
+                "F#",
+                "A",
+                "C"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            2,
+            6,
+            9
+          ],
+          "notes": [
+            "D",
+            "F#",
+            "A"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "D"
+          ],
+          "spellings": [
+            {
+              "root": "D",
+              "family": "tertian",
+              "symbol": "D",
+              "notes": [
+                "D",
+                "F#",
+                "A"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            2,
+            6,
+            10
+          ],
+          "notes": [
+            "D",
+            "F#",
+            "Bb"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Daug",
+            "F#aug",
+            "Bbaug"
+          ],
+          "spellings": [
+            {
+              "root": "D",
+              "family": "tertian",
+              "symbol": "Daug",
+              "notes": [
+                "D",
+                "F#",
+                "Bb"
+              ]
+            },
+            {
+              "root": "F#",
+              "family": "tertian",
+              "symbol": "F#aug",
+              "notes": [
+                "F#",
+                "Bb",
+                "D"
+              ]
+            },
+            {
+              "root": "Bb",
+              "family": "tertian",
+              "symbol": "Bbaug",
+              "notes": [
+                "Bb",
+                "D",
+                "F#"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            2,
+            4,
+            9
+          ],
+          "notes": [
+            "D",
+            "E",
+            "A"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "Dsus2",
+            "Asus4",
+            "Equartal"
+          ],
+          "spellings": [
+            {
+              "root": "D",
+              "family": "sus",
+              "symbol": "Dsus2",
+              "notes": [
+                "D",
+                "E",
+                "A"
+              ]
+            },
+            {
+              "root": "A",
+              "family": "sus",
+              "symbol": "Asus4",
+              "notes": [
+                "A",
+                "D",
+                "E"
+              ]
+            },
+            {
+              "root": "E",
+              "family": "quartal",
+              "symbol": "Equartal",
+              "notes": [
+                "E",
+                "A",
+                "D"
+              ]
+            }
+          ]
+        }
+      ],
+      "4": [
+        {
+          "pcset": [
+            0,
+            2,
+            6,
+            9
+          ],
+          "notes": [
+            "D",
+            "F#",
+            "A",
+            "C"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "D7"
+          ],
+          "spellings": [
+            {
+              "root": "D",
+              "family": "tertian",
+              "symbol": "D7",
+              "notes": [
+                "D",
+                "F#",
+                "A",
+                "C"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            4,
+            6,
+            9
+          ],
+          "notes": [
+            "F#",
+            "A",
+            "C",
+            "E"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "F#m7b5",
+            "Am6"
+          ],
+          "spellings": [
+            {
+              "root": "F#",
+              "family": "tertian",
+              "symbol": "F#m7b5",
+              "notes": [
+                "F#",
+                "A",
+                "C",
+                "E"
+              ]
+            },
+            {
+              "root": "A",
+              "family": "tertian",
+              "symbol": "Am6",
+              "notes": [
+                "A",
+                "C",
+                "E",
+                "F#"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            2,
+            6,
+            9,
+            10
+          ],
+          "notes": [
+            "Bb",
+            "D",
+            "F#",
+            "A"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Bbmaj7#5"
+          ],
+          "spellings": [
+            {
+              "root": "Bb",
+              "family": "tertian",
+              "symbol": "Bbmaj7#5",
+              "notes": [
+                "Bb",
+                "D",
+                "F#",
+                "A"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            0,
+            2,
+            4,
+            9
+          ],
+          "notes": [
+            "D",
+            "E",
+            "A",
+            "C"
+          ],
+          "primary_family": "sus",
+          "names": [
+            "D7sus2"
+          ],
+          "spellings": [
+            {
+              "root": "D",
+              "family": "sus",
+              "symbol": "D7sus2",
+              "notes": [
+                "D",
+                "E",
+                "A",
+                "C"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "tritone": {
+      "3": [
+        {
+          "pcset": [
+            0,
+            4,
+            7
+          ],
+          "notes": [
+            "C",
+            "E",
+            "G"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "C"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "tertian",
+              "symbol": "C",
+              "notes": [
+                "C",
+                "E",
+                "G"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            1,
+            4,
+            7
+          ],
+          "notes": [
+            "Db",
+            "E",
+            "G"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Dbdim"
+          ],
+          "spellings": [
+            {
+              "root": "Db",
+              "family": "tertian",
+              "symbol": "Dbdim",
+              "notes": [
+                "Db",
+                "E",
+                "G"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            1,
+            4,
+            10
+          ],
+          "notes": [
+            "Bb",
+            "Db",
+            "E"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Bbdim"
+          ],
+          "spellings": [
+            {
+              "root": "Bb",
+              "family": "tertian",
+              "symbol": "Bbdim",
+              "notes": [
+                "Bb",
+                "Db",
+                "E"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            1,
+            6,
+            10
+          ],
+          "notes": [
+            "F#",
+            "Bb",
+            "Db"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "F#"
+          ],
+          "spellings": [
+            {
+              "root": "F#",
+              "family": "tertian",
+              "symbol": "F#",
+              "notes": [
+                "F#",
+                "Bb",
+                "Db"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            1,
+            7,
+            10
+          ],
+          "notes": [
+            "G",
+            "Bb",
+            "Db"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Gdim"
+          ],
+          "spellings": [
+            {
+              "root": "G",
+              "family": "tertian",
+              "symbol": "Gdim",
+              "notes": [
+                "G",
+                "Bb",
+                "Db"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            4,
+            7,
+            10
+          ],
+          "notes": [
+            "E",
+            "G",
+            "Bb"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Edim"
+          ],
+          "spellings": [
+            {
+              "root": "E",
+              "family": "tertian",
+              "symbol": "Edim",
+              "notes": [
+                "E",
+                "G",
+                "Bb"
+              ]
+            }
+          ]
+        }
+      ],
+      "4": [
+        {
+          "pcset": [
+            0,
+            4,
+            7,
+            10
+          ],
+          "notes": [
+            "C",
+            "E",
+            "G",
+            "Bb"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "C7"
+          ],
+          "spellings": [
+            {
+              "root": "C",
+              "family": "tertian",
+              "symbol": "C7",
+              "notes": [
+                "C",
+                "E",
+                "G",
+                "Bb"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            1,
+            4,
+            6,
+            10
+          ],
+          "notes": [
+            "F#",
+            "Bb",
+            "Db",
+            "E"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "F#7"
+          ],
+          "spellings": [
+            {
+              "root": "F#",
+              "family": "tertian",
+              "symbol": "F#7",
+              "notes": [
+                "F#",
+                "Bb",
+                "Db",
+                "E"
+              ]
+            }
+          ]
+        },
+        {
+          "pcset": [
+            1,
+            4,
+            7,
+            10
+          ],
+          "notes": [
+            "Db",
+            "E",
+            "G",
+            "Bb"
+          ],
+          "primary_family": "tertian",
+          "names": [
+            "Dbdim7",
+            "Edim7",
+            "Gdim7",
+            "Bbdim7"
+          ],
+          "spellings": [
+            {
+              "root": "Db",
+              "family": "tertian",
+              "symbol": "Dbdim7",
+              "notes": [
+                "Db",
+                "E",
+                "G",
+                "Bb"
+              ]
+            },
+            {
+              "root": "E",
+              "family": "tertian",
+              "symbol": "Edim7",
+              "notes": [
+                "E",
+                "G",
+                "Bb",
+                "Db"
+              ]
+            },
+            {
+              "root": "G",
+              "family": "tertian",
+              "symbol": "Gdim7",
+              "notes": [
+                "G",
+                "Bb",
+                "Db",
+                "E"
+              ]
+            },
+            {
+              "root": "Bb",
+              "family": "tertian",
+              "symbol": "Bbdim7",
+              "notes": [
+                "Bb",
+                "Db",
+                "E",
+                "G"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "resolutions": [
+    {
+      "scale_size": 5,
+      "octaves": 1,
+      "subdivision": 2,
+      "beats_per_bar": 4,
+      "grouping": 3,
+      "notes_per_cycle": 5,
+      "notes_per_bar": 8,
+      "total_notes": 120,
+      "bars": 15.0,
+      "scale_traversals": 24,
+      "groups": 40.0,
+      "verdict": "120 notes = 15 bar(s); 24 traversal(s); 40 group(s) of 3"
+    },
+    {
+      "scale_size": 5,
+      "octaves": 1,
+      "subdivision": 2,
+      "beats_per_bar": 4,
+      "grouping": 4,
+      "notes_per_cycle": 5,
+      "notes_per_bar": 8,
+      "total_notes": 40,
+      "bars": 5.0,
+      "scale_traversals": 8,
+      "groups": 10.0,
+      "verdict": "40 notes = 5 bar(s); 8 traversal(s); 10 group(s) of 4"
+    },
+    {
+      "scale_size": 5,
+      "octaves": 1,
+      "subdivision": 2,
+      "beats_per_bar": 4,
+      "grouping": 5,
+      "notes_per_cycle": 5,
+      "notes_per_bar": 8,
+      "total_notes": 40,
+      "bars": 5.0,
+      "scale_traversals": 8,
+      "groups": 8.0,
+      "verdict": "40 notes = 5 bar(s); 8 traversal(s); 8 group(s) of 5"
+    },
+    {
+      "scale_size": 5,
+      "octaves": 1,
+      "subdivision": 2,
+      "beats_per_bar": 4,
+      "grouping": 6,
+      "notes_per_cycle": 5,
+      "notes_per_bar": 8,
+      "total_notes": 120,
+      "bars": 15.0,
+      "scale_traversals": 24,
+      "groups": 20.0,
+      "verdict": "120 notes = 15 bar(s); 24 traversal(s); 20 group(s) of 6"
+    },
+    {
+      "scale_size": 5,
+      "octaves": 1,
+      "subdivision": 2,
+      "beats_per_bar": 4,
+      "grouping": 7,
+      "notes_per_cycle": 5,
+      "notes_per_bar": 8,
+      "total_notes": 280,
+      "bars": 35.0,
+      "scale_traversals": 56,
+      "groups": 40.0,
+      "verdict": "280 notes = 35 bar(s); 56 traversal(s); 40 group(s) of 7"
+    },
+    {
+      "scale_size": 5,
+      "octaves": 1,
+      "subdivision": 3,
+      "beats_per_bar": 4,
+      "grouping": 3,
+      "notes_per_cycle": 5,
+      "notes_per_bar": 12,
+      "total_notes": 60,
+      "bars": 5.0,
+      "scale_traversals": 12,
+      "groups": 20.0,
+      "verdict": "60 notes = 5 bar(s); 12 traversal(s); 20 group(s) of 3"
+    },
+    {
+      "scale_size": 5,
+      "octaves": 1,
+      "subdivision": 3,
+      "beats_per_bar": 4,
+      "grouping": 4,
+      "notes_per_cycle": 5,
+      "notes_per_bar": 12,
+      "total_notes": 60,
+      "bars": 5.0,
+      "scale_traversals": 12,
+      "groups": 15.0,
+      "verdict": "60 notes = 5 bar(s); 12 traversal(s); 15 group(s) of 4"
+    },
+    {
+      "scale_size": 5,
+      "octaves": 1,
+      "subdivision": 3,
+      "beats_per_bar": 4,
+      "grouping": 5,
+      "notes_per_cycle": 5,
+      "notes_per_bar": 12,
+      "total_notes": 60,
+      "bars": 5.0,
+      "scale_traversals": 12,
+      "groups": 12.0,
+      "verdict": "60 notes = 5 bar(s); 12 traversal(s); 12 group(s) of 5"
+    },
+    {
+      "scale_size": 5,
+      "octaves": 1,
+      "subdivision": 3,
+      "beats_per_bar": 4,
+      "grouping": 6,
+      "notes_per_cycle": 5,
+      "notes_per_bar": 12,
+      "total_notes": 60,
+      "bars": 5.0,
+      "scale_traversals": 12,
+      "groups": 10.0,
+      "verdict": "60 notes = 5 bar(s); 12 traversal(s); 10 group(s) of 6"
+    },
+    {
+      "scale_size": 5,
+      "octaves": 1,
+      "subdivision": 3,
+      "beats_per_bar": 4,
+      "grouping": 7,
+      "notes_per_cycle": 5,
+      "notes_per_bar": 12,
+      "total_notes": 420,
+      "bars": 35.0,
+      "scale_traversals": 84,
+      "groups": 60.0,
+      "verdict": "420 notes = 35 bar(s); 84 traversal(s); 60 group(s) of 7"
+    },
+    {
+      "scale_size": 5,
+      "octaves": 1,
+      "subdivision": 4,
+      "beats_per_bar": 4,
+      "grouping": 3,
+      "notes_per_cycle": 5,
+      "notes_per_bar": 16,
+      "total_notes": 240,
+      "bars": 15.0,
+      "scale_traversals": 48,
+      "groups": 80.0,
+      "verdict": "240 notes = 15 bar(s); 48 traversal(s); 80 group(s) of 3"
+    },
+    {
+      "scale_size": 5,
+      "octaves": 1,
+      "subdivision": 4,
+      "beats_per_bar": 4,
+      "grouping": 4,
+      "notes_per_cycle": 5,
+      "notes_per_bar": 16,
+      "total_notes": 80,
+      "bars": 5.0,
+      "scale_traversals": 16,
+      "groups": 20.0,
+      "verdict": "80 notes = 5 bar(s); 16 traversal(s); 20 group(s) of 4"
+    },
+    {
+      "scale_size": 5,
+      "octaves": 1,
+      "subdivision": 4,
+      "beats_per_bar": 4,
+      "grouping": 5,
+      "notes_per_cycle": 5,
+      "notes_per_bar": 16,
+      "total_notes": 80,
+      "bars": 5.0,
+      "scale_traversals": 16,
+      "groups": 16.0,
+      "verdict": "80 notes = 5 bar(s); 16 traversal(s); 16 group(s) of 5"
+    },
+    {
+      "scale_size": 5,
+      "octaves": 1,
+      "subdivision": 4,
+      "beats_per_bar": 4,
+      "grouping": 6,
+      "notes_per_cycle": 5,
+      "notes_per_bar": 16,
+      "total_notes": 240,
+      "bars": 15.0,
+      "scale_traversals": 48,
+      "groups": 40.0,
+      "verdict": "240 notes = 15 bar(s); 48 traversal(s); 40 group(s) of 6"
+    },
+    {
+      "scale_size": 5,
+      "octaves": 1,
+      "subdivision": 4,
+      "beats_per_bar": 4,
+      "grouping": 7,
+      "notes_per_cycle": 5,
+      "notes_per_bar": 16,
+      "total_notes": 560,
+      "bars": 35.0,
+      "scale_traversals": 112,
+      "groups": 80.0,
+      "verdict": "560 notes = 35 bar(s); 112 traversal(s); 80 group(s) of 7"
+    },
+    {
+      "scale_size": 5,
+      "octaves": 1,
+      "subdivision": 6,
+      "beats_per_bar": 4,
+      "grouping": 3,
+      "notes_per_cycle": 5,
+      "notes_per_bar": 24,
+      "total_notes": 120,
+      "bars": 5.0,
+      "scale_traversals": 24,
+      "groups": 40.0,
+      "verdict": "120 notes = 5 bar(s); 24 traversal(s); 40 group(s) of 3"
+    },
+    {
+      "scale_size": 5,
+      "octaves": 1,
+      "subdivision": 6,
+      "beats_per_bar": 4,
+      "grouping": 4,
+      "notes_per_cycle": 5,
+      "notes_per_bar": 24,
+      "total_notes": 120,
+      "bars": 5.0,
+      "scale_traversals": 24,
+      "groups": 30.0,
+      "verdict": "120 notes = 5 bar(s); 24 traversal(s); 30 group(s) of 4"
+    },
+    {
+      "scale_size": 5,
+      "octaves": 1,
+      "subdivision": 6,
+      "beats_per_bar": 4,
+      "grouping": 5,
+      "notes_per_cycle": 5,
+      "notes_per_bar": 24,
+      "total_notes": 120,
+      "bars": 5.0,
+      "scale_traversals": 24,
+      "groups": 24.0,
+      "verdict": "120 notes = 5 bar(s); 24 traversal(s); 24 group(s) of 5"
+    },
+    {
+      "scale_size": 5,
+      "octaves": 1,
+      "subdivision": 6,
+      "beats_per_bar": 4,
+      "grouping": 6,
+      "notes_per_cycle": 5,
+      "notes_per_bar": 24,
+      "total_notes": 120,
+      "bars": 5.0,
+      "scale_traversals": 24,
+      "groups": 20.0,
+      "verdict": "120 notes = 5 bar(s); 24 traversal(s); 20 group(s) of 6"
+    },
+    {
+      "scale_size": 5,
+      "octaves": 1,
+      "subdivision": 6,
+      "beats_per_bar": 4,
+      "grouping": 7,
+      "notes_per_cycle": 5,
+      "notes_per_bar": 24,
+      "total_notes": 840,
+      "bars": 35.0,
+      "scale_traversals": 168,
+      "groups": 120.0,
+      "verdict": "840 notes = 35 bar(s); 168 traversal(s); 120 group(s) of 7"
+    },
+    {
+      "scale_size": 6,
+      "octaves": 1,
+      "subdivision": 2,
+      "beats_per_bar": 4,
+      "grouping": 3,
+      "notes_per_cycle": 6,
+      "notes_per_bar": 8,
+      "total_notes": 24,
+      "bars": 3.0,
+      "scale_traversals": 4,
+      "groups": 8.0,
+      "verdict": "24 notes = 3 bar(s); 4 traversal(s); 8 group(s) of 3"
+    },
+    {
+      "scale_size": 6,
+      "octaves": 1,
+      "subdivision": 2,
+      "beats_per_bar": 4,
+      "grouping": 4,
+      "notes_per_cycle": 6,
+      "notes_per_bar": 8,
+      "total_notes": 24,
+      "bars": 3.0,
+      "scale_traversals": 4,
+      "groups": 6.0,
+      "verdict": "24 notes = 3 bar(s); 4 traversal(s); 6 group(s) of 4"
+    },
+    {
+      "scale_size": 6,
+      "octaves": 1,
+      "subdivision": 2,
+      "beats_per_bar": 4,
+      "grouping": 5,
+      "notes_per_cycle": 6,
+      "notes_per_bar": 8,
+      "total_notes": 120,
+      "bars": 15.0,
+      "scale_traversals": 20,
+      "groups": 24.0,
+      "verdict": "120 notes = 15 bar(s); 20 traversal(s); 24 group(s) of 5"
+    },
+    {
+      "scale_size": 6,
+      "octaves": 1,
+      "subdivision": 2,
+      "beats_per_bar": 4,
+      "grouping": 6,
+      "notes_per_cycle": 6,
+      "notes_per_bar": 8,
+      "total_notes": 24,
+      "bars": 3.0,
+      "scale_traversals": 4,
+      "groups": 4.0,
+      "verdict": "24 notes = 3 bar(s); 4 traversal(s); 4 group(s) of 6"
+    },
+    {
+      "scale_size": 6,
+      "octaves": 1,
+      "subdivision": 2,
+      "beats_per_bar": 4,
+      "grouping": 7,
+      "notes_per_cycle": 6,
+      "notes_per_bar": 8,
+      "total_notes": 168,
+      "bars": 21.0,
+      "scale_traversals": 28,
+      "groups": 24.0,
+      "verdict": "168 notes = 21 bar(s); 28 traversal(s); 24 group(s) of 7"
+    },
+    {
+      "scale_size": 6,
+      "octaves": 1,
+      "subdivision": 3,
+      "beats_per_bar": 4,
+      "grouping": 3,
+      "notes_per_cycle": 6,
+      "notes_per_bar": 12,
+      "total_notes": 12,
+      "bars": 1.0,
+      "scale_traversals": 2,
+      "groups": 4.0,
+      "verdict": "12 notes = 1 bar(s); 2 traversal(s); 4 group(s) of 3"
+    },
+    {
+      "scale_size": 6,
+      "octaves": 1,
+      "subdivision": 3,
+      "beats_per_bar": 4,
+      "grouping": 4,
+      "notes_per_cycle": 6,
+      "notes_per_bar": 12,
+      "total_notes": 12,
+      "bars": 1.0,
+      "scale_traversals": 2,
+      "groups": 3.0,
+      "verdict": "12 notes = 1 bar(s); 2 traversal(s); 3 group(s) of 4"
+    },
+    {
+      "scale_size": 6,
+      "octaves": 1,
+      "subdivision": 3,
+      "beats_per_bar": 4,
+      "grouping": 5,
+      "notes_per_cycle": 6,
+      "notes_per_bar": 12,
+      "total_notes": 60,
+      "bars": 5.0,
+      "scale_traversals": 10,
+      "groups": 12.0,
+      "verdict": "60 notes = 5 bar(s); 10 traversal(s); 12 group(s) of 5"
+    },
+    {
+      "scale_size": 6,
+      "octaves": 1,
+      "subdivision": 3,
+      "beats_per_bar": 4,
+      "grouping": 6,
+      "notes_per_cycle": 6,
+      "notes_per_bar": 12,
+      "total_notes": 12,
+      "bars": 1.0,
+      "scale_traversals": 2,
+      "groups": 2.0,
+      "verdict": "12 notes = 1 bar(s); 2 traversal(s); 2 group(s) of 6"
+    },
+    {
+      "scale_size": 6,
+      "octaves": 1,
+      "subdivision": 3,
+      "beats_per_bar": 4,
+      "grouping": 7,
+      "notes_per_cycle": 6,
+      "notes_per_bar": 12,
+      "total_notes": 84,
+      "bars": 7.0,
+      "scale_traversals": 14,
+      "groups": 12.0,
+      "verdict": "84 notes = 7 bar(s); 14 traversal(s); 12 group(s) of 7"
+    },
+    {
+      "scale_size": 6,
+      "octaves": 1,
+      "subdivision": 4,
+      "beats_per_bar": 4,
+      "grouping": 3,
+      "notes_per_cycle": 6,
+      "notes_per_bar": 16,
+      "total_notes": 48,
+      "bars": 3.0,
+      "scale_traversals": 8,
+      "groups": 16.0,
+      "verdict": "48 notes = 3 bar(s); 8 traversal(s); 16 group(s) of 3"
+    },
+    {
+      "scale_size": 6,
+      "octaves": 1,
+      "subdivision": 4,
+      "beats_per_bar": 4,
+      "grouping": 4,
+      "notes_per_cycle": 6,
+      "notes_per_bar": 16,
+      "total_notes": 48,
+      "bars": 3.0,
+      "scale_traversals": 8,
+      "groups": 12.0,
+      "verdict": "48 notes = 3 bar(s); 8 traversal(s); 12 group(s) of 4"
+    },
+    {
+      "scale_size": 6,
+      "octaves": 1,
+      "subdivision": 4,
+      "beats_per_bar": 4,
+      "grouping": 5,
+      "notes_per_cycle": 6,
+      "notes_per_bar": 16,
+      "total_notes": 240,
+      "bars": 15.0,
+      "scale_traversals": 40,
+      "groups": 48.0,
+      "verdict": "240 notes = 15 bar(s); 40 traversal(s); 48 group(s) of 5"
+    },
+    {
+      "scale_size": 6,
+      "octaves": 1,
+      "subdivision": 4,
+      "beats_per_bar": 4,
+      "grouping": 6,
+      "notes_per_cycle": 6,
+      "notes_per_bar": 16,
+      "total_notes": 48,
+      "bars": 3.0,
+      "scale_traversals": 8,
+      "groups": 8.0,
+      "verdict": "48 notes = 3 bar(s); 8 traversal(s); 8 group(s) of 6"
+    },
+    {
+      "scale_size": 6,
+      "octaves": 1,
+      "subdivision": 4,
+      "beats_per_bar": 4,
+      "grouping": 7,
+      "notes_per_cycle": 6,
+      "notes_per_bar": 16,
+      "total_notes": 336,
+      "bars": 21.0,
+      "scale_traversals": 56,
+      "groups": 48.0,
+      "verdict": "336 notes = 21 bar(s); 56 traversal(s); 48 group(s) of 7"
+    },
+    {
+      "scale_size": 6,
+      "octaves": 1,
+      "subdivision": 6,
+      "beats_per_bar": 4,
+      "grouping": 3,
+      "notes_per_cycle": 6,
+      "notes_per_bar": 24,
+      "total_notes": 24,
+      "bars": 1.0,
+      "scale_traversals": 4,
+      "groups": 8.0,
+      "verdict": "24 notes = 1 bar(s); 4 traversal(s); 8 group(s) of 3"
+    },
+    {
+      "scale_size": 6,
+      "octaves": 1,
+      "subdivision": 6,
+      "beats_per_bar": 4,
+      "grouping": 4,
+      "notes_per_cycle": 6,
+      "notes_per_bar": 24,
+      "total_notes": 24,
+      "bars": 1.0,
+      "scale_traversals": 4,
+      "groups": 6.0,
+      "verdict": "24 notes = 1 bar(s); 4 traversal(s); 6 group(s) of 4"
+    },
+    {
+      "scale_size": 6,
+      "octaves": 1,
+      "subdivision": 6,
+      "beats_per_bar": 4,
+      "grouping": 5,
+      "notes_per_cycle": 6,
+      "notes_per_bar": 24,
+      "total_notes": 120,
+      "bars": 5.0,
+      "scale_traversals": 20,
+      "groups": 24.0,
+      "verdict": "120 notes = 5 bar(s); 20 traversal(s); 24 group(s) of 5"
+    },
+    {
+      "scale_size": 6,
+      "octaves": 1,
+      "subdivision": 6,
+      "beats_per_bar": 4,
+      "grouping": 6,
+      "notes_per_cycle": 6,
+      "notes_per_bar": 24,
+      "total_notes": 24,
+      "bars": 1.0,
+      "scale_traversals": 4,
+      "groups": 4.0,
+      "verdict": "24 notes = 1 bar(s); 4 traversal(s); 4 group(s) of 6"
+    },
+    {
+      "scale_size": 6,
+      "octaves": 1,
+      "subdivision": 6,
+      "beats_per_bar": 4,
+      "grouping": 7,
+      "notes_per_cycle": 6,
+      "notes_per_bar": 24,
+      "total_notes": 168,
+      "bars": 7.0,
+      "scale_traversals": 28,
+      "groups": 24.0,
+      "verdict": "168 notes = 7 bar(s); 28 traversal(s); 24 group(s) of 7"
+    },
+    {
+      "scale_size": 7,
+      "octaves": 1,
+      "subdivision": 2,
+      "beats_per_bar": 4,
+      "grouping": 3,
+      "notes_per_cycle": 7,
+      "notes_per_bar": 8,
+      "total_notes": 168,
+      "bars": 21.0,
+      "scale_traversals": 24,
+      "groups": 56.0,
+      "verdict": "168 notes = 21 bar(s); 24 traversal(s); 56 group(s) of 3"
+    },
+    {
+      "scale_size": 7,
+      "octaves": 1,
+      "subdivision": 2,
+      "beats_per_bar": 4,
+      "grouping": 4,
+      "notes_per_cycle": 7,
+      "notes_per_bar": 8,
+      "total_notes": 56,
+      "bars": 7.0,
+      "scale_traversals": 8,
+      "groups": 14.0,
+      "verdict": "56 notes = 7 bar(s); 8 traversal(s); 14 group(s) of 4"
+    },
+    {
+      "scale_size": 7,
+      "octaves": 1,
+      "subdivision": 2,
+      "beats_per_bar": 4,
+      "grouping": 5,
+      "notes_per_cycle": 7,
+      "notes_per_bar": 8,
+      "total_notes": 280,
+      "bars": 35.0,
+      "scale_traversals": 40,
+      "groups": 56.0,
+      "verdict": "280 notes = 35 bar(s); 40 traversal(s); 56 group(s) of 5"
+    },
+    {
+      "scale_size": 7,
+      "octaves": 1,
+      "subdivision": 2,
+      "beats_per_bar": 4,
+      "grouping": 6,
+      "notes_per_cycle": 7,
+      "notes_per_bar": 8,
+      "total_notes": 168,
+      "bars": 21.0,
+      "scale_traversals": 24,
+      "groups": 28.0,
+      "verdict": "168 notes = 21 bar(s); 24 traversal(s); 28 group(s) of 6"
+    },
+    {
+      "scale_size": 7,
+      "octaves": 1,
+      "subdivision": 2,
+      "beats_per_bar": 4,
+      "grouping": 7,
+      "notes_per_cycle": 7,
+      "notes_per_bar": 8,
+      "total_notes": 56,
+      "bars": 7.0,
+      "scale_traversals": 8,
+      "groups": 8.0,
+      "verdict": "56 notes = 7 bar(s); 8 traversal(s); 8 group(s) of 7"
+    },
+    {
+      "scale_size": 7,
+      "octaves": 1,
+      "subdivision": 3,
+      "beats_per_bar": 4,
+      "grouping": 3,
+      "notes_per_cycle": 7,
+      "notes_per_bar": 12,
+      "total_notes": 84,
+      "bars": 7.0,
+      "scale_traversals": 12,
+      "groups": 28.0,
+      "verdict": "84 notes = 7 bar(s); 12 traversal(s); 28 group(s) of 3"
+    },
+    {
+      "scale_size": 7,
+      "octaves": 1,
+      "subdivision": 3,
+      "beats_per_bar": 4,
+      "grouping": 4,
+      "notes_per_cycle": 7,
+      "notes_per_bar": 12,
+      "total_notes": 84,
+      "bars": 7.0,
+      "scale_traversals": 12,
+      "groups": 21.0,
+      "verdict": "84 notes = 7 bar(s); 12 traversal(s); 21 group(s) of 4"
+    },
+    {
+      "scale_size": 7,
+      "octaves": 1,
+      "subdivision": 3,
+      "beats_per_bar": 4,
+      "grouping": 5,
+      "notes_per_cycle": 7,
+      "notes_per_bar": 12,
+      "total_notes": 420,
+      "bars": 35.0,
+      "scale_traversals": 60,
+      "groups": 84.0,
+      "verdict": "420 notes = 35 bar(s); 60 traversal(s); 84 group(s) of 5"
+    },
+    {
+      "scale_size": 7,
+      "octaves": 1,
+      "subdivision": 3,
+      "beats_per_bar": 4,
+      "grouping": 6,
+      "notes_per_cycle": 7,
+      "notes_per_bar": 12,
+      "total_notes": 84,
+      "bars": 7.0,
+      "scale_traversals": 12,
+      "groups": 14.0,
+      "verdict": "84 notes = 7 bar(s); 12 traversal(s); 14 group(s) of 6"
+    },
+    {
+      "scale_size": 7,
+      "octaves": 1,
+      "subdivision": 3,
+      "beats_per_bar": 4,
+      "grouping": 7,
+      "notes_per_cycle": 7,
+      "notes_per_bar": 12,
+      "total_notes": 84,
+      "bars": 7.0,
+      "scale_traversals": 12,
+      "groups": 12.0,
+      "verdict": "84 notes = 7 bar(s); 12 traversal(s); 12 group(s) of 7"
+    },
+    {
+      "scale_size": 7,
+      "octaves": 1,
+      "subdivision": 4,
+      "beats_per_bar": 4,
+      "grouping": 3,
+      "notes_per_cycle": 7,
+      "notes_per_bar": 16,
+      "total_notes": 336,
+      "bars": 21.0,
+      "scale_traversals": 48,
+      "groups": 112.0,
+      "verdict": "336 notes = 21 bar(s); 48 traversal(s); 112 group(s) of 3"
+    },
+    {
+      "scale_size": 7,
+      "octaves": 1,
+      "subdivision": 4,
+      "beats_per_bar": 4,
+      "grouping": 4,
+      "notes_per_cycle": 7,
+      "notes_per_bar": 16,
+      "total_notes": 112,
+      "bars": 7.0,
+      "scale_traversals": 16,
+      "groups": 28.0,
+      "verdict": "112 notes = 7 bar(s); 16 traversal(s); 28 group(s) of 4"
+    },
+    {
+      "scale_size": 7,
+      "octaves": 1,
+      "subdivision": 4,
+      "beats_per_bar": 4,
+      "grouping": 5,
+      "notes_per_cycle": 7,
+      "notes_per_bar": 16,
+      "total_notes": 560,
+      "bars": 35.0,
+      "scale_traversals": 80,
+      "groups": 112.0,
+      "verdict": "560 notes = 35 bar(s); 80 traversal(s); 112 group(s) of 5"
+    },
+    {
+      "scale_size": 7,
+      "octaves": 1,
+      "subdivision": 4,
+      "beats_per_bar": 4,
+      "grouping": 6,
+      "notes_per_cycle": 7,
+      "notes_per_bar": 16,
+      "total_notes": 336,
+      "bars": 21.0,
+      "scale_traversals": 48,
+      "groups": 56.0,
+      "verdict": "336 notes = 21 bar(s); 48 traversal(s); 56 group(s) of 6"
+    },
+    {
+      "scale_size": 7,
+      "octaves": 1,
+      "subdivision": 4,
+      "beats_per_bar": 4,
+      "grouping": 7,
+      "notes_per_cycle": 7,
+      "notes_per_bar": 16,
+      "total_notes": 112,
+      "bars": 7.0,
+      "scale_traversals": 16,
+      "groups": 16.0,
+      "verdict": "112 notes = 7 bar(s); 16 traversal(s); 16 group(s) of 7"
+    },
+    {
+      "scale_size": 7,
+      "octaves": 1,
+      "subdivision": 6,
+      "beats_per_bar": 4,
+      "grouping": 3,
+      "notes_per_cycle": 7,
+      "notes_per_bar": 24,
+      "total_notes": 168,
+      "bars": 7.0,
+      "scale_traversals": 24,
+      "groups": 56.0,
+      "verdict": "168 notes = 7 bar(s); 24 traversal(s); 56 group(s) of 3"
+    },
+    {
+      "scale_size": 7,
+      "octaves": 1,
+      "subdivision": 6,
+      "beats_per_bar": 4,
+      "grouping": 4,
+      "notes_per_cycle": 7,
+      "notes_per_bar": 24,
+      "total_notes": 168,
+      "bars": 7.0,
+      "scale_traversals": 24,
+      "groups": 42.0,
+      "verdict": "168 notes = 7 bar(s); 24 traversal(s); 42 group(s) of 4"
+    },
+    {
+      "scale_size": 7,
+      "octaves": 1,
+      "subdivision": 6,
+      "beats_per_bar": 4,
+      "grouping": 5,
+      "notes_per_cycle": 7,
+      "notes_per_bar": 24,
+      "total_notes": 840,
+      "bars": 35.0,
+      "scale_traversals": 120,
+      "groups": 168.0,
+      "verdict": "840 notes = 35 bar(s); 120 traversal(s); 168 group(s) of 5"
+    },
+    {
+      "scale_size": 7,
+      "octaves": 1,
+      "subdivision": 6,
+      "beats_per_bar": 4,
+      "grouping": 6,
+      "notes_per_cycle": 7,
+      "notes_per_bar": 24,
+      "total_notes": 168,
+      "bars": 7.0,
+      "scale_traversals": 24,
+      "groups": 28.0,
+      "verdict": "168 notes = 7 bar(s); 24 traversal(s); 28 group(s) of 6"
+    },
+    {
+      "scale_size": 7,
+      "octaves": 1,
+      "subdivision": 6,
+      "beats_per_bar": 4,
+      "grouping": 7,
+      "notes_per_cycle": 7,
+      "notes_per_bar": 24,
+      "total_notes": 168,
+      "bars": 7.0,
+      "scale_traversals": 24,
+      "groups": 24.0,
+      "verdict": "168 notes = 7 bar(s); 24 traversal(s); 24 group(s) of 7"
+    },
+    {
+      "scale_size": 8,
+      "octaves": 1,
+      "subdivision": 2,
+      "beats_per_bar": 4,
+      "grouping": 3,
+      "notes_per_cycle": 8,
+      "notes_per_bar": 8,
+      "total_notes": 24,
+      "bars": 3.0,
+      "scale_traversals": 3,
+      "groups": 8.0,
+      "verdict": "24 notes = 3 bar(s); 3 traversal(s); 8 group(s) of 3"
+    },
+    {
+      "scale_size": 8,
+      "octaves": 1,
+      "subdivision": 2,
+      "beats_per_bar": 4,
+      "grouping": 4,
+      "notes_per_cycle": 8,
+      "notes_per_bar": 8,
+      "total_notes": 8,
+      "bars": 1.0,
+      "scale_traversals": 1,
+      "groups": 2.0,
+      "verdict": "8 notes = 1 bar(s); 1 traversal(s); 2 group(s) of 4"
+    },
+    {
+      "scale_size": 8,
+      "octaves": 1,
+      "subdivision": 2,
+      "beats_per_bar": 4,
+      "grouping": 5,
+      "notes_per_cycle": 8,
+      "notes_per_bar": 8,
+      "total_notes": 40,
+      "bars": 5.0,
+      "scale_traversals": 5,
+      "groups": 8.0,
+      "verdict": "40 notes = 5 bar(s); 5 traversal(s); 8 group(s) of 5"
+    },
+    {
+      "scale_size": 8,
+      "octaves": 1,
+      "subdivision": 2,
+      "beats_per_bar": 4,
+      "grouping": 6,
+      "notes_per_cycle": 8,
+      "notes_per_bar": 8,
+      "total_notes": 24,
+      "bars": 3.0,
+      "scale_traversals": 3,
+      "groups": 4.0,
+      "verdict": "24 notes = 3 bar(s); 3 traversal(s); 4 group(s) of 6"
+    },
+    {
+      "scale_size": 8,
+      "octaves": 1,
+      "subdivision": 2,
+      "beats_per_bar": 4,
+      "grouping": 7,
+      "notes_per_cycle": 8,
+      "notes_per_bar": 8,
+      "total_notes": 56,
+      "bars": 7.0,
+      "scale_traversals": 7,
+      "groups": 8.0,
+      "verdict": "56 notes = 7 bar(s); 7 traversal(s); 8 group(s) of 7"
+    },
+    {
+      "scale_size": 8,
+      "octaves": 1,
+      "subdivision": 3,
+      "beats_per_bar": 4,
+      "grouping": 3,
+      "notes_per_cycle": 8,
+      "notes_per_bar": 12,
+      "total_notes": 24,
+      "bars": 2.0,
+      "scale_traversals": 3,
+      "groups": 8.0,
+      "verdict": "24 notes = 2 bar(s); 3 traversal(s); 8 group(s) of 3"
+    },
+    {
+      "scale_size": 8,
+      "octaves": 1,
+      "subdivision": 3,
+      "beats_per_bar": 4,
+      "grouping": 4,
+      "notes_per_cycle": 8,
+      "notes_per_bar": 12,
+      "total_notes": 24,
+      "bars": 2.0,
+      "scale_traversals": 3,
+      "groups": 6.0,
+      "verdict": "24 notes = 2 bar(s); 3 traversal(s); 6 group(s) of 4"
+    },
+    {
+      "scale_size": 8,
+      "octaves": 1,
+      "subdivision": 3,
+      "beats_per_bar": 4,
+      "grouping": 5,
+      "notes_per_cycle": 8,
+      "notes_per_bar": 12,
+      "total_notes": 120,
+      "bars": 10.0,
+      "scale_traversals": 15,
+      "groups": 24.0,
+      "verdict": "120 notes = 10 bar(s); 15 traversal(s); 24 group(s) of 5"
+    },
+    {
+      "scale_size": 8,
+      "octaves": 1,
+      "subdivision": 3,
+      "beats_per_bar": 4,
+      "grouping": 6,
+      "notes_per_cycle": 8,
+      "notes_per_bar": 12,
+      "total_notes": 24,
+      "bars": 2.0,
+      "scale_traversals": 3,
+      "groups": 4.0,
+      "verdict": "24 notes = 2 bar(s); 3 traversal(s); 4 group(s) of 6"
+    },
+    {
+      "scale_size": 8,
+      "octaves": 1,
+      "subdivision": 3,
+      "beats_per_bar": 4,
+      "grouping": 7,
+      "notes_per_cycle": 8,
+      "notes_per_bar": 12,
+      "total_notes": 168,
+      "bars": 14.0,
+      "scale_traversals": 21,
+      "groups": 24.0,
+      "verdict": "168 notes = 14 bar(s); 21 traversal(s); 24 group(s) of 7"
+    },
+    {
+      "scale_size": 8,
+      "octaves": 1,
+      "subdivision": 4,
+      "beats_per_bar": 4,
+      "grouping": 3,
+      "notes_per_cycle": 8,
+      "notes_per_bar": 16,
+      "total_notes": 48,
+      "bars": 3.0,
+      "scale_traversals": 6,
+      "groups": 16.0,
+      "verdict": "48 notes = 3 bar(s); 6 traversal(s); 16 group(s) of 3"
+    },
+    {
+      "scale_size": 8,
+      "octaves": 1,
+      "subdivision": 4,
+      "beats_per_bar": 4,
+      "grouping": 4,
+      "notes_per_cycle": 8,
+      "notes_per_bar": 16,
+      "total_notes": 16,
+      "bars": 1.0,
+      "scale_traversals": 2,
+      "groups": 4.0,
+      "verdict": "16 notes = 1 bar(s); 2 traversal(s); 4 group(s) of 4"
+    },
+    {
+      "scale_size": 8,
+      "octaves": 1,
+      "subdivision": 4,
+      "beats_per_bar": 4,
+      "grouping": 5,
+      "notes_per_cycle": 8,
+      "notes_per_bar": 16,
+      "total_notes": 80,
+      "bars": 5.0,
+      "scale_traversals": 10,
+      "groups": 16.0,
+      "verdict": "80 notes = 5 bar(s); 10 traversal(s); 16 group(s) of 5"
+    },
+    {
+      "scale_size": 8,
+      "octaves": 1,
+      "subdivision": 4,
+      "beats_per_bar": 4,
+      "grouping": 6,
+      "notes_per_cycle": 8,
+      "notes_per_bar": 16,
+      "total_notes": 48,
+      "bars": 3.0,
+      "scale_traversals": 6,
+      "groups": 8.0,
+      "verdict": "48 notes = 3 bar(s); 6 traversal(s); 8 group(s) of 6"
+    },
+    {
+      "scale_size": 8,
+      "octaves": 1,
+      "subdivision": 4,
+      "beats_per_bar": 4,
+      "grouping": 7,
+      "notes_per_cycle": 8,
+      "notes_per_bar": 16,
+      "total_notes": 112,
+      "bars": 7.0,
+      "scale_traversals": 14,
+      "groups": 16.0,
+      "verdict": "112 notes = 7 bar(s); 14 traversal(s); 16 group(s) of 7"
+    },
+    {
+      "scale_size": 8,
+      "octaves": 1,
+      "subdivision": 6,
+      "beats_per_bar": 4,
+      "grouping": 3,
+      "notes_per_cycle": 8,
+      "notes_per_bar": 24,
+      "total_notes": 24,
+      "bars": 1.0,
+      "scale_traversals": 3,
+      "groups": 8.0,
+      "verdict": "24 notes = 1 bar(s); 3 traversal(s); 8 group(s) of 3"
+    },
+    {
+      "scale_size": 8,
+      "octaves": 1,
+      "subdivision": 6,
+      "beats_per_bar": 4,
+      "grouping": 4,
+      "notes_per_cycle": 8,
+      "notes_per_bar": 24,
+      "total_notes": 24,
+      "bars": 1.0,
+      "scale_traversals": 3,
+      "groups": 6.0,
+      "verdict": "24 notes = 1 bar(s); 3 traversal(s); 6 group(s) of 4"
+    },
+    {
+      "scale_size": 8,
+      "octaves": 1,
+      "subdivision": 6,
+      "beats_per_bar": 4,
+      "grouping": 5,
+      "notes_per_cycle": 8,
+      "notes_per_bar": 24,
+      "total_notes": 120,
+      "bars": 5.0,
+      "scale_traversals": 15,
+      "groups": 24.0,
+      "verdict": "120 notes = 5 bar(s); 15 traversal(s); 24 group(s) of 5"
+    },
+    {
+      "scale_size": 8,
+      "octaves": 1,
+      "subdivision": 6,
+      "beats_per_bar": 4,
+      "grouping": 6,
+      "notes_per_cycle": 8,
+      "notes_per_bar": 24,
+      "total_notes": 24,
+      "bars": 1.0,
+      "scale_traversals": 3,
+      "groups": 4.0,
+      "verdict": "24 notes = 1 bar(s); 3 traversal(s); 4 group(s) of 6"
+    },
+    {
+      "scale_size": 8,
+      "octaves": 1,
+      "subdivision": 6,
+      "beats_per_bar": 4,
+      "grouping": 7,
+      "notes_per_cycle": 8,
+      "notes_per_bar": 24,
+      "total_notes": 168,
+      "bars": 7.0,
+      "scale_traversals": 21,
+      "groups": 24.0,
+      "verdict": "168 notes = 7 bar(s); 21 traversal(s); 24 group(s) of 7"
+    }
+  ]
+}
