@@ -132,7 +132,7 @@ export const FAMILIES: Family[] = [
     id: "diatonic", short: "Diatonic hexachord",
     label: "Diatonic hexachord (6-32) — the core", kind: "rotation", size: 6,
     modes: DIATONIC_MODES,
-    note: "Zero tritones and five perfect fourths in its skip-three cycle.",
+    note: "Zero tritones, and five perfect fourth/fifth dyads — the most of any hexachord, and it is the only one that reaches five. Step three degrees and every interval in the cycle comes out perfect.",
   },
   {
     id: "mixo", short: "Mixolydian hexatonic",
