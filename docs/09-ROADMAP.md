@@ -30,7 +30,7 @@ Taken from the original brief and the follow-ups, in the order he raised them.
 | 13 | "Simplified to pentatonic and heptatonic" | 🟡 | families exist (Audava 5 / Sampurna 7) but they are not first-class *modules* with their own teaching |
 | 14 | **"The beauty of the hexatonic — the gospel usage, the improvisational usage for jazz musicians"** | ✅ | **BUILT 2026-07-25** — `/improvise`: eight vamps built only from the scale's own harmony, four voicing styles, bass/comp toggles, guide tones. Still missing: a lick library and recorded backing tracks. |
 | 15 | **"Barry Harris's octatonic scales and other octatonic scales"** | ✅ | **BUILT 2026-07-25** — `/harmony` → Barry Harris tab. All four sixth-diminished scales, the four-part movement, borrowing, the family. 16 tests. |
-| 16 | "Future: pentatonic, heptatonic and octatonic as well" | 🟡 | 5 and 7 as families; 8 now present via the sixth-diminished module. Symmetric diminished still absent. |
+| 16 | "Future: pentatonic, heptatonic and octatonic as well" | ✅ | 5 and 7 as families; 8 as both the Barry Harris sixth-diminished set AND the symmetric diminished scales (whole–half, half–whole). |
 | 17 | "World's first hexatonic scale app" | ❌ | **false and abandoned.** See `06-PRIOR-ART.md` |
 
 ---
@@ -39,7 +39,7 @@ Taken from the original brief and the follow-ups, in the order he raised them.
 
 Do these first. Each one multiplies what already exists.
 
-### 2.1 ⬜ MIDI input and grading
+### 2.1 ✅ MIDI input and grading — BUILT
 The engine already knows the expected note at every tick. Accept Web MIDI, compare
 what was played against the drill, and report which notes *and which accents* were
 missed. This converts a display into a teacher and is the single highest-value
@@ -69,7 +69,7 @@ backing tracks with drums, and more feels.
 exists. Musical examples are **Jason's own pedagogy**, never cited analysis — the
 page says so in as many words. See `08-JAZZ-GOSPEL.md §7`.
 
-### 2.3 ⬜ Print / PDF export
+### 2.3 ✅ Print / PDF export — BUILT (print stylesheet + button on /practice)
 Any drill, any key, as a clean page of engraving. Teachers will use this weekly and
 it makes the app useful away from a screen. VexFlow already renders the SVG.
 
@@ -77,7 +77,7 @@ it makes the app useful away from a screen. VexFlow already renders the SVG.
 Drill links already work. Wrap them: a teacher picks six drills, gets one page with
 six links and a printable summary. Directly useful for Music Gym and private lessons.
 
-### 2.5 🟡 Kala pramanam — three speeds as a first-class axis
+### 2.5 ✅ Kala pramanam — BUILT into /varisai as three locked speeds — three speeds as a first-class axis
 The tradition practises every exercise at ×1, ×2, ×4. Right now tempo is a slider.
 Make speed-doubling a real control with a locked relationship, because that is how
 students actually gear up. Constants are already in `resolution.ts`.
@@ -101,7 +101,7 @@ Facts already proven and worth surfacing:
 Credit properly: Weiskopf *Intervalic Improvisation* (1995 — one L), Campbell
 *Triad Pairs for Jazz* (Alfred 2001), Bergonzi *Hexatonics* (Advance).
 
-### 3.2 ⬜ Raga mode — the feature nobody can copy
+### 3.2 ✅ Raga mode — BUILT at /varisai
 Load real **shadava** ragas with aroha and avaroha that *differ*, plus vakra motion.
 `07-CARNATIC.md §3` has a verified dataset ready to use: Pushpalathika, Sriranjani,
 Malayamarutham, Nalinakanthi, Devamanohari, Marwa, Puriya, Gaudgiri Malhar, and the
@@ -114,7 +114,7 @@ Model it as an explicit degree sequence per direction.
 ⚠️ Ship the UNVERIFIED list from `07-CARNATIC.md §7` as caveats, not as facts. And
 Sriranjani is **panchama-varjya** — it is not the minor hexatonic.
 
-### 3.3 ⬜ The varisai curriculum ladder
+### 3.3 ✅ The varisai curriculum ladder — BUILT at /varisai
 Model the app's progression on the real system rather than an invented one:
 **Sarali → Melsthayi → Mandrasthayi → Janta (doubled) → Dhatu (zigzag permutations)
 → Alankaram (across talas)**. The structural insight worth stealing: levels 1–5 hold
@@ -163,7 +163,7 @@ They exist as scale families. They do not have their own teaching, their own the
 or their own interval-cycle stories. A pentatonic module should say what a pentatonic
 *is* — two omissions, no semitones at all, and its own set of available harmony.
 
-### 4.2 ⬜ Octatonic (8) — symmetric diminished first
+### 4.2 ✅ Octatonic (8) — symmetric diminished BUILT
 Whole-half and half-whole. The engine has `octatonic()` in the Python reference with
 a solved spelling problem worth porting:
 
@@ -213,6 +213,20 @@ pianists.
 Cohn's four hexatonic systems and hexatonic poles. `08-JAZZ-GOSPEL.md §8` has the
 verified PL cycles. ⚠️ Only **Western = Hex(2,3)** is directly sourced; Northern vs
 Southern could not be determined — do not assign those two.
+
+---
+
+## 4b. What actually remains, as of 2026-07-25
+
+Almost everything from the original brief is built. What is left:
+
+- **A lick library** per mode for /improvise — notated, playable phrases.
+- **Recorded backing tracks** with real drums, rather than the synthesised comp.
+- **Neo-Riemannian module** (4.5) — Cohn's hexatonic systems and poles.
+- **Instrument packs** (4.4) — guitar/bass fretboards, wind fingerings.
+- **Korvai calculator** (3.6) and **eduppu** (3.5).
+- **Drop-voicing movement** for the Barry Harris module.
+- The technical debt below.
 
 ---
 

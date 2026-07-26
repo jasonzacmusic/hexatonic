@@ -170,3 +170,39 @@ body {
   .hx-spin, .hx-rise, .hx-pulse, .hx-land { animation: none !important; }
   .btn-primary:hover { transform: none; }
 }
+
+
+/* ── print / PDF ────────────────────────────────────────────────────────────
+   Teachers will use this weekly. The page becomes the drill: title, scale,
+   resolution, and the engraving — on white, with the app furniture gone. */
+@media print {
+  @page { margin: 16mm 14mm; }
+  html, body {
+    background: #fff !important;
+    color: #111 !important;
+    background-image: none !important;
+  }
+  header, footer, nav, .no-print { display: none !important; }
+  main { padding: 0 !important; max-width: none !important; }
+  .card {
+    background: #fff !important;
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+    padding: 10mm 0 !important;
+    border-left: 0 !important; border-right: 0 !important;
+  }
+  .btn, input[type="range"], .seg, select { display: none !important; }
+  .field { display: none !important; }
+  .vf-host { background: #fff !important; padding: 0 !important; }
+  .vf-host svg { width: 100% !important; }
+  svg text, svg path { fill: #000 !important; }
+  .display, h1, h2, h3 { color: #111 !important; }
+  .quiet, .text-muted, [class*="text-muted"] { color: #555 !important; }
+  [class*="text-gold"] { color: #8a6d10 !important; }
+  [class*="text-red"] { color: #8B1E24 !important; }
+  .chip { border-color: #bbb !important; background: #fff !important; color: #111 !important; }
+  /* the print header, injected below */
+  .print-only { display: block !important; }
+}
+.print-only { display: none; }

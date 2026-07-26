@@ -14,7 +14,7 @@
 
 import {
   Alt, Letter, Note, note, pc, spell, stepLetter, letterIndex, noteName,
-  primeForm, intervalVector, forteName, parseNoteName,
+  primeForm, intervalVector, forteName, parseNoteName, MAJOR_KEYS,
 } from "./note";
 
 export const MAJOR = [0, 2, 4, 5, 7, 9, 11];
@@ -111,7 +111,7 @@ export const DIATONIC_MODES: ModeDef[] = [
   },
 ];
 
-export type FamilyKind = "rotation" | "omit" | "omitMulti" | "fixed";
+export type FamilyKind = "rotation" | "omit" | "omitMulti" | "fixed" | "symmetric8";
 
 export interface Family {
   id: string;
@@ -163,6 +163,18 @@ export const FAMILIES: Family[] = [
     label: "Prometheus / mystic (Scriabin)", kind: "fixed", size: 6,
     semis: [0, 2, 4, 6, 9, 10], letters: [0, 1, 2, 3, 5, 6],
     note: "Scriabin's synthetic harmony. 'Mystic chord' was coined by Arthur Eaglefield Hull in 1916 — Scriabin never used the term.",
+  },
+  {
+    id: "dim-wh", short: "Octatonic (whole–half)",
+    label: "Octatonic — whole–half diminished", kind: "symmetric8", size: 8,
+    semis: [0, 2, 3, 5, 6, 8, 9, 11],
+    note: "Repeats every minor third, so only three distinct transpositions exist. NOT one of Barry Harris's scales — those are eight-note but not symmetric. See /harmony.",
+  },
+  {
+    id: "dim-hw", short: "Octatonic (half–whole)",
+    label: "Octatonic — half–whole diminished", kind: "symmetric8", size: 8,
+    semis: [0, 1, 3, 4, 6, 7, 9, 10],
+    note: "The dominant-side rotation. Same three transpositions.",
   },
   {
     id: "penta", short: "Audava (5)",
@@ -248,6 +260,52 @@ export function buildScale(tonicName: string, familyId: string, modeIndex = 0): 
     const om = family.omit as number[];
     notes = full.filter((_, i) => !om.includes(i + 1));
     keySignature = inferMajorKey(full);
+  } else if (family.kind === "symmetric8") {
+    /* Eight notes will not fit in seven letters, so exactly one letter must
+       repeat — and WHICH one cannot be fixed globally. A template that spells C
+       cleanly gives Eb a double flat. So: try every position for the doubled
+       letter, score by sum(alt squared) to punish double accidentals hard, and
+       tie-break toward the key's own accidental direction. Ported from the
+       Python reference, where 0 of 24 root/kind pairs needed a double. */
+    const t = parseNoteName(tonicName);
+    const flatKey = (MAJOR_KEYS[tonicName] ?? 0) < 0 || tonicName.endsWith("b");
+    let best: Note[] | null = null;
+    let bestCost = Infinity;
+    /* dbl 0..6 doubles a letter early; dbl === 7 means no early doubling and the
+       eighth note simply takes the root letter an octave up — which is how
+       A B C D Eb F Gb Ab is conventionally written. Excluding that case was
+       forcing mixed accidentals on several roots. */
+    for (let dbl = 0; dbl <= 7; dbl++) {
+      const letters: number[] = [];
+      let li = 0;
+      for (let i = 0; i < 8; i++) { letters.push(li); if (i !== dbl) li++; }
+      if (letters[7] > 7) continue;
+      const cand: Note[] = [];
+      let ok = true;
+      for (let i = 0; i < 8; i++) {
+        const L = stepLetter(t.letter, letters[i]);
+        const oct = t.octave + Math.floor((letterIndex(t.letter) + letters[i]) / 7);
+        const n = spell(L, (pc(t) + family.semis![i]) % 12, oct);
+        if (!n) { ok = false; break; }
+        cand.push(n);
+      }
+      if (!ok) continue;
+      /* Tie-breaks, in order of importance:
+         1. fewest accidentals, punishing doubles hard
+         2. do not MIX sharps and flats in one scale — "C D Eb F F# G# A B" is
+            legal but reads as a mistake; "C D Eb F Gb Ab A B" is the same cost
+            and looks deliberate
+         3. lean the way the key already leans */
+      const sharps = cand.filter((n) => n.alt > 0).length;
+      const flats = cand.filter((n) => n.alt < 0).length;
+      const mixed = sharps > 0 && flats > 0 ? 1 : 0;
+      const wrongDir = cand.filter((n) => n.alt !== 0 && (n.alt > 0) === flatKey).length;
+      const cost =
+        cand.reduce((a, n) => a + n.alt * n.alt, 0) * 1000 + mixed * 100 + wrongDir;
+      if (cost < bestCost) { bestCost = cost; best = cand; }
+    }
+    if (!best) return fail(`${tonicName} cannot be spelled in this scale.`);
+    notes = best;
   } else {
     const t = parseNoteName(tonicName);
     for (let i = 0; i < family.semis!.length; i++) {

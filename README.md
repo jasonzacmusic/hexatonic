@@ -10,6 +10,8 @@ Immediate alias (skips DNS): **https://hexatonic.vercel.app**
 |---|---|
 | [/practice](https://hexatonic.nathanielschool.com/practice) | the drill machine |
 | [/improvise](https://hexatonic.nathanielschool.com/improvise) | vamps built from the scale's own harmony |
+| [/harmony](https://hexatonic.nathanielschool.com/harmony) | triads, triad pairs, Barry Harris |
+| [/varisai](https://hexatonic.nathanielschool.com/varisai) | the practice ladder + raga mode |
 | [/learn](https://hexatonic.nathanielschool.com/learn) | the five theorems, each with a button that proves it by ear |
 | [/scales](https://hexatonic.nathanielschool.com/scales) | every family in every key |
 | [/resolution](https://hexatonic.nathanielschool.com/resolution) | the bar-count calculator |

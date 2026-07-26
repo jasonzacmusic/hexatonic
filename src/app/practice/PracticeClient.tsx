@@ -351,6 +351,9 @@ export default function PracticeClient() {
                   onClick={copyLink}>
             {copied ? "✓ Link copied" : "Copy drill link"}
           </button>
+          <button className="btn btn-ghost" onClick={() => window.print()}>
+            Print / PDF
+          </button>
           <span className="ml-auto font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
             space play · l loop · c click
           </span>
