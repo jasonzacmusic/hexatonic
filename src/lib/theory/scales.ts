@@ -16,6 +16,7 @@ import {
   Alt, Letter, Note, note, pc, spell, stepLetter, letterIndex, noteName,
   primeForm, intervalVector, forteName, parseNoteName, MAJOR_KEYS,
 } from "./note";
+import { spellSet } from "./custom";
 
 export const MAJOR = [0, 2, 4, 5, 7, 9, 11];
 export const NATURAL_MINOR = [0, 2, 3, 5, 7, 8, 10];
@@ -111,7 +112,7 @@ export const DIATONIC_MODES: ModeDef[] = [
   },
 ];
 
-export type FamilyKind = "rotation" | "omit" | "omitMulti" | "fixed" | "symmetric8";
+export type FamilyKind = "rotation" | "omit" | "omitMulti" | "fixed" | "symmetric8" | "custom";
 
 export interface Family {
   id: string;
@@ -177,6 +178,11 @@ export const FAMILIES: Family[] = [
     note: "The dominant-side rotation. Same three transpositions.",
   },
   {
+    id: "custom", short: "Custom — build your own",
+    label: "Custom — build your own", kind: "custom", size: 6,
+    note: "Any set of notes you like. Everything else in the app — the harmony, the interval cycles, the resolution maths — is computed from whatever you build.",
+  },
+  {
     id: "penta", short: "Audava (5)",
     label: "Audava (5) — major pentatonic", kind: "omitMulti", size: 5,
     parent: MAJOR, omit: [4, 7],
@@ -213,7 +219,9 @@ export interface ScaleInstance {
   error?: string;
 }
 
-export function buildScale(tonicName: string, familyId: string, modeIndex = 0): ScaleInstance {
+export function buildScale(
+  tonicName: string, familyId: string, modeIndex = 0, customSemis?: number[]
+): ScaleInstance {
   const family = familyById(familyId);
   const fail = (msg: string): ScaleInstance => ({
     notes: [], removed: null, keySignature: null, label: family.label, aka: [], teaching: "",
@@ -260,6 +268,14 @@ export function buildScale(tonicName: string, familyId: string, modeIndex = 0): 
     const om = family.omit as number[];
     notes = full.filter((_, i) => !om.includes(i + 1));
     keySignature = inferMajorKey(full);
+  } else if (family.kind === "custom") {
+    /* Whatever the user built. Everything downstream — harmony, interval cycles,
+       the resolution maths — is computed from the set, so nothing else needs to
+       know this scale was not one of ours. */
+    const semis = customSemis && customSemis.length ? customSemis : [0, 2, 3, 5, 7, 10];
+    const r = spellSet(tonicName, semis);
+    if (r.error) return fail(r.error);
+    notes = r.notes;
   } else if (family.kind === "symmetric8") {
     /* Eight notes will not fit in seven letters, so exactly one letter must
        repeat — and WHICH one cannot be fixed globally. A template that spells C

@@ -12,6 +12,7 @@ import { SUBDIVISIONS } from "@/lib/theory/resolution";
 import { METERS, saptaTalaMeters } from "@/lib/theory/meters";
 import { midi, pc } from "@/lib/theory/note";
 import { previewAudio } from "@/lib/audio/engine";
+import CustomBuilder from "@/components/CustomBuilder";
 
 export default function PracticeClient() {
   const d = useDrill();
@@ -244,6 +245,13 @@ export default function PracticeClient() {
                 </select>
               </div>
             </div>
+            {state.family === "custom" ? (
+              <div className="field">
+                <label>Your notes</label>
+                <CustomBuilder code={state.custom} scale={scale}
+                               onChange={(c) => set("custom", c)} />
+              </div>
+            ) : (
             <div className="field">
               <label htmlFor="mode">Mode / rotation</label>
               <select id="mode" className="sel" value={state.mode} disabled={!isRotation}
@@ -254,6 +262,7 @@ export default function PracticeClient() {
                   : <option value={0}>—</option>}
               </select>
             </div>
+            )}
             <div className="flex flex-wrap items-end gap-4">
               <div className="field">
                 <label>Octaves</label>

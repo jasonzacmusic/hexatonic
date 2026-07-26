@@ -14,6 +14,7 @@ import { buildScale, familyById, FAMILIES, KEYS } from "./theory/scales";
 import { buildPattern, patternById, PATTERNS, PatternId } from "./theory/patterns";
 import { solveResolution, ResolveMode, gatiFor } from "./theory/resolution";
 import { meterById, METERS, allTalaMeters } from "./theory/meters";
+import { decodeCustom } from "./theory/custom";
 import { getAudio } from "./audio/engine";
 import { usePlayback } from "./audio/usePlayback";
 
@@ -30,21 +31,22 @@ export interface DrillState {
   resolve: ResolveMode;
   meter: string;
   countIn: boolean;
+  custom: string;
   bpm: number;
   loop: boolean;
   click: boolean;
 }
 
 export const DEFAULTS: DrillState = {
-  key: "C", family: "diatonic", mode: 0, pattern: "both", cell: 4,
+  key: "C", family: "diatonic", mode: 4, pattern: "both", cell: 4,
   octaves: 1, includeTop: false, sub: 4, grouping: 4, resolve: "full", meter: "4-4",
-  bpm: 84, loop: true, click: true, countIn: true,
+  bpm: 84, loop: true, click: true, countIn: true, custom: "",
 };
 
 const SHORT: Record<keyof DrillState, string> = {
   key: "k", family: "f", mode: "m", pattern: "p", cell: "c", octaves: "o",
   includeTop: "t", sub: "s", grouping: "g", resolve: "r", meter: "mt", bpm: "b",
-  loop: "l", click: "x", countIn: "ci",
+  loop: "l", click: "x", countIn: "ci", custom: "cs",
 };
 
 export function encodeState(s: DrillState): string {
@@ -98,6 +100,8 @@ export function decodeState(qs: string): DrillState {
   out.loop = bool(q.get(SHORT.loop), DEFAULTS.loop);
   out.click = bool(q.get(SHORT.click), DEFAULTS.click);
   out.countIn = bool(q.get(SHORT.countIn), DEFAULTS.countIn);
+  const cs = q.get(SHORT.custom);
+  out.custom = cs && /^[0-9a-z]{1,3}$/.test(cs) ? cs : DEFAULTS.custom;
   return out;
 }
 
@@ -131,8 +135,9 @@ export function useDrill(initial?: Partial<DrillState>) {
   }, []);
 
   const scale = useMemo(
-    () => buildScale(state.key, state.family, state.mode),
-    [state.key, state.family, state.mode]
+    () => buildScale(state.key, state.family, state.mode,
+                     state.custom ? decodeCustom(state.custom) : undefined),
+    [state.key, state.family, state.mode, state.custom]
   );
 
   const pattern = useMemo(() => {
