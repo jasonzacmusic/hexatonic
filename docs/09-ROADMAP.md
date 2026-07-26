@@ -45,17 +45,29 @@ what was played against the drill, and report which notes *and which accents* we
 missed. This converts a display into a teacher and is the single highest-value
 addition on the list.
 
-### 2.2 ✅ Improvisation mode — BUILT. What remains: a lick library per mode, and richer feels/drums.
-Jason asked for this explicitly and it is entirely missing. Minimum useful version:
-- a **drone** on the tonic, and a **vamp** per mode (Am11 loop, gospel 6/8, quartal pad)
-- **"blow over this"** — the ring and keyboard stay lit with the available notes while
-  a progression cycles, so the student improvises rather than runs patterns
-- the four available triads shown as **voicings**, not just labels
-- a small **lick library** in each mode, notated and playable
+### 2.2 ✅ Improvisation mode — BUILT 2026-07-25
+`/improvise`. A vamp loops underneath while the ring and keyboard show what is
+available; guide tones say what to **land on** rather than what is permitted.
+Eight vamps (drone, tonic, I–vi, four-chord turnaround, i–♭VII, quartal, 6/8,
+swing two-feel), four voicing styles, bass and comp toggles.
+
+**The rule that makes it teach:** every chord is built only from notes the scale
+actually contains. If a progression would need the removed note, it does not exist.
+
+⚠️ **The trap, recorded because it is the app's own headline error.** The first
+implementation built chords by taking *every other scale degree*. In a six-note
+scale that is **not thirds** — C D E G A B gives C–E–A, which is A minor, so the C
+tonic vamp came out labelled and voiced as Am. Chords must be looked up by real
+interval from the scale's chord table. Degree arithmetic is correct **only** for
+the quartal stack, where stepping three degrees is perfect every time. Eight tests
+in `tests/vamps.test.ts` lock this.
+
+**Still open here:** a lick library per mode (notated and playable), recorded
+backing tracks with drums, and more feels.
 
 ⚠️ Content caution: no published repertoire analysis of the no-4 collection in gospel
-exists. Present musical examples as **Jason's own pedagogy**, never as cited analysis.
-See `08-JAZZ-GOSPEL.md §7`.
+exists. Musical examples are **Jason's own pedagogy**, never cited analysis — the
+page says so in as many words. See `08-JAZZ-GOSPEL.md §7`.
 
 ### 2.3 ⬜ Print / PDF export
 Any drill, any key, as a clean page of engraving. Teachers will use this weekly and
