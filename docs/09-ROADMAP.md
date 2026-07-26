@@ -28,7 +28,7 @@ Taken from the original brief and the follow-ups, in the order he raised them.
 | 11 | "The available triads should be very, very critical" | ✅ | harmony panel, chord-as-set with a name list |
 | 12 | "Some of them would be inversions of each other" | ✅ | confirmed — C6 = Am7, Em7 = G6, tap to flip |
 | 13 | "Simplified to pentatonic and heptatonic" | 🟡 | families exist (Audava 5 / Sampurna 7) but they are not first-class *modules* with their own teaching |
-| 14 | **"The beauty of the hexatonic — the Sunday scale, the gospel usage, the improvisational usage for jazz musicians"** | ⬜ | **the biggest unbuilt thing.** There is no improvisation surface at all: no vamps, no backing tracks, no lick library, no "play over this" mode |
+| 14 | **"The beauty of the hexatonic — the gospel usage, the improvisational usage for jazz musicians"** | ✅ | **BUILT 2026-07-25** — `/improvise`: eight vamps built only from the scale's own harmony, four voicing styles, bass/comp toggles, guide tones. Still missing: a lick library and recorded backing tracks. |
 | 15 | **"Barry Harris's octatonic scales and other octatonic scales"** | ⬜ | not built. See §3 — this needs a *harmony* engine, not another scale list |
 | 16 | "Future: pentatonic, heptatonic and octatonic as well" | 🟡 | 5 and 7 partial, 8 absent |
 | 17 | "World's first hexatonic scale app" | ❌ | **false and abandoned.** See `06-PRIOR-ART.md` |
@@ -45,7 +45,7 @@ what was played against the drill, and report which notes *and which accents* we
 missed. This converts a display into a teacher and is the single highest-value
 addition on the list.
 
-### 2.2 ⬜ Improvisation mode — the gospel/jazz gap (feature 14)
+### 2.2 ✅ Improvisation mode — BUILT. What remains: a lick library per mode, and richer feels/drums.
 Jason asked for this explicitly and it is entirely missing. Minimum useful version:
 - a **drone** on the tonic, and a **vamp** per mode (Am11 loop, gospel 6/8, quartal pad)
 - **"blow over this"** — the ring and keyboard stay lit with the available notes while

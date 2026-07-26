@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://hexatonic.nathanielschool.com/about" },
   title: "About",
   description: "How Hexatonic was built, what it claims, and what it deliberately does not claim.",
 };

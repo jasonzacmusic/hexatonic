@@ -56,26 +56,93 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-const JSONLD = {
-  "@context": "https://schema.org",
+const SITE_URL = SITE;
+
+const ORG = {
+  "@type": "Organization",
+  "@id": `${SITE_URL}#org`,
+  name: "Nathaniel School of Music",
+  url: "https://nathanielschool.com",
+  founder: { "@type": "Person", name: "Jason Zac" },
+};
+
+const APP = {
   "@type": "WebApplication",
+  "@id": `${SITE_URL}#app`,
   name: "Hexatonic",
   alternateName: "Hexatonic — the six-note practice engine",
-  url: SITE,
+  url: SITE_URL,
   applicationCategory: "EducationalApplication",
-  operatingSystem: "Any",
+  applicationSubCategory: "Music education",
+  operatingSystem: "Any modern browser",
+  browserRequirements: "Requires JavaScript and Web Audio",
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
-  description:
-    "A free browser app for practising hexatonic (six-note) scales, with generated pattern drills in Carnatic rhythmic groupings, live staff notation and sampled piano.",
-  creator: { "@type": "Person", name: "Jason Zac" },
-  publisher: {
-    "@type": "Organization",
-    name: "Nathaniel School of Music",
-    url: "https://nathanielschool.com",
-  },
+  featureList: [
+    "Hexatonic scales in all twelve keys",
+    "Generated pattern drills in groupings of three to nine",
+    "Resolution solver — the bar a pattern lands on",
+    "Carnatic gati and konnakol",
+    "Live staff notation",
+    "Sampled grand piano",
+    "Improvisation vamps built from the scale's own harmony",
+    "Works offline",
+  ],
+  creator: { "@type": "Person", name: "Jason Zac", url: "https://nathanielschool.com" },
+  publisher: { "@id": `${SITE_URL}#org` },
   inLanguage: "en",
   isAccessibleForFree: true,
 };
+
+/* Answers to what people actually type into a search box. Every one of these is
+   a claim the app can defend — see docs/06-PRIOR-ART.md and docs/08-JAZZ-GOSPEL.md. */
+const FAQ = {
+  "@type": "FAQPage",
+  "@id": `${SITE_URL}#faq`,
+  mainEntity: [
+    {
+      "@type": "Question",
+      name: "What is a hexatonic scale?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "A six-note scale. The most useful one is a major scale with the 4th or the 7th removed. A major scale contains exactly one tritone, and removing either member of it — and only those two notes — leaves a six-note scale with no tritone at all.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Why remove the 4th from a major scale?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Because the 4th is one of the two notes forming the scale's only tritone, F and B in C major. Removing either one produces the same tritone-free six-note collection. Removing any other degree leaves the tritone in place.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Is the hexatonic scale the same as the gospel scale?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "No. The term gospel scale usually means 1 2 b3 3 5 6, the major blues scale. The six-note collection here is better called the Ionian/Lydian hexatonic, after the two modes it sits between.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Can you practise a hexatonic scale in thirds?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Not really. Stepping two degrees through a six-note scale gives two major thirds, two minor thirds and two perfect fourths — the fourths appearing where the removed note left a gap. Stepping three degrees, however, gives a perfect fourth or fifth on every single degree.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "What are tisra, chatusra, khanda and misra?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "They are the Carnatic gati — the number of pulses subdividing each beat. Tisra is three, chatusra four, khanda five, misra seven and sankeerna nine. Misra means mixed, because seven is three plus four.",
+      },
+    },
+  ],
+};
+
+const JSONLD = { "@context": "https://schema.org", "@graph": [ORG, APP, FAQ] };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

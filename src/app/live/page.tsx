@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import LiveClient from "./LiveClient";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://hexatonic.nathanielschool.com/live" },
   title: "Live — presenter mode",
   description: "Big type, keyboard shortcuts and preset drills for teaching from the piano bench.",
   robots: { index: false },

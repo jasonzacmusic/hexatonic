@@ -9,6 +9,7 @@ Immediate alias (skips DNS): **https://hexatonic.vercel.app**
 | | |
 |---|---|
 | [/practice](https://hexatonic.nathanielschool.com/practice) | the drill machine |
+| [/improvise](https://hexatonic.nathanielschool.com/improvise) | vamps built from the scale's own harmony |
 | [/learn](https://hexatonic.nathanielschool.com/learn) | the five theorems, each with a button that proves it by ear |
 | [/scales](https://hexatonic.nathanielschool.com/scales) | every family in every key |
 | [/resolution](https://hexatonic.nathanielschool.com/resolution) | the bar-count calculator |
@@ -21,6 +22,7 @@ Immediate alias (skips DNS): **https://hexatonic.vercel.app**
 
 **Handing it to Codex?** → [CODEX-AUDIT-PROMPT.md](CODEX-AUDIT-PROMPT.md) — one copy-paste block.
 **What's still unbuilt?** → [docs/09-ROADMAP.md](docs/09-ROADMAP.md) — every feature from the original brief, with status.
+**Handing the look to Claude Design?** → [docs/DESIGN-BRIEF-CLAUDE-DESIGN.md](docs/DESIGN-BRIEF-CLAUDE-DESIGN.md) — three ready-to-paste briefs.
 
 Local: `npm install && npm run dev` → http://localhost:3311
 Tests: `npm test` — 56 tests gated against `engine/verified.json`
