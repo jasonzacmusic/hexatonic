@@ -54,6 +54,32 @@ describe("set-class analysis", () => {
     expect(intervalVector(pcs)).toEqual([1, 4, 3, 2, 5, 0]);
     expect(forteName(pcs)).toContain("6-32");
   });
+  it("6-32 is the UNIQUE hexachord with the maximum perfect-fourth content", () => {
+    // Guards the /scales copy: the "five" is five ic5 DYADS in the set, which is
+    // not the same thing as the six perfect intervals in the skip-three cycle.
+    // Conflating the two is exactly the error this test exists to catch.
+    const classes = new Map<string, number[]>();
+    for (let a = 0; a < 12; a++)
+      for (let b = a + 1; b < 12; b++)
+        for (let c = b + 1; c < 12; c++)
+          for (let d = c + 1; d < 12; d++)
+            for (let e = d + 1; e < 12; e++)
+              for (let f = e + 1; f < 12; f++) {
+                const set = [a, b, c, d, e, f];
+                classes.set(primeForm(set).join(","), intervalVector(set));
+              }
+    const max = Math.max(...[...classes.values()].map((v) => v[4]));
+    const winners = [...classes].filter(([, v]) => v[4] === max).map(([k]) => k);
+    expect(max).toBe(5);
+    expect(winners).toEqual(["0,2,4,5,7,9"]);          // 6-32, and only 6-32
+
+    const hexa = buildScale("C", "diatonic", 0);
+    expect(intervalVector(hexa.pcs)[4]).toBe(5);        // five dyads in the SET
+    const cycle = skipCycle(hexa.notes, 3);
+    expect(Object.values(cycle.tally).reduce((x, y) => x + y, 0)).toBe(6); // six in the CYCLE
+    expect(cycle.tally).toEqual({ P5: 3, P4: 3 });
+  });
+
   it("finds exactly five tritone-free hexachord set classes", () => {
     const free = new Set<string>();
     for (let a = 0; a < 12; a++)

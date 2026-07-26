@@ -10,6 +10,8 @@
  * 2. Everything is scheduled against AudioContext.currentTime, never setTimeout.
  */
 
+import { midi, Note } from "../theory/note";
+
 const SAMPLES: Record<number, string> = {
   36: "C2", 39: "Ds2", 42: "Fs2", 45: "A2",
   48: "C3", 51: "Ds3", 54: "Fs3", 57: "A3",
@@ -25,10 +27,11 @@ export interface ScheduledNote {
 }
 
 export interface PlaybackOptions {
-  notes: number[];          // midi numbers, one per step
+  notes: Note[];            // spelled notes; MIDI is derived only at the audio boundary
   stepDur: number;          // seconds per note
   grouping: number;         // accent every N
   subdivision: number;      // notes per beat (for the click)
+  beatsPerBar?: number;
   loop: boolean;
   click: boolean;
   countInBeats: number;
@@ -44,27 +47,35 @@ export class AudioEngine {
   private master: GainNode | null = null;
   private clickBus: GainNode | null = null;
   private buffers = new Map<number, AudioBuffer>();
+  private samplePromises = new Map<number, Promise<void>>();
+  private failedSamples = new Set<number>();
+  private sampleBasePath = "/audio/salamander";
   private timer: ReturnType<typeof setInterval> | null = null;
   private opts: PlaybackOptions | null = null;
   private queued = 0;
   private seqStart = 0;
-  private live = new Set<AudioBufferSourceNode>();
+  private requestId = 0;
+  private previewId = 0;
+  private live = new Set<AudioScheduledSourceNode>();
+  private fallbackNotes = 0;
 
-  loading = false;
   ready = false;
   playing = false;
 
   get context() { return this.ctx; }
   get startTime() { return this.seqStart; }
+  get loadedSamples() { return this.buffers.size; }
+  get totalSamples() { return Object.keys(SAMPLES).length; }
+  get liveNodeCount() { return this.live.size; }
+  get loading() { return this.samplePromises.size > 0; }
+  get fullyLoaded() { return this.buffers.size === this.totalSamples; }
+  get sampleFailures() { return this.failedSamples.size; }
+  get fallbackNoteCount() { return this.fallbackNotes; }
 
-  async init(basePath = "/audio/salamander"): Promise<void> {
-    if (this.ready) {
-      if (this.ctx?.state === "suspended") await this.ctx.resume();
-      return;
-    }
-    if (this.loading) return;
-    this.loading = true;
+  private ensureContext() {
+    if (this.ctx) return;
     const Ctor = window.AudioContext ?? (window as any).webkitAudioContext;
+    if (!Ctor) throw new Error("Web Audio is not supported in this browser.");
     this.ctx = new Ctor();
     this.master = this.ctx.createGain();
     this.master.gain.value = 0.85;
@@ -72,41 +83,116 @@ export class AudioEngine {
     this.clickBus = this.ctx.createGain();
     this.clickBus.gain.value = 0.3;
     this.clickBus.connect(this.ctx.destination);
+  }
 
-    await Promise.all(
-      Object.entries(SAMPLES).map(async ([m, name]) => {
-        const res = await fetch(`${basePath}/${name}.mp3`);
+  /**
+   * Start fetching samples without making playback depend on the network.
+   * The notes needed by the current drill are requested first; every missing
+   * file loads independently, so one bad response can never mute the app.
+   */
+  private beginSampleLoading(priorityMidis: number[] = []) {
+    if (!this.ctx) return;
+    const keys = Object.keys(SAMPLES).map(Number);
+    const priority = new Set<number>();
+    for (const m of priorityMidis) {
+      let nearest = keys[0];
+      for (const key of keys)
+        if (Math.abs(m - key) < Math.abs(m - nearest)) nearest = key;
+      priority.add(nearest);
+    }
+    const ordered = [...priority, ...keys.filter((key) => !priority.has(key))];
+    for (const key of ordered) this.loadSample(key);
+  }
+
+  private loadSample(key: number) {
+    if (!this.ctx || this.buffers.has(key) || this.samplePromises.has(key)) return;
+    const name = SAMPLES[key];
+    if (!name) return;
+    const task = (async () => {
+      try {
+        const res = await fetch(`${this.sampleBasePath}/${name}.mp3`, { cache: "force-cache" });
         if (!res.ok) throw new Error(`sample ${name} failed (${res.status})`);
-        const buf = await this.ctx!.decodeAudioData(await res.arrayBuffer());
-        this.buffers.set(Number(m), buf);
-      })
-    );
-    this.loading = false;
+        const decoded = await this.ctx!.decodeAudioData(await res.arrayBuffer());
+        this.buffers.set(key, decoded);
+        this.failedSamples.delete(key);
+      } catch {
+        // Keep the transport alive on its synthesized fallback. A later Play or
+        // preview retries only the missing file.
+        this.failedSamples.add(key);
+      } finally {
+        this.samplePromises.delete(key);
+      }
+    })();
+    this.samplePromises.set(key, task);
+  }
+
+  /** Test/diagnostic hook: playback never waits on this. */
+  async waitForSampleLoading() {
+    while (this.samplePromises.size)
+      await Promise.allSettled([...this.samplePromises.values()]);
+  }
+
+  async init(basePath = "/audio/salamander", priorityMidis: number[] = []): Promise<void> {
+    this.sampleBasePath = basePath;
+    this.ensureContext();
+
+    // Resume is invoked before the first await so iOS can associate it with the
+    // current user gesture. Downloads continue independently in the background.
+    const resume = this.resume();
+    this.beginSampleLoading(priorityMidis);
+    const running = await resume;
+    if (!running)
+      throw new Error("Audio is blocked by the browser. Tap Play once more to enable it.");
     this.ready = true;
   }
 
-  /** Resume after a tab-visibility change — the AudioContext suspend trap. */
-  async resume() {
-    if (this.ctx?.state === "suspended") await this.ctx.resume();
+  private unlock() {
+    if (!this.ctx || !this.master) return;
+    // A zero-gain source created inside the gesture unlocks older iOS Web Audio
+    // implementations without producing a click.
+    const oscillator = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    gain.gain.value = 0;
+    oscillator.connect(gain);
+    gain.connect(this.master);
+    const now = this.ctx.currentTime;
+    oscillator.start(now);
+    oscillator.stop(now + 0.008);
   }
 
-  private nearest(m: number): number {
-    let best = 60, bd = Infinity;
+  /** Resume after a tab-visibility change — the AudioContext suspend trap. */
+  async resume(): Promise<boolean> {
+    if (!this.ctx) return false;
+    try {
+      this.unlock();
+      if (this.ctx.state !== "running")
+        await this.ctx.resume();
+    } catch {
+      return false;
+    }
+    return this.ctx.state === "running";
+  }
+
+  private nearest(m: number): { key: number; distance: number } | null {
+    let best = 0, bd = Infinity;
     for (const k of this.buffers.keys()) {
       const d = Math.abs(m - k);
       if (d < bd) { bd = d; best = k; }
     }
-    return best;
+    return Number.isFinite(bd) ? { key: best, distance: bd } : null;
   }
 
   note(m: number, when: number, dur: number, vel = 0.8) {
     if (!this.ctx || !this.master) return;
-    const s = this.nearest(m);
-    const buf = this.buffers.get(s);
-    if (!buf) return;
+    const nearest = this.nearest(m);
+    const buf = nearest && nearest.distance <= 12 ? this.buffers.get(nearest.key) : null;
+    if (!buf || !nearest) {
+      this.synthNote(m, when, dur, vel);
+      return;
+    }
     const src = this.ctx.createBufferSource();
     src.buffer = buf;
-    src.playbackRate.value = Math.pow(2, (m - s) / 12);
+    src.playbackRate.value = Math.pow(2, (m - nearest.key) / 12);
     const g = this.ctx.createGain();
     g.gain.setValueAtTime(0, when);
     g.gain.linearRampToValueAtTime(vel, when + 0.006);
@@ -114,17 +200,46 @@ export class AudioEngine {
     src.connect(g); g.connect(this.master);
     src.start(when);
     src.stop(when + Math.max(dur * 1.6, 0.45));
-    this.live.add(src);
-    src.onended = () => this.live.delete(src);
+    this.track(src);
+  }
+
+  /** Network-independent, pitched fallback used only until a nearby piano sample arrives. */
+  private synthNote(m: number, when: number, dur: number, vel: number) {
+    if (!this.ctx || !this.master) return;
+    const oscillator = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    const end = when + Math.max(0.22, Math.min(dur * 1.8, 0.8));
+    oscillator.type = "triangle";
+    oscillator.frequency.value = 440 * Math.pow(2, (m - 69) / 12);
+    gain.gain.setValueAtTime(0.0001, when);
+    gain.gain.exponentialRampToValueAtTime(Math.max(0.02, vel * 0.2), when + 0.006);
+    gain.gain.exponentialRampToValueAtTime(0.0001, end);
+    oscillator.connect(gain);
+    gain.connect(this.master);
+    oscillator.start(when);
+    oscillator.stop(end + 0.02);
+    this.fallbackNotes++;
+    this.track(oscillator);
+  }
+
+  private track(source: AudioScheduledSourceNode) {
+    this.live.add(source);
+    source.onended = () => this.live.delete(source);
   }
 
   /** One-shot chord/note preview, for tapping a chip or a chord card. */
-  async preview(midis: number[], spread = 0.055) {
-    await this.init();
-    await this.resume();
-    if (!this.ctx) return;
+  async preview(midis: number[], spread = 0.055): Promise<boolean> {
+    const request = ++this.previewId;
+    await this.init("/audio/salamander", midis);
+    if (request !== this.previewId || !this.ctx) return false;
+    if (this.master) {
+      const now = this.ctx.currentTime;
+      this.master.gain.cancelScheduledValues(now);
+      this.master.gain.setTargetAtTime(0.85, now, 0.008);
+    }
     const t0 = this.ctx.currentTime + 0.02;
     midis.forEach((m, i) => this.note(m, t0 + i * spread, 1.1, 0.7));
+    return true;
   }
 
   private clickAt(when: number, strong: boolean) {
@@ -138,13 +253,25 @@ export class AudioEngine {
     g.gain.exponentialRampToValueAtTime(0.0001, when + 0.035);
     o.connect(g); g.connect(this.clickBus);
     o.start(when); o.stop(when + 0.05);
+    this.track(o);
   }
 
-  async start(opts: PlaybackOptions) {
-    await this.init();
-    await this.resume();
-    if (!this.ctx) return;
-    this.stop(true);
+  async start(opts: PlaybackOptions): Promise<boolean> {
+    const request = ++this.requestId;
+    this.stopPlayback(true);
+
+    await this.init("/audio/salamander", opts.notes.map(midi));
+    if (request !== this.requestId) return false;
+    if (request !== this.requestId || !this.ctx || !opts.notes.length) return false;
+
+    // stopPlayback deliberately faded the previous run. Restore before the
+    // count-in; unlike the old timeout, this does not depend on playing=false.
+    if (this.master) {
+      const now = this.ctx.currentTime;
+      this.master.gain.cancelScheduledValues(now);
+      this.master.gain.setValueAtTime(0.85, now);
+    }
+
     this.opts = opts;
     this.playing = true;
     this.queued = 0;
@@ -156,6 +283,7 @@ export class AudioEngine {
     }
     this.pump();
     this.timer = setInterval(() => this.pump(), TICK_MS);
+    return true;
   }
 
   private pump() {
@@ -168,14 +296,13 @@ export class AudioEngine {
       const i = this.queued;
       if (!o.loop && i >= len) break;
       const when = this.seqStart + i * o.stepDur;
-      this.note(o.notes[i % len], when, o.stepDur, i % o.grouping === 0 ? 0.95 : 0.7);
+      this.note(midi(o.notes[i % len]), when, o.stepDur, i % o.grouping === 0 ? 0.95 : 0.7);
       if (o.click && i % o.subdivision === 0)
-        this.clickAt(when, i % (o.subdivision * 4) === 0);
+        this.clickAt(when, i % (o.subdivision * (o.beatsPerBar ?? 4)) === 0);
       this.queued++;
     }
     if (!o.loop && this.ctx.currentTime > this.seqStart + len * o.stepDur + 0.15) {
       this.stop();
-      o.onStop?.();
     }
   }
 
@@ -197,22 +324,40 @@ export class AudioEngine {
   }
 
   stop(silent = false) {
+    this.requestId++;
+    this.stopPlayback(silent);
+  }
+
+  private stopPlayback(silent: boolean) {
+    const onStop = this.opts?.onStop;
     this.playing = false;
     if (this.timer) { clearInterval(this.timer); this.timer = null; }
-    if (this.ctx && this.master) {
+    this.opts = null;
+    if (this.ctx) {
       const now = this.ctx.currentTime;
-      this.master.gain.cancelScheduledValues(now);
-      this.master.gain.setTargetAtTime(0, now, 0.012);
-      for (const s of this.live) { try { s.stop(now + 0.15); } catch {} }
+      if (this.master) {
+        this.master.gain.cancelScheduledValues(now);
+        this.master.gain.setValueAtTime(this.master.gain.value, now);
+        this.master.gain.linearRampToValueAtTime(0, now + 0.012);
+        this.master.gain.setValueAtTime(0.85, now + 0.04);
+      }
+      for (const source of this.live) {
+        try { source.stop(now + 0.015); } catch {}
+      }
       this.live.clear();
-      window.setTimeout(() => {
-        if (!this.playing && this.ctx && this.master)
-          this.master.gain.setTargetAtTime(0.85, this.ctx.currentTime, 0.02);
-      }, 160);
     }
-    if (!silent) this.opts?.onStop?.();
+    if (!silent) onStop?.();
   }
 }
 
 let singleton: AudioEngine | null = null;
 export const getAudio = (): AudioEngine => (singleton ??= new AudioEngine());
+
+/** Fire-and-forget UI preview with no unhandled rejection in click handlers. */
+export async function previewAudio(midis: number[], spread = 0.055): Promise<boolean> {
+  try {
+    return await getAudio().preview(midis, spread);
+  } catch {
+    return false;
+  }
+}

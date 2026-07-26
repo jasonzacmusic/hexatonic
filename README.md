@@ -71,11 +71,9 @@ many notes music had. Safe version: *"for centuries musicians learned to sing on
 six-note unit, and these are exactly those six notes."*
 
 **2. The scale *is* a chord.** Stack all six notes in thirds: **Cmaj13** from C,
-**Am11** from A. Nothing left over. Every note is a chord tone — because the avoid
-note is the note we removed. That's the theoretical reason for the "can't play a
-wrong note" feeling. It's your best line: *"the scale with no wrong notes."*
-(Phrasing caveat in the naming-trap section below — say the 4th is barred from
-*chords and long notes*, not from being played at all.)
+**Am11** from A. Every scale note is accounted for as a chord tone over compatible
+extended harmony. That precise claim does not mean musical context, voice leading,
+or phrasing can never make a note sound wrong.
 
 **3. You were right about the triads, exactly.** Four tertian triads only:
 **C, Am, Em, G** (I–vi–iii–V). And only three 4-note sets, each with two correct

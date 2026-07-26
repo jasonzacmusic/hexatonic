@@ -24,7 +24,7 @@ function Mark({ size = 22 }: { size?: number }) {
       {pts.map((p, i) =>
         i === 4 ? (
           <circle key={i} cx={p.x} cy={p.y} r={size * 0.115} fill="none"
-                  stroke="#8B1E24" strokeWidth={size * 0.075} />
+                  stroke="#E8666C" strokeWidth={size * 0.075} />
         ) : (
           <circle key={i} cx={p.x} cy={p.y} r={size * 0.13} fill="#C9A227" />
         )
@@ -50,6 +50,7 @@ export default function Nav() {
             const active = path === n.href;
             return (
               <Link key={n.href} href={n.href}
+                    aria-current={active ? "page" : undefined}
                     className={`rounded-lg px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.14em] transition ${
                       active ? "bg-white/[0.06] text-cream" : "text-muted hover:text-cream"}`}>
                 {n.label}
@@ -64,6 +65,7 @@ export default function Nav() {
             Open the app
           </Link>
           <button className="md:hidden" aria-label="Menu" aria-expanded={open}
+                  aria-controls="mobile-navigation"
                   onClick={() => setOpen((v) => !v)}>
             <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
               <path d={open ? "M5 5l12 12M17 5L5 17" : "M3 6h16M3 11h16M3 16h16"}
@@ -74,9 +76,10 @@ export default function Nav() {
       </div>
 
       {open && (
-        <nav className="border-t border-line px-5 pb-4 pt-2 md:hidden">
+        <nav id="mobile-navigation" className="border-t border-line px-5 pb-4 pt-2 md:hidden">
           {NAV.map((n) => (
             <Link key={n.href} href={n.href} onClick={() => setOpen(false)}
+                  aria-current={path === n.href ? "page" : undefined}
                   className={`block rounded-lg px-3 py-2.5 font-mono text-[12px] uppercase tracking-[0.14em] transition ${
                     path === n.href ? "bg-white/[0.06] text-cream" : "text-muted"}`}>
               {n.label}

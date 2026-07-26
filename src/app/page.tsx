@@ -26,13 +26,14 @@ export default function Home() {
             Remove<br />one note.
           </h1>
           <p className="pull hx-rise hx-d2 mt-6 max-w-lg">
-            The tritone goes with it — and what&rsquo;s left is a scale you cannot play
-            a wrong note in.
+            The tritone goes with it — and what remains can stack into one rich,
+            six-note harmony.
           </p>
           <p className="lede hx-rise hx-d3 mt-6 max-w-xl">
             A major scale holds exactly one tritone. Take out the 4th or the 7th, and only
-            those two, and nothing dissonant remains. Hexatonic drills that scale in every
-            key, in groupings of three to nine, and tells you which bar the phrase lands on.
+            those two, and that tritone disappears. Hexatonic drills those six-note sets
+            in every key, in groupings of three to nine, and tells you which bar the phrase
+            lands on.
           </p>
           <div className="hx-rise hx-d4 mt-9 flex flex-wrap items-center gap-3">
             <Link href="/practice" className="btn btn-primary px-8 py-3.5 text-base">
@@ -101,8 +102,9 @@ export default function Home() {
           </table>
         </div>
         <p className="quiet mt-6 max-w-xl">
-          Gospel, bluegrass, Celtic, Carnatic and West African music all arrived at
-          &ldquo;drop the 4 or the 7&rdquo; independently. This table is why.
+          This proves a narrow, useful fact about the major scale: removing either
+          endpoint of its one tritone is the only single-note removal that leaves no
+          tritone behind.
         </p>
       </Section>
 
@@ -128,19 +130,19 @@ export default function Home() {
               all perfect
             </p>
           </div>
-          <div className="card border-red/25">
-            <p className="eyebrow text-red">seven notes</p>
+          <div className="card border-amber/25">
+            <p className="eyebrow text-amber">seven notes</p>
             <p className="mt-3 font-mono text-lg leading-relaxed text-muted">
               {heptFourths.pairs.map((p, i) => (
                 <span key={i} className="mr-3 inline-block whitespace-nowrap">
                   {noteName(p.from)}<span className="opacity-50">–</span>{noteName(p.to)}
-                  <span className={`ml-1 ${p.interval === "A4" ? "font-bold text-red-hi" : "text-muted/70"}`}>
+                  <span className={`ml-1 ${p.interval === "A4" ? "font-bold text-amber" : "text-muted/70"}`}>
                     {p.interval}
                   </span>
                 </span>
               ))}
             </p>
-            <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.14em] text-red-hi">
+            <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.14em] text-amber">
               F–B breaks the chain
             </p>
           </div>

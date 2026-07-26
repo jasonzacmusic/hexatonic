@@ -35,7 +35,7 @@ const PRESETS: Preset[] = [
 
 export default function LiveClient() {
   const d = useDrill({ bpm: 84 });
-  const { state, set, setState, scale, notes, resolution, gati, seconds, playing, index } = d;
+  const { state, set, setState, scale, notes, resolution, gati, seconds, playing, index, toggle } = d;
   const [showNotation, setShowNotation] = useState(true);
   const [yatiStep, setYatiStep] = useState<number | null>(null);
 
@@ -44,8 +44,8 @@ export default function LiveClient() {
       const t = e.target as HTMLElement;
       if (["INPUT", "SELECT", "TEXTAREA"].includes(t.tagName)) return;
       const k = e.key;
-      if (e.code === "Space") { e.preventDefault(); d.toggle(); return; }
-      if (k >= "3" && k <= "9") { set("grouping", Number(k)); return; }
+      if (e.code === "Space") { e.preventDefault(); toggle(); return; }
+      if (["3", "4", "5", "6", "7", "9"].includes(k)) { set("grouping", Number(k)); return; }
       if (k === "ArrowUp") { e.preventDefault(); set("key", KEYS[(KEYS.indexOf(state.key) + 1) % KEYS.length]); }
       if (k === "ArrowDown") { e.preventDefault(); set("key", KEYS[(KEYS.indexOf(state.key) + KEYS.length - 1) % KEYS.length]); }
       if (k === "ArrowRight") { e.preventDefault(); set("mode", (state.mode + 1) % 6); }
@@ -58,7 +58,7 @@ export default function LiveClient() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [d, set, state]);
+  }, [set, state.bpm, state.click, state.key, state.loop, state.mode, toggle]);
 
   const activeNote = index >= 0 && notes[index] ? notes[index] : null;
   const bar = index >= 0 ? Math.floor(index / resolution.notesPerBar) + 1 : 0;
@@ -75,8 +75,8 @@ export default function LiveClient() {
           <button key={p.name}
                   onClick={() => setState((s) => ({ ...s, ...p.s }))}
                   className="rounded-lg border border-line bg-surface2 px-3.5 py-2 text-left transition hover:border-gold">
-            <span className="block text-sm font-bold">{p.name}</span>
-            <span className="block font-mono text-[10px] text-muted">{p.note}</span>
+            <span className="block text-base font-bold">{p.name}</span>
+            <span className="block font-mono text-xs text-muted">{p.note}</span>
           </button>
         ))}
         <button
@@ -86,8 +86,8 @@ export default function LiveClient() {
             setState((s) => ({ ...s, sub: 3, grouping: yati.shape[i], pattern: "aroha" }));
           }}
           className="rounded-lg border border-gold bg-gold/10 px-3.5 py-2 text-left transition hover:bg-gold/20">
-          <span className="block text-sm font-bold text-gold">Yati ladder →</span>
-          <span className="block font-mono text-[10px] text-gold/80">
+          <span className="block text-base font-bold text-gold">Yati ladder →</span>
+          <span className="block font-mono text-xs text-gold/80">
             srotovaha · {yati.shape.join(" ")}{yatiStep !== null ? ` · now ${yati.shape[yatiStep]}` : ""}
           </span>
         </button>
@@ -120,7 +120,7 @@ export default function LiveClient() {
         </div>
 
         <div className={`card flex min-w-[260px] flex-col justify-center transition ${
-          landing ? "border-gold bg-gold/15" : ""}`}>
+          landing ? "hx-land border-gold bg-gold/15" : ""}`}>
           {d.countdown > 0 ? (
             <>
               <p className="font-mono text-xs uppercase tracking-[0.14em] text-muted">count in</p>
@@ -151,9 +151,8 @@ export default function LiveClient() {
       {/* transport */}
       <div className="card flex flex-wrap items-center gap-4">
         <button onClick={d.toggle}
-                className="btn btn-primary px-10 py-4 text-xl tracking-wider"
-                style={playing ? { background: "#8B1E24", color: "#F4EFE4" } : undefined}>
-          {d.loadingAudio ? "LOADING…" : playing ? "STOP" : "PLAY"}
+                className={`btn ${playing ? "btn-stop" : "btn-primary"} min-w-[174px] px-10 py-4 text-xl tracking-wider`}>
+          {d.loadingAudio ? "STARTING…" : playing ? "STOP" : "PLAY"}
         </button>
         <div className="flex items-center gap-3">
           <span className="font-mono text-xs uppercase tracking-[0.12em] text-muted">tempo</span>
@@ -165,15 +164,19 @@ export default function LiveClient() {
           <span className="font-mono text-xs uppercase tracking-[0.12em] text-muted">group</span>
           {[3, 4, 5, 6, 7, 9].map((g) => (
             <button key={g} onClick={() => set("grouping", g)}
+                    aria-pressed={state.grouping === g}
                     className={`h-11 w-11 rounded-lg border text-lg font-bold transition ${
                       state.grouping === g ? "border-gold bg-gold text-[#17130a]" : "border-line bg-surface2 hover:border-gold"}`}>
               {g}
             </button>
           ))}
         </div>
-        <button className="btn btn-ghost" data-on={state.loop} onClick={() => set("loop", !state.loop)}>Loop</button>
-        <button className="btn btn-ghost" data-on={state.click} onClick={() => set("click", !state.click)}>Click</button>
-        <button className="btn btn-ghost" data-on={showNotation} onClick={() => setShowNotation((v) => !v)}>Score</button>
+        <button className="btn btn-ghost" data-on={state.loop} aria-pressed={state.loop}
+                onClick={() => set("loop", !state.loop)}>Loop</button>
+        <button className="btn btn-ghost" data-on={state.click} aria-pressed={state.click}
+                onClick={() => set("click", !state.click)}>Click</button>
+        <button className="btn btn-ghost" data-on={showNotation} aria-pressed={showNotation}
+                onClick={() => setShowNotation((v) => !v)}>Score</button>
         <select className="sel" value={state.mode} onChange={(e) => set("mode", Number(e.target.value))}>
           {DIATONIC_MODES.map((m) => <option key={m.index} value={m.index}>{m.name}</option>)}
         </select>
@@ -181,6 +184,7 @@ export default function LiveClient() {
 
       {showNotation && !scale.error && notes.length > 0 && (
         <Notation notes={notes} subdivision={state.sub} grouping={state.grouping}
+                  keySignature={scale.keySignature}
                   activeIndex={index} maxBars={8} />
       )}
 
@@ -188,9 +192,14 @@ export default function LiveClient() {
                 activeMidi={activeNote ? midi(activeNote) : null} octaves={2} height={150} />
 
       <p className="font-mono text-[11px] uppercase tracking-[0.1em] text-muted">
-        space play/stop · 3–9 grouping · ↑↓ key · ←→ mode · [ ] tempo · l loop · c click · n score
+        space play/stop · 3–7 or 9 grouping · ↑↓ key · ←→ mode · [ ] tempo · l loop · c click · n score
       </p>
-      {d.audioError && <p className="text-red">Audio: {d.audioError}</p>}
+      <p className="min-h-5 text-sm text-muted" role="status" aria-live="polite">
+        {d.loadingAudio ? "Starting the audio engine…"
+          : d.audioReady ? "Audio ready. Piano samples continue caching in the background."
+          : "Playback starts immediately while piano samples load in the background."}
+      </p>
+      {d.audioError && <p className="text-amber" role="alert">Audio: {d.audioError}</p>}
     </div>
   );
 }

@@ -9,9 +9,9 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { midi, Note } from "./theory/note";
-import { buildScale, familyById, KEYS } from "./theory/scales";
-import { buildPattern, patternById, PatternId } from "./theory/patterns";
+import { Note } from "./theory/note";
+import { buildScale, familyById, FAMILIES, KEYS } from "./theory/scales";
+import { buildPattern, patternById, PATTERNS, PatternId } from "./theory/patterns";
 import { solveResolution, ResolveMode, gatiFor } from "./theory/resolution";
 import { getAudio } from "./audio/engine";
 
@@ -29,19 +29,18 @@ export interface DrillState {
   bpm: number;
   loop: boolean;
   click: boolean;
-  transpose: number;   // octave shift for playback
 }
 
 export const DEFAULTS: DrillState = {
   key: "C", family: "diatonic", mode: 0, pattern: "aroha", cell: 4,
   octaves: 1, includeTop: false, sub: 4, grouping: 4, resolve: "full",
-  bpm: 84, loop: true, click: true, transpose: 1,
+  bpm: 84, loop: true, click: true,
 };
 
 const SHORT: Record<keyof DrillState, string> = {
   key: "k", family: "f", mode: "m", pattern: "p", cell: "c", octaves: "o",
   includeTop: "t", sub: "s", grouping: "g", resolve: "r", bpm: "b",
-  loop: "l", click: "x", transpose: "v",
+  loop: "l", click: "x",
 };
 
 export function encodeState(s: DrillState): string {
@@ -57,15 +56,38 @@ export function encodeState(s: DrillState): string {
 export function decodeState(qs: string): DrillState {
   const q = new URLSearchParams(qs);
   const out: DrillState = { ...DEFAULTS };
-  (Object.keys(SHORT) as (keyof DrillState)[]).forEach((k) => {
-    const raw = q.get(SHORT[k]);
-    if (raw === null) return;
-    const def = DEFAULTS[k];
-    if (typeof def === "boolean") (out as any)[k] = raw === "1";
-    else if (typeof def === "number") (out as any)[k] = Number(raw);
-    else (out as any)[k] = raw;
-  });
-  if (!KEYS.includes(out.key)) out.key = DEFAULTS.key;
+
+  const oneOf = <T extends string>(raw: string | null, allowed: readonly T[], fallback: T): T =>
+    raw !== null && allowed.includes(raw as T) ? raw as T : fallback;
+  const integer = (
+    raw: string | null, allowed: readonly number[] | { min: number; max: number }, fallback: number
+  ): number => {
+    if (raw === null || raw.trim() === "") return fallback;
+    const value = Number(raw);
+    if (!Number.isFinite(value) || !Number.isInteger(value)) return fallback;
+    if (Array.isArray(allowed)) return allowed.includes(value) ? value : fallback;
+    const range = allowed as { min: number; max: number };
+    return value >= range.min && value <= range.max ? value : fallback;
+  };
+  const bool = (raw: string | null, fallback: boolean): boolean =>
+    raw === "1" ? true : raw === "0" ? false : fallback;
+
+  out.key = oneOf(q.get(SHORT.key), KEYS, DEFAULTS.key);
+  out.family = oneOf(q.get(SHORT.family), FAMILIES.map((f) => f.id), DEFAULTS.family);
+  out.pattern = oneOf(
+    q.get(SHORT.pattern), PATTERNS.map((p) => p.id), DEFAULTS.pattern
+  );
+  out.mode = integer(q.get(SHORT.mode), { min: 0, max: 5 }, DEFAULTS.mode);
+  if (familyById(out.family).kind !== "rotation") out.mode = 0;
+  out.cell = integer(q.get(SHORT.cell), [3, 4, 5, 6], DEFAULTS.cell);
+  out.octaves = integer(q.get(SHORT.octaves), [1, 2, 3], DEFAULTS.octaves);
+  out.includeTop = bool(q.get(SHORT.includeTop), DEFAULTS.includeTop);
+  out.sub = integer(q.get(SHORT.sub), [2, 3, 4, 6], DEFAULTS.sub);
+  out.grouping = integer(q.get(SHORT.grouping), [3, 4, 5, 6, 7, 9], DEFAULTS.grouping);
+  out.resolve = oneOf(q.get(SHORT.resolve), ["accent", "full"] as const, DEFAULTS.resolve);
+  out.bpm = integer(q.get(SHORT.bpm), { min: 40, max: 200 }, DEFAULTS.bpm);
+  out.loop = bool(q.get(SHORT.loop), DEFAULTS.loop);
+  out.click = bool(q.get(SHORT.click), DEFAULTS.click);
   return out;
 }
 
@@ -76,7 +98,9 @@ export function useDrill(initial?: Partial<DrillState>) {
   const [countdown, setCountdown] = useState(0);
   const [audioError, setAudioError] = useState<string | null>(null);
   const [loadingAudio, setLoadingAudio] = useState(false);
+  const [audioReady, setAudioReady] = useState(() => getAudio().ready);
   const raf = useRef<number | null>(null);
+  const operation = useRef(0);
 
   // hydrate from the URL once
   useEffect(() => {
@@ -124,8 +148,10 @@ export function useDrill(initial?: Partial<DrillState>) {
   const seconds = resolution.totalNotes * stepDur;
 
   const stop = useCallback(() => {
+    operation.current++;
     getAudio().stop(true);
     setPlaying(false);
+    setLoadingAudio(false);
     setIndex(-1);
     setCountdown(0);
     if (raf.current) cancelAnimationFrame(raf.current);
@@ -135,42 +161,71 @@ export function useDrill(initial?: Partial<DrillState>) {
   const play = useCallback(async () => {
     if (!notes.length) return;
     const a = getAudio();
+    const op = ++operation.current;
     setAudioError(null);
     if (!a.ready) setLoadingAudio(true);
     try {
-      await a.init();
+      const started = await a.start({
+        notes,
+        stepDur, grouping: state.grouping, subdivision: state.sub,
+        beatsPerBar: 4,
+        loop: state.loop, click: state.click,
+        countInBeats: 4, beatDur: 60 / state.bpm,
+        onStop: () => {
+          if (operation.current !== op) return;
+          setPlaying(false);
+          setIndex(-1);
+          setCountdown(0);
+          if (raf.current) cancelAnimationFrame(raf.current);
+          raf.current = null;
+        },
+      });
+      if (operation.current !== op || !started) return;
     } catch (e: any) {
-      setLoadingAudio(false);
-      setAudioError(e?.message ?? "audio failed to load");
+      if (operation.current === op) {
+        setLoadingAudio(false);
+        setAudioError(e?.message ?? "audio failed to load");
+      }
       return;
     }
+    if (operation.current !== op) return;
     setLoadingAudio(false);
+    setAudioReady(true);
     setPlaying(true);
-    await a.start({
-      notes: notes.map((n) => midi(n) + 12 * state.transpose),
-      stepDur, grouping: state.grouping, subdivision: state.sub,
-      loop: state.loop, click: state.click,
-      countInBeats: 4, beatDur: 60 / state.bpm,
-      onStop: () => { setPlaying(false); setIndex(-1); },
-    });
     const tick = () => {
-      setIndex(a.currentIndex());
-      setCountdown(a.countdown());
+      if (operation.current !== op || !a.playing) {
+        raf.current = null;
+        return;
+      }
+      const nextIndex = a.currentIndex();
+      const nextCountdown = a.countdown();
+      setIndex((current) => current === nextIndex ? current : nextIndex);
+      setCountdown((current) => current === nextCountdown ? current : nextCountdown);
       raf.current = requestAnimationFrame(tick);
     };
     raf.current = requestAnimationFrame(tick);
-  }, [notes, stepDur, state.grouping, state.sub, state.loop, state.click, state.bpm, state.transpose]);
+  }, [notes, stepDur, state.grouping, state.sub, state.loop, state.click, state.bpm]);
 
-  const toggle = useCallback(() => { playing ? stop() : play(); }, [playing, play, stop]);
+  const toggle = useCallback(
+    () => { playing || loadingAudio ? stop() : play(); },
+    [playing, loadingAudio, play, stop]
+  );
 
   // stop when the configuration changes underneath us
-  const sig = `${state.key}|${state.family}|${state.mode}|${state.pattern}|${state.cell}|${state.octaves}|${state.includeTop}|${state.sub}|${state.grouping}|${state.resolve}`;
+  const sig = `${state.key}|${state.family}|${state.mode}|${state.pattern}|${state.cell}|${state.octaves}|${state.includeTop}|${state.sub}|${state.grouping}|${state.resolve}|${state.bpm}|${state.loop}|${state.click}`;
   const lastSig = useRef(sig);
   useEffect(() => {
-    if (lastSig.current !== sig) { lastSig.current = sig; if (playing) stop(); }
-  }, [sig, playing, stop]);
+    if (lastSig.current !== sig) {
+      lastSig.current = sig;
+      if (playing || loadingAudio) stop();
+    }
+  }, [sig, playing, loadingAudio, stop]);
 
-  useEffect(() => () => { getAudio().stop(true); if (raf.current) cancelAnimationFrame(raf.current); }, []);
+  useEffect(() => () => {
+    operation.current++;
+    getAudio().stop(true);
+    if (raf.current) cancelAnimationFrame(raf.current);
+  }, []);
 
   // the AudioContext suspend trap
   useEffect(() => {
@@ -188,7 +243,7 @@ export function useDrill(initial?: Partial<DrillState>) {
   return {
     state, set, setState, scale, pattern, notes, resolution, gati,
     stepDur, seconds, playing, index, countdown, toggle, play, stop,
-    audioError, loadingAudio, shareUrl,
+    audioError, loadingAudio, audioReady, shareUrl,
     family: familyById(state.family),
     patternDef: patternById(state.pattern),
   };
