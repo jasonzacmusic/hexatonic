@@ -102,6 +102,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <nav className="flex flex-col gap-2 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
                 <span className="text-cream/50">App</span>
                 <Link href="/practice" className="transition hover:text-cream">Practice</Link>
+                <Link href="/improvise" className="transition hover:text-cream">Improvise</Link>
                 <Link href="/live" className="transition hover:text-cream">Presenter</Link>
                 <Link href="/resolution" className="transition hover:text-cream">Resolution</Link>
               </nav>

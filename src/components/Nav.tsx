@@ -6,6 +6,7 @@ import { useState } from "react";
 
 const NAV = [
   { href: "/practice", label: "Practice" },
+  { href: "/improvise", label: "Improvise" },
   { href: "/learn", label: "Learn" },
   { href: "/scales", label: "Scales" },
   { href: "/resolution", label: "Resolution" },
@@ -45,7 +46,7 @@ export default function Nav() {
           <span className="display text-[19px] tracking-[0.01em]">Hexatonic</span>
         </Link>
 
-        <nav className="ml-4 hidden items-center gap-1 md:flex">
+        <nav className="ml-2 hidden items-center gap-0.5 overflow-x-auto md:flex">
           {NAV.map((n) => {
             const active = path === n.href;
             return (
@@ -61,7 +62,7 @@ export default function Nav() {
 
         <div className="ml-auto flex items-center gap-3">
           <Link href="/practice"
-                className="hidden rounded-xl bg-white/[0.06] px-4 py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-cream transition hover:bg-white/[0.1] sm:inline-block">
+                className="hidden whitespace-nowrap rounded-xl bg-white/[0.06] px-4 py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-cream transition hover:bg-white/[0.1] lg:inline-block">
             Open the app
           </Link>
           <button className="md:hidden" aria-label="Menu" aria-expanded={open}

@@ -42,6 +42,32 @@ export interface PlaybackOptions {
 const LOOKAHEAD = 3.0;
 const TICK_MS = 400;
 
+export interface VampChord {
+  bass: number;
+  voicing: number[];
+  bars: number;
+}
+
+export interface VampOptions {
+  chords: VampChord[];
+  beatDur: number;
+  beatsPerBar: number;
+  feel: "straight" | "swing" | "68";
+  click: boolean;
+  countInBeats: number;
+  bassOn: boolean;
+  compOn: boolean;
+}
+
+/** Comp patterns, in beats from the top of the bar.
+ *  Kept deliberately sparse — this is a bed to improvise over, not a performance
+ *  competing with the student. */
+const COMP: Record<string, { chord: number[]; bass: number[] }> = {
+  straight: { chord: [0, 1.5, 2.5], bass: [0, 2] },
+  swing:    { chord: [1, 3],        bass: [0, 1, 2, 3] },
+  "68":     { chord: [0, 1, 2],     bass: [0, 1.5] },
+};
+
 export class AudioEngine {
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
@@ -61,6 +87,11 @@ export class AudioEngine {
 
   ready = false;
   playing = false;
+  vamping = false;
+  private vampOpts: VampOptions | null = null;
+  private vampTimer: ReturnType<typeof setInterval> | null = null;
+  private vampBar = 0;
+  private vampStart = 0;
 
   get context() { return this.ctx; }
   get startTime() { return this.seqStart; }
@@ -307,6 +338,114 @@ export class AudioEngine {
   }
 
   /** Current step index, derived from the clock — safe against dropped frames. */
+  /** Start a looping vamp. Independent of the drill scheduler so the two can
+   *  never corrupt each other's queue state. */
+  async startVamp(opts: VampOptions): Promise<boolean> {
+    const request = ++this.requestId;
+    this.stopVamp(true);
+    this.stopPlayback(true);
+
+    const priority = opts.chords.flatMap((c) => [c.bass, ...c.voicing]);
+    await this.init("/audio/salamander", priority);
+    if (request !== this.requestId || !this.ctx || !opts.chords.length) return false;
+
+    if (this.master) {
+      const now = this.ctx.currentTime;
+      this.master.gain.cancelScheduledValues(now);
+      this.master.gain.setValueAtTime(0.85, now);
+    }
+
+    this.vampOpts = opts;
+    this.vamping = true;
+    this.vampBar = 0;
+    const countIn = opts.countInBeats * opts.beatDur;
+    this.vampStart = this.ctx.currentTime + 0.3 + countIn;
+    if (opts.click)
+      for (let i = 0; i < opts.countInBeats; i++)
+        this.clickAt(this.ctx.currentTime + 0.3 + i * opts.beatDur, i === 0);
+
+    this.pumpVamp();
+    this.vampTimer = setInterval(() => this.pumpVamp(), TICK_MS);
+    return true;
+  }
+
+  private pumpVamp() {
+    const o = this.vampOpts;
+    if (!this.vamping || !o || !this.ctx) return;
+    const barDur = o.beatDur * o.beatsPerBar;
+    const horizon = this.ctx.currentTime + LOOKAHEAD;
+    const pattern = COMP[o.feel] ?? COMP.straight;
+    const totalBars = o.chords.reduce((a, c) => a + c.bars, 0);
+    let guard = 0;
+
+    while (this.vampStart + this.vampBar * barDur < horizon && guard++ < 2000) {
+      const barAt = this.vampStart + this.vampBar * barDur;
+      // which chord is this bar in?
+      let acc = 0, chord = o.chords[0];
+      const barInCycle = this.vampBar % totalBars;
+      for (const c of o.chords) {
+        if (barInCycle < acc + c.bars) { chord = c; break; }
+        acc += c.bars;
+      }
+      const swing = o.feel === "swing";
+      const at = (beat: number) => {
+        // push the offbeats late for a swing feel
+        const frac = beat % 1;
+        const shift = swing && Math.abs(frac - 0.5) < 0.01 ? 0.167 : 0;
+        return barAt + (Math.floor(beat) + frac + shift) * o.beatDur;
+      };
+
+      if (o.compOn)
+        for (const [i, b] of pattern.chord.entries())
+          for (const m of chord.voicing)
+            this.note(m, at(b), o.beatDur * 1.6, i === 0 ? 0.34 : 0.22);
+
+      if (o.bassOn)
+        for (const [i, b] of pattern.bass.entries()) {
+          const m = i === 0 ? chord.bass
+                            : chord.bass + [0, 7, 12, 7][i % 4]; // root/fifth movement
+          this.note(m, at(b), o.beatDur * 0.9, 0.42);
+        }
+
+      if (o.click)
+        for (let b = 0; b < o.beatsPerBar; b++)
+          this.clickAt(barAt + b * o.beatDur, b === 0);
+
+      this.vampBar++;
+    }
+  }
+
+  /** Which chord index is sounding right now, for lighting the UI. */
+  currentChordIndex(): number {
+    const o = this.vampOpts;
+    if (!this.ctx || !o || !this.vamping) return -1;
+    const barDur = o.beatDur * o.beatsPerBar;
+    const elapsed = this.ctx.currentTime - this.vampStart;
+    if (elapsed < 0) return -1;
+    const totalBars = o.chords.reduce((a, c) => a + c.bars, 0);
+    const barInCycle = Math.floor(elapsed / barDur) % totalBars;
+    let acc = 0;
+    for (let i = 0; i < o.chords.length; i++) {
+      if (barInCycle < acc + o.chords[i].bars) return i;
+      acc += o.chords[i].bars;
+    }
+    return 0;
+  }
+
+  vampCountdown(): number {
+    const o = this.vampOpts;
+    if (!this.ctx || !o || !this.vamping) return 0;
+    const left = this.vampStart - this.ctx.currentTime;
+    return left > 0 ? Math.ceil(left / o.beatDur) : 0;
+  }
+
+  stopVamp(silent = false) {
+    this.vamping = false;
+    this.vampOpts = null;
+    if (this.vampTimer) { clearInterval(this.vampTimer); this.vampTimer = null; }
+    if (!silent) this.stopPlayback(true);
+  }
+
   currentIndex(): number {
     const o = this.opts;
     if (!this.ctx || !o || !this.playing) return -1;
