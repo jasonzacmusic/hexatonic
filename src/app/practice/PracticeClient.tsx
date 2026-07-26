@@ -127,16 +127,24 @@ export default function PracticeClient() {
                   </select>
                 </div>
               </div>
-              <div className="field">
-                <label htmlFor="mobile-mode">Mode / rotation</label>
-                <select id="mobile-mode" className="sel" value={state.mode} disabled={!isRotation}
-                        onChange={(e) => set("mode", Number(e.target.value))}>
-                  {isRotation
-                    ? DIATONIC_MODES.map((m) => (
-                        <option key={m.index} value={m.index}>{m.name} · {m.degrees}</option>))
-                    : <option value={0}>—</option>}
-                </select>
-              </div>
+              {state.family === "custom" ? (
+                <div className="field">
+                  <label>Your notes</label>
+                  <CustomBuilder code={state.custom} scale={scale}
+                                 onChange={(c) => set("custom", c)} />
+                </div>
+              ) : (
+                <div className="field">
+                  <label htmlFor="mobile-mode">Mode / rotation</label>
+                  <select id="mobile-mode" className="sel" value={state.mode} disabled={!isRotation}
+                          onChange={(e) => set("mode", Number(e.target.value))}>
+                    {isRotation
+                      ? DIATONIC_MODES.map((m) => (
+                          <option key={m.index} value={m.index}>{m.name} · {m.degrees}</option>))
+                      : <option value={0}>—</option>}
+                  </select>
+                </div>
+              )}
             </>
           )}
 
