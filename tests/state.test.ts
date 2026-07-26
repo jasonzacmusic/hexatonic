@@ -5,7 +5,7 @@ describe("share-link state", () => {
   it("round-trips every supported field", () => {
     const state: DrillState = {
       key: "F#", family: "diatonic", mode: 4, pattern: "cells", cell: 6,
-      octaves: 3, includeTop: true, sub: 6, grouping: 9, resolve: "accent",
+      octaves: 3, includeTop: true, sub: 6, grouping: 9, resolve: "accent", meter: "7-8",
       bpm: 137, loop: false, click: false,
     };
     expect(decodeState(encodeState(state))).toEqual(state);

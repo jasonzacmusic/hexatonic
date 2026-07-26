@@ -7,6 +7,32 @@ Live app to look at first: **https://hexatonic.nathanielschool.com**
 
 ---
 
+---
+
+# ⚡ START HERE — exactly what to do
+
+**Do not attach any of these files.** Claude Design does not need them. It only
+needs the live URL, which is already inside each prompt.
+
+**Do this, three times, once per asset — but do ASSET 1 first and stop.**
+
+1. Open Claude Design and start a **new project**.
+2. Type the **Title** exactly as given below the asset heading.
+3. Copy the **whole grey block** underneath it — from the first word to the last —
+   and paste it as your first message. Nothing else. Do not add a hello.
+4. Wait for it to finish, then click **Share → "Hand off to Claude Code"**, and
+   paste the link it gives you into our chat.
+
+**The only file worth attaching, and only to Asset 1:** the NSM logo PNG from
+iCloud `Logos/` (white-on-dark version), if you want the school mark to appear in
+the lockup. Everything else is in the prompt.
+
+Do the assets in order. Asset 1 sets the identity, and Assets 2 and 3 should be
+designed to match what comes back from it — so there is no point running them in
+parallel.
+
+---
+
 # ASSET 1 — the logo and identity
 
 ## 1. Title to type into Claude Design

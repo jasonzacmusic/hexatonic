@@ -9,6 +9,7 @@ import { useDrill } from "@/lib/useDrill";
 import { KEYS, FAMILIES, DIATONIC_MODES } from "@/lib/theory/scales";
 import { PATTERNS } from "@/lib/theory/patterns";
 import { SUBDIVISIONS } from "@/lib/theory/resolution";
+import { METERS, saptaTalaMeters } from "@/lib/theory/meters";
 import { midi, pc } from "@/lib/theory/note";
 import { previewAudio } from "@/lib/audio/engine";
 
@@ -174,6 +175,27 @@ export default function PracticeClient() {
 
           {mobileTab === "rhythm" && (
             <>
+              <div className="field min-w-[200px]">
+                <label htmlFor="meter">Meter / tala</label>
+                <select id="meter" className="sel" value={state.meter}
+                        onChange={(e) => set("meter", e.target.value)}>
+                  <optgroup label="Simple">
+                    {METERS.filter((m) => m.family === "simple")
+                      .map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
+                  </optgroup>
+                  <optgroup label="Compound">
+                    {METERS.filter((m) => m.family === "compound")
+                      .map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
+                  </optgroup>
+                  <optgroup label="Odd">
+                    {METERS.filter((m) => m.family === "odd")
+                      .map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
+                  </optgroup>
+                  <optgroup label="Sapta talas">
+                    {saptaTalaMeters().map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
+                  </optgroup>
+                </select>
+              </div>
               <div className="field">
                 <label>Subdivision</label>
                 <Seg value={state.sub} ariaLabel="Mobile subdivision"
@@ -265,6 +287,27 @@ export default function PracticeClient() {
                   {[3, 4, 5, 6].map((v) => <option key={v}>{v}</option>)}
                 </select>
               </div>
+              <div className="field min-w-[200px]">
+                <label htmlFor="meter">Meter / tala</label>
+                <select id="meter" className="sel" value={state.meter}
+                        onChange={(e) => set("meter", e.target.value)}>
+                  <optgroup label="Simple">
+                    {METERS.filter((m) => m.family === "simple")
+                      .map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
+                  </optgroup>
+                  <optgroup label="Compound">
+                    {METERS.filter((m) => m.family === "compound")
+                      .map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
+                  </optgroup>
+                  <optgroup label="Odd">
+                    {METERS.filter((m) => m.family === "odd")
+                      .map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
+                  </optgroup>
+                  <optgroup label="Sapta talas">
+                    {saptaTalaMeters().map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
+                  </optgroup>
+                </select>
+              </div>
               <div className="field">
                 <label>Subdivision</label>
                 <Seg value={state.sub} ariaLabel="Subdivision"
@@ -342,6 +385,12 @@ export default function PracticeClient() {
 
       <ResolutionBanner resolution={resolution} gati={gati} seconds={seconds}
                         bpm={state.bpm} playing={playing} />
+
+      {d.meter.note && (
+        <p className="quiet -mt-1 px-1">
+          <span className="font-semibold text-cream">{d.meter.label}</span> — {d.meter.note}
+        </p>
+      )}
 
       {state.includeTop && usesTop && (
         <p className="rounded-xl border border-amber/40 bg-amber/[0.08] px-5 py-3 text-sm text-amber">

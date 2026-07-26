@@ -2,7 +2,7 @@
 const CACHE_PREFIX = "hexatonic-";
 const BUILD = new URL(self.location.href).searchParams.get("v") || "local";
 const CACHE = `${CACHE_PREFIX}${BUILD}`;
-const CORE = ["/", "/practice", "/improvise", "/learn", "/scales", "/resolution", "/live",
+const CORE = ["/", "/practice", "/improvise", "/harmony", "/learn", "/scales", "/resolution", "/live",
               "/manifest.webmanifest", "/icon.svg"];
 
 self.addEventListener("install", (e) => {

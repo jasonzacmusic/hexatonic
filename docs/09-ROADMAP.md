@@ -29,8 +29,8 @@ Taken from the original brief and the follow-ups, in the order he raised them.
 | 12 | "Some of them would be inversions of each other" | ✅ | confirmed — C6 = Am7, Em7 = G6, tap to flip |
 | 13 | "Simplified to pentatonic and heptatonic" | 🟡 | families exist (Audava 5 / Sampurna 7) but they are not first-class *modules* with their own teaching |
 | 14 | **"The beauty of the hexatonic — the gospel usage, the improvisational usage for jazz musicians"** | ✅ | **BUILT 2026-07-25** — `/improvise`: eight vamps built only from the scale's own harmony, four voicing styles, bass/comp toggles, guide tones. Still missing: a lick library and recorded backing tracks. |
-| 15 | **"Barry Harris's octatonic scales and other octatonic scales"** | ⬜ | not built. See §3 — this needs a *harmony* engine, not another scale list |
-| 16 | "Future: pentatonic, heptatonic and octatonic as well" | 🟡 | 5 and 7 partial, 8 absent |
+| 15 | **"Barry Harris's octatonic scales and other octatonic scales"** | ✅ | **BUILT 2026-07-25** — `/harmony` → Barry Harris tab. All four sixth-diminished scales, the four-part movement, borrowing, the family. 16 tests. |
+| 16 | "Future: pentatonic, heptatonic and octatonic as well" | 🟡 | 5 and 7 as families; 8 now present via the sixth-diminished module. Symmetric diminished still absent. |
 | 17 | "World's first hexatonic scale app" | ❌ | **false and abandoned.** See `06-PRIOR-ART.md` |
 
 ---
@@ -86,7 +86,7 @@ students actually gear up. Constants are already in `resolution.ts`.
 
 ## 3. Tier 2 — the differentiators
 
-### 3.1 ⬜ Triad-pair generator (the jazz route in)
+### 3.1 ✅ Triad-pair generator — BUILT at `/harmony` → Triad pairs
 `chords.ts` already exports `triadPair()` and `augmentedPair()` with the validation
 rules. There is **no UI**. Build it: pick any two triads, get the hexatonic they
 generate, its modes, its available harmony, and the parent scales it fits.
@@ -121,11 +121,13 @@ Model the app's progression on the real system rather than an invented one:
 the raga constant and vary the *pattern*; Alankaram holds the pattern and varies the
 *tala*. **Permute, then re-tala.** Detail in `07-CARNATIC.md §6`.
 
-### 3.4 ⬜ Talas beyond 4/4
-`/resolution` already accepts any beats-per-bar, but the **drill itself is hard-wired
-to 4/4**. Add the sapta talas (Dhruva, Matya, Rupaka, Jhampa, Triputa, Ata, Eka) with
-their jati variants. ⚠️ The akshara counts in `07-CARNATIC.md §C3` are *computed, not
-sourced* — verify against a printed text before displaying them.
+### 3.4 ✅ Talas beyond 4/4 — BUILT
+The drill now takes any meter: 2/4, 3/4, 4/4, 5/4, 7/4, 5/8, 6/8, 7/8, 9/8, 12/8,
+plus all 35 talas built from their anga structure. Notation renders the right time
+signature and beams by the real grouping (7/8 as 2+2+3, Adi as 4+2+2).
+⚠️ The akshara counts are still **computed, not sourced** — the method validates on
+Adi = chatusra Triputa = 8, but verify against a printed text before treating the
+other totals as authoritative.
 
 ### 3.5 ⬜ Eduppu — off-samam starts
 Support **sama** (on beat 1), **atita** (before) and **anagata** (after) phrase starts.
@@ -171,7 +173,7 @@ a solved spelling problem worth porting:
 > scores by `sum(alt²)`, and tie-breaks toward the key's own accidental direction.
 > Verified: 0 of 24 root/kind combinations need a double accidental.
 
-### 4.3 ⬜ Barry Harris module (feature 15) — do this properly or not at all
+### 4.3 ✅ Barry Harris module — BUILT. Symmetric diminished and drop-voicing movement remain.
 **This is a harmony engine, not a scale list.** Getting it wrong is worse than not
 shipping it, because his method is mangled everywhere online.
 

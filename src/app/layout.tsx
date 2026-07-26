@@ -176,6 +176,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <nav className="flex flex-col gap-2 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
                 <span className="text-cream/50">Theory</span>
                 <Link href="/learn" className="transition hover:text-cream">The five theorems</Link>
+                <Link href="/harmony" className="transition hover:text-cream">Harmony</Link>
                 <Link href="/scales" className="transition hover:text-cream">Scale library</Link>
                 <Link href="/about" className="transition hover:text-cream">About</Link>
               </nav>

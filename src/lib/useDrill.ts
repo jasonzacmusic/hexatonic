@@ -13,6 +13,7 @@ import { Note } from "./theory/note";
 import { buildScale, familyById, FAMILIES, KEYS } from "./theory/scales";
 import { buildPattern, patternById, PATTERNS, PatternId } from "./theory/patterns";
 import { solveResolution, ResolveMode, gatiFor } from "./theory/resolution";
+import { meterById, METERS, allTalaMeters } from "./theory/meters";
 import { getAudio } from "./audio/engine";
 
 export interface DrillState {
@@ -26,6 +27,7 @@ export interface DrillState {
   sub: number;
   grouping: number;
   resolve: ResolveMode;
+  meter: string;
   bpm: number;
   loop: boolean;
   click: boolean;
@@ -33,13 +35,13 @@ export interface DrillState {
 
 export const DEFAULTS: DrillState = {
   key: "C", family: "diatonic", mode: 0, pattern: "aroha", cell: 4,
-  octaves: 1, includeTop: false, sub: 4, grouping: 4, resolve: "full",
+  octaves: 1, includeTop: false, sub: 4, grouping: 4, resolve: "full", meter: "4-4",
   bpm: 84, loop: true, click: true,
 };
 
 const SHORT: Record<keyof DrillState, string> = {
   key: "k", family: "f", mode: "m", pattern: "p", cell: "c", octaves: "o",
-  includeTop: "t", sub: "s", grouping: "g", resolve: "r", bpm: "b",
+  includeTop: "t", sub: "s", grouping: "g", resolve: "r", meter: "mt", bpm: "b",
   loop: "l", click: "x",
 };
 
@@ -85,6 +87,11 @@ export function decodeState(qs: string): DrillState {
   out.sub = integer(q.get(SHORT.sub), [2, 3, 4, 6], DEFAULTS.sub);
   out.grouping = integer(q.get(SHORT.grouping), [3, 4, 5, 6, 7, 9], DEFAULTS.grouping);
   out.resolve = oneOf(q.get(SHORT.resolve), ["accent", "full"] as const, DEFAULTS.resolve);
+  out.meter = oneOf(
+    q.get(SHORT.meter),
+    [...METERS, ...allTalaMeters()].map((m) => m.id),
+    DEFAULTS.meter
+  );
   out.bpm = integer(q.get(SHORT.bpm), { min: 40, max: 200 }, DEFAULTS.bpm);
   out.loop = bool(q.get(SHORT.loop), DEFAULTS.loop);
   out.click = bool(q.get(SHORT.click), DEFAULTS.click);
@@ -131,9 +138,11 @@ export function useDrill(initial?: Partial<DrillState>) {
     return buildPattern(state.pattern, scale.notes, state.octaves, state.cell, state.includeTop);
   }, [scale, state.pattern, state.octaves, state.cell, state.includeTop]);
 
+  const meter = useMemo(() => meterById(state.meter), [state.meter]);
   const resolution = useMemo(
-    () => solveResolution(Math.max(pattern.length, 1), state.sub, 4, state.grouping, state.resolve),
-    [pattern.length, state.sub, state.grouping, state.resolve]
+    () => solveResolution(Math.max(pattern.length, 1), state.sub, meter.top,
+                          state.grouping, state.resolve),
+    [pattern.length, state.sub, meter.top, state.grouping, state.resolve]
   );
 
   const notes = useMemo(() => {
@@ -170,7 +179,7 @@ export function useDrill(initial?: Partial<DrillState>) {
         stepDur, grouping: state.grouping, subdivision: state.sub,
         beatsPerBar: 4,
         loop: state.loop, click: state.click,
-        countInBeats: 4, beatDur: 60 / state.bpm,
+        countInBeats: meter.top, beatDur: 60 / state.bpm,
         onStop: () => {
           if (operation.current !== op) return;
           setPlaying(false);
@@ -241,7 +250,7 @@ export function useDrill(initial?: Partial<DrillState>) {
   }, [state]);
 
   return {
-    state, set, setState, scale, pattern, notes, resolution, gati,
+    state, set, setState, scale, pattern, notes, resolution, gati, meter,
     stepDur, seconds, playing, index, countdown, toggle, play, stop,
     audioError, loadingAudio, audioReady, shareUrl,
     family: familyById(state.family),

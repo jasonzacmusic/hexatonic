@@ -18,12 +18,14 @@ import { useEffect, useRef, useState } from "react";
 import {
   Note, vexKey, ALT_NAME, keySignatureAlterations, notePretty,
 } from "@/lib/theory/note";
+import { meterById, pulseDuration, beamGroups } from "@/lib/theory/meters";
 
 export interface NotationProps {
   notes: Note[];
   subdivision: number;      // 2 = 8ths, 3 = triplets, 4 = 16ths, 6 = sextuplets
   grouping: number;         // accent every N
   beatsPerBar?: number;
+  meterId?: string;
   maxBars?: number;
   keySignature?: string | null;
   activeIndex?: number;
@@ -31,7 +33,7 @@ export interface NotationProps {
 }
 
 export default function Notation({
-  notes, subdivision, grouping, beatsPerBar = 4,
+  notes, subdivision, grouping, beatsPerBar = 4, meterId = "4-4",
   maxBars = 35, keySignature = null, activeIndex = -1, compact = false,
 }: NotationProps) {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -63,7 +65,8 @@ export default function Notation({
       groupsRef.current = [];
 
       try {
-        const perBar = subdivision * beatsPerBar;
+        const meter = meterById(meterId);
+        const perBar = subdivision * meter.top;
         const totalBars = Math.ceil(notes.length / perBar);
         const showBars = Math.min(totalBars, maxBars);
         setTruncated(totalBars > maxBars ? totalBars : 0);
@@ -73,9 +76,9 @@ export default function Notation({
         const maxBarsInSystem = Math.min(barsPerSystem, showBars);
         const barW = compact ? 260
           : subdivision <= 2 ? 200 : subdivision === 3 ? 320 : subdivision === 4 ? 430 : 560;
-        const dur = subdivision === 2 ? "8" : subdivision === 3 ? "8"
-          : subdivision === 4 ? "16" : "16";
-        const isTuplet = subdivision === 3 || subdivision === 6;
+        const pd = pulseDuration(meter, subdivision);
+        const dur = pd.duration;
+        const isTuplet = pd.tuplet !== null;
         const systems = Math.ceil(showBars / barsPerSystem);
         const width = maxBarsInSystem * barW + 80;
         const sysH = 142;
@@ -135,7 +138,7 @@ export default function Notation({
             if (!barNotes.length) break;
             // generateBeams owns grouping, strips flags, and unifies stems.
             beams.push(...VF.Beam.generateBeams(barNotes, {
-              groups: [new VF.Fraction(1, 4)],
+              groups: beamGroups(meter).map((g) => new VF.Fraction(g.num, g.den)),
               maintain_stem_directions: false,
             }));
             if (isTuplet) {
@@ -150,7 +153,7 @@ export default function Notation({
             if (b < barsHere - 1) tickables.push(new VF.BarNote());
           }
 
-          const voice = new VF.Voice({ num_beats: beatsPerBar * barsHere, beat_value: 4 })
+          const voice = new VF.Voice({ num_beats: meter.top * barsHere, beat_value: meter.bottom })
             .setStrict(false);
           voice.addTickables(tickables);
           new VF.Formatter().joinVoices([voice]).format([voice], barsHere * barW + 10);
