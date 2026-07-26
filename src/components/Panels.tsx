@@ -1,6 +1,6 @@
 "use client";
 
-import { midi, notePretty, pc } from "@/lib/theory/note";
+import { Note, midi, notePretty, pc } from "@/lib/theory/note";
 import { ScaleInstance } from "@/lib/theory/scales";
 import { ChordSet, findChords, tertianOnly, susQuartal } from "@/lib/theory/chords";
 import { Resolution, Gati } from "@/lib/theory/resolution";
@@ -71,38 +71,61 @@ function Stat({
 /* ── scale chips, with the ghost ─────────────────────────────────────────── */
 
 export function ScaleChips({
-  scale, activePc = null, size = "md",
-}: { scale: ScaleInstance; activePc?: number | null; size?: "md" | "lg" }) {
-  if (scale.error) return <p className="text-sm text-amber">{scale.error}</p>;
+  scale, activePc = null, transpose = 1, size = "md",
+}: { scale: ScaleInstance; activePc?: number | null; transpose?: number; size?: "md" | "lg" }) {
+  if (scale.error) return <p className="text-sm text-red-hi">{scale.error}</p>;
   const lg = size === "lg";
+
+  /* The removed note is shown IN ITS OWN PLACE in the row, not appended at the
+     end. Seeing "C D E ⌀ G A B" reads instantly as a gap in the scale; seeing
+     "C D E G A B ⌀" reads as an afterthought. The whole app is about a note that
+     is missing from somewhere specific — so it has to sit somewhere specific. */
+  const rootPc = scale.notes.length ? pc(scale.notes[0]) : 0;
+  const rel = (n: Note) => (((pc(n) - rootPc) % 12) + 12) % 12;
+  const row: { note: Note; removed: boolean; degree?: string }[] = [
+    ...scale.notes.map((n, i) => ({ note: n, removed: false, degree: scale.degrees[i] })),
+    ...(scale.removed ? [{ note: scale.removed, removed: true }] : []),
+  ].sort((a, b) => rel(a.note) - rel(b.note));
+
   return (
-    <div className="flex flex-wrap items-center gap-2.5">
-      {scale.notes.map((n, i) => {
-        const lit = activePc !== null && pc(n) === activePc;
+    <div className="flex flex-wrap items-stretch gap-2.5">
+      {row.map((item, i) => {
+        if (item.removed) {
+          return (
+            <div key={`x${i}`}
+                 title={`${notePretty(item.note)} — removed from this scale`}
+                 className={`relative flex flex-col items-center justify-center rounded-xl
+                             border-2 border-dashed border-red/70 bg-red/[0.07]
+                             ${lg ? "min-w-[74px] px-5 py-3" : "min-w-[58px] px-3.5 py-2"}`}>
+              <span className={`font-semibold text-red-hi/85 ${lg ? "text-3xl" : "text-lg"}`}>
+                {notePretty(item.note)}
+              </span>
+              {/* a clean strike, drawn rather than a text-decoration so it reads
+                  as a deletion mark instead of a hyperlink style */}
+              <span aria-hidden className="pointer-events-none absolute inset-x-2.5 top-1/2 h-[2px]
+                                           -translate-y-[3px] -rotate-12 rounded bg-red-hi/80" />
+              <span className="mt-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-red-hi/70">
+                removed
+              </span>
+            </div>
+          );
+        }
+        const lit = activePc !== null && pc(item.note) === activePc;
         return (
           <button
             key={i}
-            onClick={() => { void previewAudio([midi(n)]); }}
+            onClick={() => void previewAudio([midi(item.note) + 12 * transpose])}
             className={`chip ${lit ? "chip-lit" : ""} ${lg ? "min-w-[74px] px-5 py-3" : "min-w-[58px]"}`}
           >
             <span className={`block font-semibold ${lg ? "text-3xl" : "text-lg"}`}>
-              {notePretty(n)}
+              {notePretty(item.note)}
             </span>
             <span className={`block font-mono text-[9px] ${lit ? "text-[#5a4a12]" : "text-muted"}`}>
-              {scale.degrees[i]}
+              {item.degree}
             </span>
           </button>
         );
       })}
-      {scale.removed && (
-        <div className={`chip chip-ghost ${lg ? "min-w-[74px] px-5 py-3" : "min-w-[58px]"}`}
-             title="the note we removed">
-          <span className={`block font-semibold line-through decoration-2 ${lg ? "text-3xl" : "text-lg"}`}>
-            {notePretty(scale.removed)}
-          </span>
-          <span className="block font-mono text-[9px] opacity-80">removed</span>
-        </div>
-      )}
     </div>
   );
 }

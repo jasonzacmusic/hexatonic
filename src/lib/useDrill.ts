@@ -15,6 +15,7 @@ import { buildPattern, patternById, PATTERNS, PatternId } from "./theory/pattern
 import { solveResolution, ResolveMode, gatiFor } from "./theory/resolution";
 import { meterById, METERS, allTalaMeters } from "./theory/meters";
 import { getAudio } from "./audio/engine";
+import { usePlayback } from "./audio/usePlayback";
 
 export interface DrillState {
   key: string;
@@ -28,21 +29,22 @@ export interface DrillState {
   grouping: number;
   resolve: ResolveMode;
   meter: string;
+  countIn: boolean;
   bpm: number;
   loop: boolean;
   click: boolean;
 }
 
 export const DEFAULTS: DrillState = {
-  key: "C", family: "diatonic", mode: 0, pattern: "aroha", cell: 4,
+  key: "C", family: "diatonic", mode: 0, pattern: "both", cell: 4,
   octaves: 1, includeTop: false, sub: 4, grouping: 4, resolve: "full", meter: "4-4",
-  bpm: 84, loop: true, click: true,
+  bpm: 84, loop: true, click: true, countIn: true,
 };
 
 const SHORT: Record<keyof DrillState, string> = {
   key: "k", family: "f", mode: "m", pattern: "p", cell: "c", octaves: "o",
   includeTop: "t", sub: "s", grouping: "g", resolve: "r", meter: "mt", bpm: "b",
-  loop: "l", click: "x",
+  loop: "l", click: "x", countIn: "ci",
 };
 
 export function encodeState(s: DrillState): string {
@@ -95,12 +97,12 @@ export function decodeState(qs: string): DrillState {
   out.bpm = integer(q.get(SHORT.bpm), { min: 40, max: 200 }, DEFAULTS.bpm);
   out.loop = bool(q.get(SHORT.loop), DEFAULTS.loop);
   out.click = bool(q.get(SHORT.click), DEFAULTS.click);
+  out.countIn = bool(q.get(SHORT.countIn), DEFAULTS.countIn);
   return out;
 }
 
 export function useDrill(initial?: Partial<DrillState>) {
   const [state, setState] = useState<DrillState>({ ...DEFAULTS, ...initial });
-  const [playing, setPlaying] = useState(false);
   const [index, setIndex] = useState(-1);
   const [countdown, setCountdown] = useState(0);
   const [audioError, setAudioError] = useState<string | null>(null);
@@ -156,68 +158,60 @@ export function useDrill(initial?: Partial<DrillState>) {
   const stepDur = 60 / state.bpm / state.sub;
   const seconds = resolution.totalNotes * stepDur;
 
-  const stop = useCallback(() => {
-    operation.current++;
-    getAudio().stop(true);
-    setPlaying(false);
-    setLoadingAudio(false);
+  /* Playback lifecycle. usePlayback owns the stopping: unmount, route change,
+     tab hide, page unload and any other surface claiming audio all end this run
+     without the screen having to remember. See src/lib/audio/session.ts. */
+  const clearVisuals = useCallback(() => {
     setIndex(-1);
     setCountdown(0);
     if (raf.current) cancelAnimationFrame(raf.current);
     raf.current = null;
   }, []);
 
+  const pb = usePlayback("drill", clearVisuals);
+  const playing = pb.playing;
+
+  const stop = useCallback(() => { pb.end(); }, [pb]);
+
   const play = useCallback(async () => {
     if (!notes.length) return;
-    const a = getAudio();
-    const op = ++operation.current;
     setAudioError(null);
-    if (!a.ready) setLoadingAudio(true);
-    try {
-      const started = await a.start({
+    await pb.begin(async (guard) => {
+      const a = getAudio();
+      if (!a.ready) setLoadingAudio(true);
+      try {
+        await a.init();
+      } catch (e: any) {
+        setAudioError(e?.message ?? "audio failed to load");
+        return false;
+      } finally {
+        setLoadingAudio(false);
+      }
+      if (!guard()) return false;           // stopped while the samples loaded
+      const ok = await a.start({
         notes,
         stepDur, grouping: state.grouping, subdivision: state.sub,
-        beatsPerBar: 4,
         loop: state.loop, click: state.click,
-        countInBeats: meter.top, beatDur: 60 / state.bpm,
-        onStop: () => {
-          if (operation.current !== op) return;
-          setPlaying(false);
-          setIndex(-1);
-          setCountdown(0);
-          if (raf.current) cancelAnimationFrame(raf.current);
-          raf.current = null;
-        },
+        countInBeats: state.countIn ? meter.top : 0, beatDur: 60 / state.bpm,
+        onStop: () => { if (guard()) pb.end(); },
       });
-      if (operation.current !== op || !started) return;
-    } catch (e: any) {
-      if (operation.current === op) {
-        setLoadingAudio(false);
-        setAudioError(e?.message ?? "audio failed to load");
-      }
-      return;
-    }
-    if (operation.current !== op) return;
-    setLoadingAudio(false);
-    setAudioReady(true);
-    setPlaying(true);
-    const tick = () => {
-      if (operation.current !== op || !a.playing) {
-        raf.current = null;
-        return;
-      }
-      const nextIndex = a.currentIndex();
-      const nextCountdown = a.countdown();
-      setIndex((current) => current === nextIndex ? current : nextIndex);
-      setCountdown((current) => current === nextCountdown ? current : nextCountdown);
+      if (!ok || !guard()) return false;
+      const tick = () => {
+        if (!guard()) return;               // a stale frame must not repaint
+        setIndex(a.currentIndex());
+        setCountdown(a.countdown());
+        raf.current = requestAnimationFrame(tick);
+      };
       raf.current = requestAnimationFrame(tick);
-    };
-    raf.current = requestAnimationFrame(tick);
-  }, [notes, stepDur, state.grouping, state.sub, state.loop, state.click, state.bpm]);
+      return true;
+    });
+  }, [notes, stepDur, state.grouping, state.sub, state.loop, state.click,
+      state.countIn, state.bpm, meter.top, pb]);
+
 
   const toggle = useCallback(
-    () => { playing || loadingAudio ? stop() : play(); },
-    [playing, loadingAudio, play, stop]
+    () => { playing || loadingAudio ? stop() : void play(); },
+    [playing, loadingAudio, stop, play]
   );
 
   // stop when the configuration changes underneath us

@@ -21,9 +21,9 @@ export interface PatternDef {
 }
 
 export const PATTERNS: PatternDef[] = [
+  { id: "both",      label: "Aroha–Avaroha — up and down", hint: "Up, turn, and back down with no note repeated. The top note is the turning point and the bottom is left to the next pass, so the loop is seamless.", usesTopNote: false, usesCell: false },
   { id: "aroha",     label: "Aroha — ascending",           hint: "Straight up.", usesTopNote: true,  usesCell: false },
   { id: "avaroha",   label: "Avaroha — descending",        hint: "Straight down.", usesTopNote: true, usesCell: false },
-  { id: "both",      label: "Aroha–Avaroha — up then down", hint: "Up and back.", usesTopNote: true, usesCell: false },
   { id: "thirds",    label: "In thirds (step 2 degrees)",  hint: "In a six-note scale this is NOT thirds — you get 2 major 3rds, 2 minor 3rds and 2 perfect 4ths. The fourths appear where the removed note left a gap.", usesTopNote: false, usesCell: false },
   { id: "fourths",   label: "In fourths (step 3 degrees)", hint: "Every single degree yields a perfect 4th or 5th. Six for six. The major scale cannot do this — F–B comes out an augmented 4th.", usesTopNote: false, usesCell: false },
   { id: "fifths",    label: "In fifths (step 4 degrees)",  hint: "Sixths and fifths mixed. Here the heptatonic is actually the more uniform one — don't overclaim.", usesTopNote: false, usesCell: false },
@@ -95,8 +95,14 @@ export function buildPattern(
     case "aroha":     return ladder(scale, octaves, includeTop);
     case "avaroha":   return [...ladder(scale, octaves, includeTop)].reverse();
     case "both": {
-      const up = ladder(scale, octaves, true);
-      return up.concat([...up].slice(0, -1).reverse());
+      /* Up, turn, and back down with NOTHING repeated.
+         The turning note at the top is played once, and the bottom note is left
+         off the end because the loop supplies it again on the next pass. For a
+         hexatonic over one octave that gives exactly 12 notes — which happens to
+         resolve in three bars of 16ths, the shortest useful cycle in the app. */
+      const up = ladder(scale, octaves, true);       // C D E G A B C
+      const down = [...up].slice(1, -1).reverse();   // B A G E D   (no top, no bottom)
+      return up.concat(down);
     }
     case "thirds":    return skip(scale, octaves, 2);
     case "fourths":   return skip(scale, octaves, 3);

@@ -18,6 +18,7 @@ import {
 } from "@/lib/theory/vamps";
 import { midi, notePretty, pc } from "@/lib/theory/note";
 import { getAudio, previewAudio } from "@/lib/audio/engine";
+import { usePlayback } from "@/lib/audio/usePlayback";
 
 const VOICINGS: { label: string; value: VoicingStyle; hint: string }[] = [
   { label: "Shell", value: "shell", hint: "root, 3rd and 7th — the jazz default" },
@@ -36,8 +37,8 @@ export default function ImproviseClient() {
   const [bass, setBass] = useState(true);
   const [comp, setComp] = useState(true);
   const [click, setClick] = useState(false);
+  const [countIn, setCountIn] = useState(true);
   const [guides, setGuides] = useState(true);
-  const [playing, setPlaying] = useState(false);
   const [chordIdx, setChordIdx] = useState(-1);
   const [countdown, setCountdown] = useState(0);
   const [err, setErr] = useState<string | null>(null);
@@ -60,47 +61,52 @@ export default function ImproviseClient() {
       setVampId(available[0].id);
   }, [available, vampId]);
 
-  const stop = useCallback(() => {
-    getAudio().stopVamp();
-    setPlaying(false);
+  /* Managed by usePlayback so unmount, route change, tab hide and unload all
+     stop the vamp without this screen having to remember. */
+  const clearVisuals = useCallback(() => {
     setChordIdx(-1);
     setCountdown(0);
     if (raf.current) cancelAnimationFrame(raf.current);
     raf.current = null;
   }, []);
+  const pb = usePlayback("vamp", clearVisuals);
+  const playing = pb.playing;
+  const stop = useCallback(() => { pb.end(); }, [pb]);
 
   const play = useCallback(async () => {
     if (!steps.length) return;
     setErr(null);
-    const a = getAudio();
-    const beatDur = 60 / bpm;
-    const ok = await a.startVamp({
-      chords: steps.map((s) => ({
-        bass: s.chord.bass, voicing: s.chord.voicing, bars: s.bars,
-      })),
-      beatDur,
-      beatsPerBar: vamp.feel === "68" ? 6 : 4,
-      feel: vamp.feel,
-      click, countInBeats: 4, bassOn: bass, compOn: comp,
-    });
-    if (!ok) { setErr("audio could not start"); return; }
-    setPlaying(true);
-    const tick = () => {
-      setChordIdx(a.currentChordIndex());
-      setCountdown(a.vampCountdown());
+    await pb.begin(async (guard) => {
+      const a = getAudio();
+      const ok = await a.startVamp({
+        chords: steps.map((s) => ({
+          bass: s.chord.bass, voicing: s.chord.voicing, bars: s.bars,
+        })),
+        beatDur: 60 / bpm,
+        beatsPerBar: vamp.feel === "68" ? 6 : 4,
+        feel: vamp.feel,
+        click, countInBeats: countIn ? 4 : 0, bassOn: bass, compOn: comp,
+      });
+      if (!ok) { setErr("audio could not start"); return false; }
+      if (!guard()) return false;
+      const tick = () => {
+        if (!guard()) return;
+        setChordIdx(a.currentChordIndex());
+        setCountdown(a.vampCountdown());
+        raf.current = requestAnimationFrame(tick);
+      };
       raf.current = requestAnimationFrame(tick);
-    };
-    raf.current = requestAnimationFrame(tick);
-  }, [steps, bpm, vamp.feel, click, bass, comp]);
+      return true;
+    });
+  }, [steps, bpm, vamp.feel, click, bass, comp, countIn, pb]);
 
   // restart cleanly whenever the musical content changes underneath
-  const sig = `${key}|${family}|${mode}|${vampId}|${voicing}|${bpm}|${bass}|${comp}|${click}`;
+  const sig = `${key}|${family}|${mode}|${vampId}|${voicing}|${bpm}|${bass}|${comp}|${click}|${countIn}`;
   const last = useRef(sig);
   useEffect(() => {
     if (last.current !== sig) { last.current = sig; if (playing) { stop(); } }
   }, [sig, playing, stop]);
 
-  useEffect(() => () => { getAudio().stopVamp(); if (raf.current) cancelAnimationFrame(raf.current); }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -287,6 +293,7 @@ export default function ImproviseClient() {
           <Toggle on={bass} onClick={() => setBass((v) => !v)}>Bass</Toggle>
           <Toggle on={comp} onClick={() => setComp((v) => !v)}>Chords</Toggle>
           <Toggle on={click} onClick={() => setClick((v) => !v)}>Click</Toggle>
+          <Toggle on={countIn} onClick={() => setCountIn((v) => !v)}>Count-off</Toggle>
           <Toggle on={guides} onClick={() => setGuides((v) => !v)}>Guide tones</Toggle>
           <span className="ml-auto font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
             space play/stop

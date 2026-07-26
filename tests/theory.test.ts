@@ -398,3 +398,32 @@ describe("Carnatic layer — verified terminology only", () => {
 function yatiShape(id: string) {
   return [...(YATIS.find((y) => y.id === id)!.shape)];
 }
+
+/* ── aroha–avaroha ─────────────────────────────────────────────────────── */
+describe("aroha–avaroha repeats nothing", () => {
+  const s = buildScale("C", "diatonic", 0);          // C D E G A B
+  it("plays each note once up and once down, with no doubled turning points", () => {
+    const p = buildPattern("both", s.notes, 1, 4, false).map(noteName);
+    expect(p).toEqual(["C", "D", "E", "G", "A", "B", "C", "B", "A", "G", "E", "D"]);
+  });
+  it("never plays the same note twice in a row, including across the loop seam", () => {
+    for (let mode = 0; mode < 6; mode++)
+      for (const oct of [1, 2]) {
+        const sc = buildScale("C", "diatonic", mode);
+        const p = buildPattern("both", sc.notes, oct, 4, false);
+        for (let i = 0; i < p.length; i++) {
+          const next = p[(i + 1) % p.length];        // wraps, so the seam is checked
+          expect(pc(p[i]) === pc(next) && p[i].octave === next.octave,
+            `mode ${mode} oct ${oct} index ${i}`).toBe(false);
+        }
+      }
+  });
+  it("is 2n notes long for an n-note scale over one octave", () => {
+    expect(buildPattern("both", s.notes, 1, 4, false)).toHaveLength(12);
+    expect(buildPattern("both", buildScale("C", "penta").notes, 1, 4, false)).toHaveLength(10);
+  });
+  it("is the default drill", async () => {
+    const { DEFAULTS } = await import("../src/lib/useDrill");
+    expect(DEFAULTS.pattern).toBe("both");
+  });
+});

@@ -109,25 +109,44 @@ export default function ScaleRing({
             return <circle key={`o${p}`} cx={x} cy={y} r={size * 0.008} fill="#3A3331" />;
           })}
 
-        {/* the note that was removed — a hollow ring in the gap it left */}
+        {/* THE NOTE THAT WAS REMOVED.
+            An earlier version drew a filled ring with a diagonal slash, which
+            reads as a "no entry" sign — a prohibition rather than an absence.
+            This version instead shows the route the scale does NOT take: a
+            dotted red detour from the two neighbouring notes through the empty
+            position, with a hollow dashed marker sitting in the gap. The eye
+            reads a missing piece rather than a forbidden one. */}
         {removedPc >= 0 && (() => {
           const { x, y } = posFor(removedPc);
-          const r = size * 0.032;
+          const r = size * 0.03;
+          // the two scale notes either side of the gap, going clockwise
+          const relOf = (p: number) => ((p - rootPc) % 12 + 12) % 12;
+          const sorted = [...scalePcs].sort((a, b) => relOf(a) - relOf(b));
+          const gapRel = relOf(removedPc);
+          const before = [...sorted].reverse().find((p) => relOf(p) < gapRel) ?? sorted[sorted.length - 1];
+          const after = sorted.find((p) => relOf(p) > gapRel) ?? sorted[0];
+          const A = posFor(before), B = posFor(after);
+          const L = labelFor(removedPc, size * 0.1);
           return (
             <g key="rm">
-              <circle cx={x} cy={y} r={r} fill="none" stroke="#E8666C" strokeWidth={size * 0.011} />
-              <line x1={x - r * 0.72} y1={y - r * 0.72} x2={x + r * 0.72} y2={y + r * 0.72}
-                    stroke="#E8666C" strokeWidth={size * 0.009} strokeLinecap="round" />
-              {showLabels && (() => {
-                const L = labelFor(removedPc, size * 0.088);
-                return (
-                  <text x={L.x} y={L.y} textAnchor="middle"
-                        className="fill-[#E8666C] font-mono"
-                        style={{ fontSize: size * 0.05, fontWeight: 600 }}>
-                    {notePretty(removed!)}
-                  </text>
-                );
-              })()}
+              {/* the path the scale would have taken */}
+              <polyline
+                points={`${A.x},${A.y} ${x},${y} ${B.x},${B.y}`}
+                fill="none" stroke="#C4353C" strokeOpacity={0.5}
+                strokeWidth={size * 0.006} strokeDasharray={`${size * 0.018} ${size * 0.018}`}
+                strokeLinecap="round" strokeLinejoin="round"
+              />
+              {/* the empty seat */}
+              <circle cx={x} cy={y} r={r} fill="#0A0908"
+                      stroke="#C4353C" strokeWidth={size * 0.009}
+                      strokeDasharray={`${size * 0.021} ${size * 0.013}`} />
+              {showLabels && (
+                <text x={L.x} y={L.y} textAnchor="middle" className="font-mono"
+                      fill="#C4353C"
+                      style={{ fontSize: size * 0.05, fontWeight: 700 }}>
+                  {notePretty(removed!)}
+                </text>
+              )}
             </g>
           );
         })()}

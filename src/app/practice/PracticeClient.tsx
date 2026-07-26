@@ -218,6 +218,8 @@ export default function PracticeClient() {
                 </div>
                 <Toggle on={state.loop} onClick={() => set("loop", !state.loop)}>Loop</Toggle>
                 <Toggle on={state.click} onClick={() => set("click", !state.click)}>Click</Toggle>
+          <Toggle on={state.countIn} onClick={() => set("countIn", !state.countIn)}
+                  title="Play a bar of clicks before the drill starts.">Count-off</Toggle>
               </div>
             </>
           )}
@@ -347,6 +349,8 @@ export default function PracticeClient() {
           </div>
           <Toggle on={state.loop} onClick={() => set("loop", !state.loop)}>Loop</Toggle>
           <Toggle on={state.click} onClick={() => set("click", !state.click)}>Click</Toggle>
+          <Toggle on={state.countIn} onClick={() => set("countIn", !state.countIn)}
+                  title="Play a bar of clicks before the drill starts.">Count-off</Toggle>
           <button className="btn btn-ghost"
                   onClick={copyLink}>
             {copied ? "✓ Link copied" : "Copy drill link"}
