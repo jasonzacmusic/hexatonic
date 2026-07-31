@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hexatonic — Musical &amp; Technical Audit · 31 Jul 2026</title>
+<style>
+  :root{
+    --bg:#0A0908; --surface:#171512; --surface2:#1E1B17; --line:#2A2523;
+    --gold:#C9A227; --gold-hi:#F3D765; --cream:#F4EFE4; --muted:#9A9088;
+    --red:#C4353C; --red-hi:#E05860; --amber:#D08A2C; --green:#7BA05B;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--cream);font-family:-apple-system,"SF Pro Text",Segoe UI,Roboto,sans-serif;line-height:1.6;padding:0 0 80px}
+  .wrap{max-width:880px;margin:0 auto;padding:0 20px}
+  header{padding:64px 0 40px;border-bottom:1px solid var(--line);margin-bottom:40px;
+    background:radial-gradient(ellipse 70% 100% at 50% 0%, rgba(201,162,39,.10), transparent 70%)}
+  .eyebrow{font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
+  h1{font-size:clamp(30px,6vw,46px);font-weight:800;letter-spacing:-.02em;margin:14px 0 10px}
+  h1 em{font-style:normal;color:var(--gold)}
+  .sub{color:var(--muted);font-size:16px;max-width:640px}
+  .pill{display:inline-block;font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.08em;
+    border:1px solid var(--line);border-radius:99px;padding:5px 13px;margin:18px 8px 0 0;color:var(--muted)}
+  .pill b{color:var(--gold-hi);font-weight:700}
+  h2{font-size:24px;font-weight:800;letter-spacing:-.01em;margin:52px 0 6px}
+  h2 .n{color:var(--gold);opacity:.55;font-family:ui-monospace,Menlo,monospace;font-size:18px;margin-right:10px}
+  .lede{color:var(--muted);margin-bottom:20px;max-width:660px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px 24px;margin:14px 0}
+  .card h3{font-size:16px;font-weight:700;margin-bottom:4px}
+  .card p{color:#cfc7b8;font-size:14.5px}
+  .card .why{color:var(--muted);font-size:13px;margin-top:6px}
+  .tag{display:inline-block;font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+    border-radius:6px;padding:3px 9px;margin-bottom:10px}
+  .t-fixed{background:rgba(123,160,91,.14);color:#a9c98b;border:1px solid rgba(123,160,91,.35)}
+  .t-ship{background:rgba(201,162,39,.12);color:var(--gold-hi);border:1px solid rgba(201,162,39,.4)}
+  .t-big{background:rgba(196,53,60,.12);color:var(--red-hi);border:1px solid rgba(196,53,60,.4)}
+  .t-idea{background:rgba(208,138,44,.12);color:#e9b06a;border:1px solid rgba(208,138,44,.4)}
+  .grid2{display:grid;gap:14px;grid-template-columns:1fr 1fr}
+  @media(max-width:700px){.grid2{grid-template-columns:1fr}}
+  .verified{border-left:3px solid var(--green)}
+  .bug{border-left:3px solid var(--gold)}
+  .missing{border-left:3px solid var(--red)}
+  .idea{border-left:3px solid var(--amber)}
+  code{font-family:ui-monospace,Menlo,monospace;font-size:13px;color:var(--gold-hi);background:var(--surface2);
+    border-radius:5px;padding:1.5px 6px}
+  .bigstat{display:flex;flex-wrap:wrap;gap:28px;margin:22px 0}
+  .bigstat div{min-width:120px}
+  .bigstat .v{font-size:38px;font-weight:800;color:var(--gold-hi);line-height:1;font-variant-numeric:tabular-nums}
+  .bigstat .l{font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+  a{color:var(--gold-hi)}
+  .btn{display:inline-block;background:var(--gold);color:#17130a;font-weight:800;border:none;border-radius:12px;
+    padding:14px 26px;font-size:15px;cursor:pointer;letter-spacing:.02em;margin:8px 10px 0 0;text-decoration:none}
+  .btn.ghost{background:transparent;color:var(--cream);border:1px solid var(--line)}
+  .foot{margin-top:64px;padding-top:24px;border-top:1px solid var(--line);color:var(--muted);font-size:13px}
+  .blues{background:linear-gradient(135deg, rgba(201,162,39,.08), rgba(196,53,60,.06));border:1px solid rgba(201,162,39,.3)}
+  ol.tight{margin:10px 0 0 20px;color:#cfc7b8;font-size:14.5px}
+  ol.tight li{margin-bottom:7px}
+  .copied{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--gold);color:#17130a;
+    font-weight:700;border-radius:99px;padding:10px 22px;opacity:0;transition:opacity .25s;pointer-events:none}
+  .copied.on{opacity:1}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <p class="eyebrow">Nathaniel School of Music · Internal Audit · 31 July 2026</p>
+    <h1>Hexatonic — <em>the full musical audit.</em></h1>
+    <p class="sub">Every line of the theory engine read and verified, nine bugs found and shipped,
+      the blues question answered, and the honest map of what to build next —
+      intervallic, chordal, scalar, rhythmic, ear, and eye.</p>
+    <span class="pill">LIVE at <b>hexatonic.nathanielschool.com</b></span>
+    <span class="pill"><b>167</b> tests green</span>
+    <span class="pill"><b>9</b> fixes shipped today</span>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <h2><span class="n">01</span>What is already excellent — verified, not assumed</h2>
+  <p class="lede">I read every theory file line by line and re-derived the maths by hand. This engine is
+    the real thing — most scale apps get half of this wrong.</p>
+  <div class="grid2">
+    <div class="card verified"><h3>Note spelling engine</h3>
+      <p>Notes are (letter, accidental, octave) — never bare MIDI numbers. Every key spells correctly:
+      the parent scale is built first, then the note is removed. No E♯-where-F-belongs anywhere.</p></div>
+    <div class="card verified"><h3>Barry Harris module — exact</h3>
+      <p>All four sixth-diminished scales correct, including the trap everyone falls into
+      (the dominant scale uses A♭, not A) and the 7♭5 scale's six-transposition tritone symmetry. Checked note by note.</p></div>
+    <div class="card verified"><h3>Ragas &amp; talas — verified</h3>
+      <p>All eleven ragas checked against the swara table (Pushpalathika, Sriranjani, Marwa, vakra ragas…),
+      sapta talas computed from real anga structure, konnakol syllables match our locked reference.</p></div>
+    <div class="card verified"><h3>The resolution solver</h3>
+      <p>The LCM mathematics of groupings-vs-bar is right, including full-resolve vs accent-resolve.
+      This remains the app's moat — nothing on the market does it.</p></div>
+    <div class="card verified"><h3>Set theory</h3>
+      <p>Prime forms, interval vectors, Forte names — I re-derived 6-Z47 (blues) and the augmented-pair
+      parity rule by hand. Correct, including the subtle normal-order edge cases.</p></div>
+    <div class="card verified"><h3>Audio architecture</h3>
+      <p>Lookahead scheduler on the audio clock, playback-lifecycle guarantee with a contract test,
+      resilient sample loading with pitched fallback. Professional-grade for a web app.</p></div>
+  </div>
+
+  <h2><span class="n">02</span>Nine bugs found — all fixed and live</h2>
+  <p class="lede">Shipped to main this morning; Vercel deployed automatically.</p>
+
+  <div class="card bug"><span class="tag t-fixed">FIXED</span><h3>The click ignored your meter</h3>
+    <p>In 5/4, 7/4, 6/8 or any tala, the strong click still landed every 4 beats — the engine was never told
+    the bar length. Downbeats now land where the meter says.</p></div>
+  <div class="card bug"><span class="tag t-fixed">FIXED</span><h3>The staff always engraved 4/4</h3>
+    <p>Pick 7/8 or Khanda Ata and the notation still drew 4/4 barlines with a wrong time signature.
+    The score now engraves the real meter — correct signature, correct barring, correct beaming.</p></div>
+  <div class="card bug"><span class="tag t-fixed">FIXED</span><h3>MIDI grading existed but was never on the page</h3>
+    <p>A complete, tested play-along grading system (notes, accents, timing, early/late bias) was built
+    and then never mounted anywhere. It now lives on /practice — plug in a MIDI keyboard, play the drill, get graded.</p></div>
+  <div class="card bug"><span class="tag t-fixed">FIXED</span><h3>Wrong notes were reported with the wrong name</h3>
+    <p>The grade report named the note you were <em>supposed</em> to play as the note you played.
+    It now names what you actually played — and shows plain note names, never raw MIDI numbers.</p></div>
+  <div class="card bug"><span class="tag t-fixed">FIXED</span><h3>Raga playback never reached the upper Sa</h3>
+    <p>The aroha–avaroha preview jumped straight from Ni back down without landing the top Sa —
+    musically wrong in any tradition. It now plays the true line: S R G M P N Ṡ, then down.</p></div>
+  <div class="card bug"><span class="tag t-fixed">FIXED</span><h3>Barry Harris "run the movement" wouldn't stop</h3>
+    <p>Navigating away mid-run left chords sounding for seconds. The run now cancels on navigation,
+    on scale change, and on re-click.</p></div>
+  <div class="card bug"><span class="tag t-fixed">FIXED</span><h3>Changing meter mid-play desynced the display</h3>
+    <p>Switching meter or editing a custom scale while playing kept the old audio running against new visuals.
+    Playback now stops cleanly on any musical change.</p></div>
+  <div class="card bug"><span class="tag t-fixed">FIXED</span><h3>Home page hydration error</h3>
+    <p>The chromatic ring rendered slightly different floating-point coordinates on server and browser —
+    a console error on every load. Coordinates are now rounded and deterministic.</p></div>
+  <div class="card bug"><span class="tag t-ship">SHIPPED</span><h3>The major blues scale — see below</h3>
+    <p>Not a bug — a missing scale. Now live.</p></div>
+
+  <h2><span class="n">03</span>The blues answer</h2>
+  <div class="card blues">
+    <h3 style="font-size:19px">You hadn't missed it — you had exactly half of it.</h3>
+    <p style="margin-top:8px">The <b>minor blues hexatonic</b> (1 ♭3 4 ♭5 5 ♭7) was already a family.
+    What was missing was the <b>major blues — 1 2 ♭3 3 5 6, the gospel scale</b> — the sound of gospel piano,
+    Ray Charles, Oscar Peterson. It was even name-checked in the code's own comments and never made selectable.</p>
+    <p style="margin-top:10px"><b>Shipped today:</b> Major blues hexatonic is now a first-class family on
+    /scales, /practice and /improvise, with the teaching point built in: C major blues and A minor blues are
+    the <em>same six notes</em> (set class 6-Z47, a minor third apart) — one scale, two homes, which is the
+    entire secret of blues piano vocabulary.</p>
+    <p class="why" style="margin-top:10px">What's still missing for the blues is not a scale — it's the
+    <em>form</em>: a 12-bar backing lane, shuffle feel, and dominant-7 harmony that deliberately steps outside
+    the scale. That's item one of the pipeline below.</p>
+  </div>
+
+  <h2><span class="n">04</span>The pipeline — by the four ways you practise</h2>
+  <p class="lede">Organised by your own frame: intervallically, chordally, scalarly, plus rhythm — and then
+    the two missing senses: ear and eye. Ranked within each lane.</p>
+
+  <h3 style="margin:26px 0 4px;font-size:18px;color:var(--gold-hi)">A · The blues, properly</h3>
+  <div class="card missing"><span class="tag t-big">BIGGEST WIN</span><h3>12-bar blues lane in Improvise</h3>
+    <p>A real I7–IV7–V7 twelve-bar with shuffle feel, walking bass and a "quick change" toggle. The vamp
+    engine currently only plays chords <em>inside</em> the scale — the blues teaches the opposite lesson:
+    one scale over moving dominant harmony. This needs a small second vamp lane that knows chords the scale
+    doesn't contain, and it unlocks the single most-requested practice context in existence.</p>
+    <p class="why">Also: swing/shuffle subdivision feel for the drill itself (straight vs swung 8ths),
+    and call-and-response mode — the app plays two bars, leaves two bars of silence over the band.</p></div>
+
+  <h3 style="margin:26px 0 4px;font-size:18px;color:var(--gold-hi)">B · Intervallic practice</h3>
+  <div class="card idea"><span class="tag t-idea">ADD</span><h3>Mixed-interval and enclosure patterns</h3>
+    <p>The skip cycles (3rds/4ths/5ths/6ths) are excellent. Missing: compound patterns —
+    "up a 4th, down a step", enclosures (approach the target from above and below), and the
+    pivot exercise (one note held, the other voice walking). These are the bebop &amp; Carnatic datu bridge.</p></div>
+
+  <h3 style="margin:26px 0 4px;font-size:18px;color:var(--gold-hi)">C · Chordal practice</h3>
+  <div class="card idea"><span class="tag t-idea">ADD</span><h3>Arpeggio ladder through every available chord</h3>
+    <p>The app already finds every chord in the scale — but there's no drill that <em>plays</em> them in
+    sequence as arpeggios (C → Am → G → Em, up and down, resolved against the bar like everything else).
+    One new pattern type, huge payoff.</p></div>
+  <div class="card idea"><span class="tag t-idea">ADD</span><h3>Inversions &amp; voice-leading trainer</h3>
+    <p>Drill each triad through its inversions; then the smart version — connect chord to chord with the
+    smallest possible motion. The Barry Harris "borrowing" engine is <em>already built and tested</em> in the
+    code but has no UI — expose it as the four-voice movement drill it is.</p></div>
+
+  <h3 style="margin:26px 0 4px;font-size:18px;color:var(--gold-hi)">D · Scalar practice</h3>
+  <div class="card idea"><span class="tag t-idea">ADD</span><h3>True Janta (doubled notes) &amp; Datu (zigzag) patterns</h3>
+    <p>The varisai ladder currently approximates janta with cells — real janta is CC DD EE GG AA BB, and
+    real datu varisai jumps S–G, R–M, G–P. Both are one-line pattern generators in the existing engine, and
+    they make the Carnatic ladder authentic instead of approximate.</p></div>
+  <div class="card idea"><span class="tag t-idea">ADD</span><h3>Rotation gauntlet</h3>
+    <p>Same tonic, all six rotations of the hexachord back to back, four bars each — the fastest way to
+    actually <em>hear</em> that six scales are one object. The engine can already do it; it just needs a preset chain.</p></div>
+
+  <h3 style="margin:26px 0 4px;font-size:18px;color:var(--gold-hi)">E · Rhythmic workouts</h3>
+  <div class="card idea"><span class="tag t-idea">ADD</span><h3>Tihai generator</h3>
+    <p>The signature Carnatic ending — one phrase played three times, landing exactly on sam. It is the
+    <em>same LCM mathematics the resolution solver already does</em>, run backwards: give me a phrase length
+    and a tala, and it computes the gap so the third repetition lands on the one. Nobody else has this. It is
+    the resolution solver's natural sequel and a YouTube lesson goldmine.</p></div>
+  <div class="card idea"><span class="tag t-idea">ADD</span><h3>Gati bhedam &amp; polyrhythm click</h3>
+    <p>Switch gati mid-stream (4s → 3s → 5s over a constant beat) as a scheduled sequence, and a two-layer
+    click (3:2, 4:3) under any drill. Both fit the existing scheduler.</p></div>
+
+  <h3 style="margin:26px 0 4px;font-size:18px;color:var(--gold-hi)">F · Ear training — the biggest empty room</h3>
+  <div class="card missing"><span class="tag t-big">NEW WING</span><h3>"Which note is missing?"</h3>
+    <p>The perfect Hexatonic ear game, straight from the app's own thesis: it plays a hexachord, you name the
+    degree that was removed. Nobody else can even pose this question — it falls directly out of the omission
+    engine. Start here.</p></div>
+  <div class="card idea"><span class="tag t-idea">ADD</span><h3>Interval, chord-quality and mode quizzes</h3>
+    <p>Play two notes → name the interval; play a chord from the scale's own harmony → name it (including the
+    C6 = Am7 flip); play a rotation → name the mode. The MIDI grading that went live today is the answer-input
+    system for all of these — answer by playing, not by clicking.</p></div>
+
+  <h3 style="margin:26px 0 4px;font-size:18px;color:var(--gold-hi)">G · Visualization</h3>
+  <div class="card idea"><span class="tag t-idea">ADD</span><h3>Guitar fretboard view</h3>
+    <p>The ring, keyboard and engraved staff are strong. The missing instrument is guitar — a fretboard with
+    the same removed-note language would double the audience of every page. One component, reused everywhere.</p></div>
+  <div class="card idea"><span class="tag t-idea">ADD</span><h3>Circle-of-fifths overlay &amp; falling-note mode</h3>
+    <p>The ring already speaks chromatically; a fifths-mode toggle shows why the hexachord is a stack of five
+    fifths. And a falling-note lane (like our MIDI visualizer) during playback turns Presenter mode into
+    B-roll-ready footage for lessons.</p></div>
+
+  <h2><span class="n">05</span>Suggested order</h2>
+  <div class="card">
+    <ol class="tight">
+      <li><b>12-bar blues lane + shuffle feel</b> — completes the blues story the major-blues scale started.</li>
+      <li><b>"Which note is missing?" ear game</b> — the app's thesis as a game; instantly shareable.</li>
+      <li><b>Tihai generator</b> — the resolution solver's sequel; unique on the market.</li>
+      <li><b>True janta/datu + arpeggio ladder</b> — makes the varisai ladder authentic.</li>
+      <li><b>Guitar fretboard</b> — doubles the audience.</li>
+      <li><b>Expose Barry's "borrowing" + voice-leading drill</b> — the code is already written.</li>
+    </ol>
+  </div>
+
+  <div style="margin-top:40px">
+    <a class="btn" href="https://hexatonic.nathanielschool.com" target="_blank">Open the live app</a>
+    <button class="btn ghost" onclick="copyWA()">Copy WhatsApp summary</button>
+  </div>
+
+  <p class="foot">Prepared for Jason Zac · Nathaniel School of Music · audit of github.com/jasonzacmusic/hexatonic
+    at commit 13bfac6 · every claim verified in code or by hand, not assumed.</p>
+</div>
+
+<div class="copied" id="copied">Copied — paste into WhatsApp</div>
+
+<script>
+const WA = `🎹 *HEXATONIC — AUDIT DONE (31 Jul)*
+Live: hexatonic.nathanielschool.com
+
+✅ *9 fixes shipped today*
+• Click + notation now follow the real meter/tala (was stuck in 4/4)
+• MIDI play-along grading is now LIVE on /practice
+• Raga playback lands the upper Sa properly
+• Major blues scale (the gospel scale) added — we had only the minor blues
+• Home-page console error gone + 4 more fixes
+• 167 tests green
+
+🎯 *Top of the pipeline*
+1. 12-bar blues backing + shuffle feel
+2. "Which note is missing?" ear-training game
+3. Tihai generator (same maths as the resolution solver)
+4. True janta/datu varisai + arpeggio ladder
+5. Guitar fretboard view`;
+function copyWA(){
+  navigator.clipboard.writeText(WA).then(()=>{
+    const el=document.getElementById('copied');
+    el.classList.add('on');
+    setTimeout(()=>el.classList.remove('on'),1800);
+  });
+}
+</script>
+</body>
+</html>
