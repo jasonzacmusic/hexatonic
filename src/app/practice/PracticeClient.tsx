@@ -13,6 +13,7 @@ import { METERS, saptaTalaMeters } from "@/lib/theory/meters";
 import { midi, pc } from "@/lib/theory/note";
 import { previewAudio } from "@/lib/audio/engine";
 import CustomBuilder from "@/components/CustomBuilder";
+import MidiPanel from "@/components/MidiPanel";
 
 export default function PracticeClient() {
   const d = useDrill();
@@ -425,6 +426,7 @@ export default function PracticeClient() {
 
       {!scale.error && notes.length > 0 && (
         <Notation notes={notes} subdivision={state.sub} grouping={state.grouping}
+                  meterId={state.meter} beatsPerBar={d.meter.top}
                   keySignature={scale.keySignature}
                   activeIndex={index} />
       )}
@@ -440,6 +442,9 @@ export default function PracticeClient() {
           <span>&gt; = accent</span>
         </div>
       </section>
+
+      <MidiPanel expected={notes} grouping={state.grouping}
+                 stepDur={d.stepDur} playing={playing} />
 
       <section className="card">
         <h2 className="eyebrow">Available harmony</h2>

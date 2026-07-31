@@ -105,7 +105,7 @@ export default function Notation({
           const stave = new VF.Stave(12, 18 + sy * sysH, barsHere * barW + 46);
           stave.addClef("treble");
           if (keySignature) stave.addKeySignature(keySignature);
-          if (sy === 0) stave.addTimeSignature(`${beatsPerBar}/4`);
+          if (sy === 0) stave.addTimeSignature(`${meter.top}/${meter.bottom}`);
           stave.setContext(ctx).draw();
 
           const tickables: any[] = [];
@@ -182,7 +182,7 @@ export default function Notation({
     if (g) { g.style.fill = "#F3D765"; g.style.stroke = "#F3D765"; }
   }, [activeIndex]);
 
-  const totalBars = Math.ceil(notes.length / Math.max(1, subdivision * beatsPerBar));
+  const totalBars = Math.ceil(notes.length / Math.max(1, subdivision * meterById(meterId).top));
   const opening = notes.slice(0, 16).map(notePretty).join(", ");
 
   return (

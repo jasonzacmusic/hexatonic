@@ -18,6 +18,10 @@
 
 import { Note, midi, pc, noteName } from "./theory/note";
 
+/** Name a played pitch class with no scale context — flat-leaning, plain names. */
+const PC_NAMES = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
+export const midiNoteName = (m: number): string => PC_NAMES[((m % 12) + 12) % 12];
+
 export interface MidiEvent {
   midi: number;
   velocity: number;
@@ -79,7 +83,7 @@ export function grade(
     if (s.verdict !== "missed") continue;            // first note in the window wins
     const hit = ((ev.midi % 12) + 12) % 12 === s.expected;
     s.played = ev.midi;
-    s.playedNote = noteName(expected[idx]);
+    s.playedNote = hit ? noteName(expected[idx]) : midiNoteName(ev.midi);
     s.offset = ev.at - (startTime + idx * stepDur);
     s.verdict = hit ? "correct" : "wrong";
     s.octaveOff = hit && ev.midi !== midi(expected[idx]);

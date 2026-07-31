@@ -427,3 +427,25 @@ describe("aroha–avaroha repeats nothing", () => {
     expect(DEFAULTS.pattern).toBe("both");
   });
 });
+
+/* ── the major blues family (added after the July 2026 audit) ───────────── */
+describe("major blues hexatonic", () => {
+  it("spells C major blues as C D Eb E G A", () => {
+    const s = buildScale("C", "blues-major");
+    expect(s.notes.map(noteName)).toEqual(["C", "D", "Eb", "E", "G", "A"]);
+  });
+  it("spells F major blues as F G Ab A C D", () => {
+    const s = buildScale("F", "blues-major");
+    expect(s.notes.map(noteName)).toEqual(["F", "G", "Ab", "A", "C", "D"]);
+  });
+  it("is the same set class as the minor blues, a minor third below", () => {
+    const major = buildScale("C", "blues-major");
+    const minor = buildScale("A", "blues");
+    expect(primeForm(major.pcs)).toEqual(primeForm(minor.pcs));
+    expect(new Set(major.pcs)).toEqual(new Set(minor.pcs));
+    expect(major.forte).toContain("6-Z47");
+  });
+  it("spells in every standard key without failure", () => {
+    for (const k of KEYS) expect(buildScale(k, "blues-major").error).toBeUndefined();
+  });
+});

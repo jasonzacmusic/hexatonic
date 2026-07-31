@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { buildScale, KEYS, DIATONIC_MODES } from "@/lib/theory/scales";
 import { findChords, tertianOnly, susQuartal, triadPair, augmentedPair } from "@/lib/theory/chords";
 import {
@@ -266,6 +266,23 @@ function Barry() {
   const family = useMemo(() => theFamily(key, fam), [key, fam]);
   const proof = notOctatonic(fam);
 
+  /* "Run the whole movement" schedules ten previews; they must die with the
+     component (or with a second click), not keep sounding after navigation. */
+  const runTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const cancelRun = () => {
+    for (const t of runTimers.current) clearTimeout(t);
+    runTimers.current = [];
+  };
+  useEffect(() => cancelRun, [key, fam]);
+  const runMovement = () => {
+    cancelRun();
+    steps.forEach((s, i) => {
+      runTimers.current.push(
+        setTimeout(() => previewAudio(s.voicing.map((m) => m + 12), 0.015), i * 480)
+      );
+    });
+  };
+
   return (
     <div className="space-y-5">
       <section className="card">
@@ -321,11 +338,7 @@ function Barry() {
             </button>
           ))}
         </div>
-        <button className="btn btn-ghost mt-4"
-          onClick={async () => {
-            for (const [i, s] of steps.entries())
-              setTimeout(() => previewAudio(s.voicing.map((m) => m + 12), 0.015), i * 480);
-          }}>
+        <button className="btn btn-ghost mt-4" onClick={runMovement}>
           ▶ Run the whole movement
         </button>
       </section>

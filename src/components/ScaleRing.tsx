@@ -32,11 +32,16 @@ export default function ScaleRing({
   const R = size * 0.33;
   const rootPc = notes.length ? pc(notes[0]) : 0;
 
+  /* Coordinates are rounded to 2dp: raw trig floats serialise with different
+     final digits on server and client, which showed up as a hydration mismatch
+     on the home page. */
+  const round = (v: number) => Math.round(v * 100) / 100;
+
   // 12 o'clock is the tonic; clockwise by semitone.
   const posFor = (p: number) => {
     const rel = ((p - rootPc) % 12 + 12) % 12;
     const a = (rel / 12) * Math.PI * 2 - Math.PI / 2;
-    return { x: cx + R * Math.cos(a), y: cy + R * Math.sin(a), a };
+    return { x: round(cx + R * Math.cos(a)), y: round(cy + R * Math.sin(a)), a };
   };
   /* Labels sit radially OUTWARD from each dot. Placing them all "above" made them
      collide at the bottom of the circle where the dots crowd together. */
@@ -44,7 +49,7 @@ export default function ScaleRing({
     const rel = ((p - rootPc) % 12 + 12) % 12;
     const a = (rel / 12) * Math.PI * 2 - Math.PI / 2;
     const LR = R + pad;
-    return { x: cx + LR * Math.cos(a), y: cy + LR * Math.sin(a) + size * 0.018 };
+    return { x: round(cx + LR * Math.cos(a)), y: round(cy + LR * Math.sin(a) + size * 0.018) };
   };
 
   const scalePcs = notes.map(pc);

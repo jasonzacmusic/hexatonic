@@ -196,6 +196,7 @@ export function useDrill(initial?: Partial<DrillState>) {
       const ok = await a.start({
         notes,
         stepDur, grouping: state.grouping, subdivision: state.sub,
+        beatsPerBar: meter.top,
         loop: state.loop, click: state.click,
         countInBeats: state.countIn ? meter.top : 0, beatDur: 60 / state.bpm,
         onStop: () => { if (guard()) pb.end(); },
@@ -220,7 +221,7 @@ export function useDrill(initial?: Partial<DrillState>) {
   );
 
   // stop when the configuration changes underneath us
-  const sig = `${state.key}|${state.family}|${state.mode}|${state.pattern}|${state.cell}|${state.octaves}|${state.includeTop}|${state.sub}|${state.grouping}|${state.resolve}|${state.bpm}|${state.loop}|${state.click}`;
+  const sig = `${state.key}|${state.family}|${state.mode}|${state.pattern}|${state.cell}|${state.octaves}|${state.includeTop}|${state.sub}|${state.grouping}|${state.resolve}|${state.meter}|${state.custom}|${state.bpm}|${state.loop}|${state.click}`;
   const lastSig = useRef(sig);
   useEffect(() => {
     if (lastSig.current !== sig) {

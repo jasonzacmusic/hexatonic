@@ -184,6 +184,7 @@ export default function LiveClient() {
 
       {showNotation && !scale.error && notes.length > 0 && (
         <Notation notes={notes} subdivision={state.sub} grouping={state.grouping}
+                  meterId={state.meter} beatsPerBar={d.meter.top}
                   keySignature={scale.keySignature}
                   activeIndex={index} maxBars={8} />
       )}

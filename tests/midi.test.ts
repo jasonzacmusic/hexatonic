@@ -76,3 +76,14 @@ describe("grading", () => {
     expect(r.steps[1].verdict).toBe("missed");
   });
 });
+
+describe("wrong-note reporting", () => {
+  it("names the note the student actually played, not the expected one", () => {
+    const events = perfect();
+    events[1] = { ...events[1], midi: events[1].midi + 1 };   // D becomes Eb
+    const r = grade(expected, 4, events, T0, STEP);
+    expect(r.steps[1].verdict).toBe("wrong");
+    expect(r.steps[1].expectedNote).toBe("D");
+    expect(r.steps[1].playedNote).toBe("Eb");
+  });
+});

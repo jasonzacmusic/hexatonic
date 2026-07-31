@@ -15,7 +15,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { encodeState, DEFAULTS, DrillState } from "@/lib/useDrill";
 import { SAPTA_TALAS, talaAsMeter, aksharas } from "@/lib/theory/meters";
-import { RAGAS, buildRaga } from "@/lib/theory/ragas";
+import { RAGAS, buildRaga, ragaLine } from "@/lib/theory/ragas";
 import { notePretty } from "@/lib/theory/note";
 import { previewAudio } from "@/lib/audio/engine";
 import { midi } from "@/lib/theory/note";
@@ -195,8 +195,7 @@ export default function VarisaiClient() {
           </div>
           {raga && !raga.error && (
             <button className="btn btn-primary"
-              onClick={() => previewAudio(
-                [...raga.arohana, ...raga.avarohana].map((n) => midi(n) + 12), 0.2)}>
+              onClick={() => previewAudio(ragaLine(raga, 1).map((n) => midi(n) + 12), 0.2)}>
               ▶ Aroha then avaroha
             </button>
           )}

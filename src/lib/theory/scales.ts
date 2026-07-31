@@ -148,6 +148,12 @@ export const FAMILIES: Family[] = [
     note: "Minor pentatonic plus the ♭5. Set class 6-Z47 — the SAME class as the major blues scale, a minor third away.",
   },
   {
+    id: "blues-major", short: "Major blues hexatonic",
+    label: "Major blues hexatonic (the gospel scale)", kind: "fixed", size: 6,
+    semis: [0, 2, 3, 4, 7, 9], letters: [0, 1, 2, 2, 4, 5],
+    note: "1 2 ♭3 3 5 6 — major pentatonic plus the ♭3. The gospel scale. Set class 6-Z47, the SAME class as the minor blues a minor third below: C major blues and A minor blues are the identical six notes.",
+  },
+  {
     id: "aug", short: "Augmented hexatonic",
     label: "Augmented hexatonic (jazz 'the hexatonic scale')", kind: "fixed", size: 6,
     semis: [0, 3, 4, 7, 8, 11], letters: [0, 1, 2, 4, 5, 6],

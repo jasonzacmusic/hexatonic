@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Note } from "@/lib/theory/note";
-import { getMidi, grade, GradeReport, MidiPort } from "@/lib/midi";
+import { getMidi, grade, GradeReport, MidiPort, midiNoteName } from "@/lib/midi";
 import { getAudio } from "@/lib/audio/engine";
 
 interface Props {
@@ -76,7 +76,7 @@ export default function MidiPanel({ expected, grouping, stepDur, playing }: Prop
         <div className="ml-auto flex flex-wrap items-center gap-3">
           {lastNote !== null && (
             <span className="rounded-lg bg-gold px-3 py-1.5 font-mono text-[11px] font-bold text-[#17130a]">
-              ♪ {lastNote}
+              ♪ {midiNoteName(lastNote)}
             </span>
           )}
           {!ports.length ? (

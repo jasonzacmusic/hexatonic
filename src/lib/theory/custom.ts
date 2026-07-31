@@ -108,6 +108,7 @@ export const CUSTOM_PRESETS: { name: string; semis: number[]; note: string }[] =
   { name: "Dorian/Aeolian hexatonic", semis: [0, 2, 3, 5, 7, 10],
     note: "the minor scale without its ♭6" },
   { name: "Blues hexatonic", semis: [0, 3, 5, 6, 7, 10], note: "minor pentatonic + ♭5" },
+  { name: "Major blues (gospel)", semis: [0, 2, 3, 4, 7, 9], note: "major pentatonic + ♭3" },
   { name: "Augmented", semis: [0, 3, 4, 7, 8, 11], note: "two augmented triads a semitone apart" },
   { name: "Whole tone", semis: [0, 2, 4, 6, 8, 10], note: "no perfect fifth anywhere" },
   { name: "Major pentatonic", semis: [0, 2, 4, 7, 9], note: "five notes" },
