@@ -449,3 +449,26 @@ describe("major blues hexatonic", () => {
     for (const k of KEYS) expect(buildScale(k, "blues-major").error).toBeUndefined();
   });
 });
+
+/* ── janta and the arpeggio ladder (July 2026 additions) ────────────────── */
+describe("janta and chordLadder patterns", () => {
+  const scale = buildScale("C", "diatonic", 0).notes;   // C D E G A B
+  it("janta doubles every note of the up-and-down contour", () => {
+    const both = buildPattern("both", scale, 1, 4, false);
+    const janta = buildPattern("janta", scale, 1, 4, false);
+    expect(janta.length).toBe(both.length * 2);
+    for (let i = 0; i < both.length; i++) {
+      expect(noteName(janta[2 * i])).toBe(noteName(both[i]));
+      expect(noteName(janta[2 * i + 1])).toBe(noteName(both[i]));
+    }
+  });
+  it("arpeggiates the four REAL triads of the hexachord, by degree", () => {
+    const run = buildPattern("chordLadder", scale, 1, 4, false).map(noteName);
+    expect(run).toEqual([
+      "C", "E", "G",     // I
+      "E", "G", "B",     // iii
+      "G", "B", "D",     // V
+      "A", "C", "E",     // vi
+    ]);
+  });
+});

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { buildScale, KEYS, DIATONIC_MODES } from "@/lib/theory/scales";
 import { findChords, tertianOnly, susQuartal, triadPair, augmentedPair } from "@/lib/theory/chords";
 import {
-  SIXTH_DIMINISHED, buildSixthDim, harmonise, theFamily, notOctatonic, SixthFamily,
+  SIXTH_DIMINISHED, buildSixthDim, harmonise, borrow, theFamily, notOctatonic, SixthFamily,
 } from "@/lib/theory/barryharris";
 import { midi, noteName, notePretty, pc, primeForm, forteName, intervalVector } from "@/lib/theory/note";
 import { previewAudio } from "@/lib/audio/engine";
@@ -266,22 +266,26 @@ function Barry() {
   const family = useMemo(() => theFamily(key, fam), [key, fam]);
   const proof = notOctatonic(fam);
 
-  /* "Run the whole movement" schedules ten previews; they must die with the
-     component (or with a second click), not keep sounding after navigation. */
+  const [borrowVoice, setBorrowVoice] = useState(3);
+  const borrowed = useMemo(() => borrow(key, fam, borrowVoice), [key, fam, borrowVoice]);
+
+  /* Movement runs schedule ten previews; they must die with the component (or
+     with a second click), not keep sounding after navigation. */
   const runTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const cancelRun = () => {
     for (const t of runTimers.current) clearTimeout(t);
     runTimers.current = [];
   };
-  useEffect(() => cancelRun, [key, fam]);
-  const runMovement = () => {
+  useEffect(() => cancelRun, [key, fam, borrowVoice]);
+  const runSteps = (list: { voicing: number[] }[]) => {
     cancelRun();
-    steps.forEach((s, i) => {
+    list.forEach((s, i) => {
       runTimers.current.push(
         setTimeout(() => previewAudio(s.voicing.map((m) => m + 12), 0.015), i * 480)
       );
     });
   };
+  const runMovement = () => runSteps(steps);
 
   return (
     <div className="space-y-5">
@@ -341,6 +345,43 @@ function Barry() {
         <button className="btn btn-ghost mt-4" onClick={runMovement}>
           ▶ Run the whole movement
         </button>
+      </section>
+
+      <section className="card">
+        <p className="eyebrow">&ldquo;Borrowing&rdquo; — his own term</p>
+        <p className="quiet mt-2 max-w-3xl">
+          Barry described a major 7th chord as three notes of a sixth chord plus one note
+          of its related diminished: lift one voice a scale step and the 6th becomes a 7th.
+          Run that borrowed shape up the whole scale and the alternation keeps working —
+          every step is still one chord borrowing from the other. Pick which voice to lift.
+        </p>
+        <div className="mt-4 flex flex-wrap items-end gap-4">
+          <div className="field">
+            <label>Voice to lift</label>
+            <Seg value={borrowVoice} ariaLabel="Borrowed voice"
+                 options={[{ label: "bottom", value: 0 }, { label: "2nd", value: 1 },
+                           { label: "3rd", value: 2 }, { label: "top", value: 3 }]}
+                 onChange={setBorrowVoice} />
+          </div>
+          <button className="btn btn-ghost" onClick={() => runSteps(borrowed)}>
+            ▶ Run the borrowed movement
+          </button>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {borrowed.map((s, i) => (
+            <button key={i}
+              onClick={() => previewAudio(s.voicing.map((m) => m + 12), 0.02)}
+              className={`rounded-xl border px-4 py-3 text-left transition hover:border-gold/60 ${
+                s.isDiminished ? "border-line bg-surface2" : "border-gold/40 bg-gold/[0.07]"}`}>
+              <span className={`block text-base font-bold ${s.isDiminished ? "text-cream/70" : "text-gold"}`}>
+                {s.label.replace(" (borrowed)", "")}
+              </span>
+              <span className="block font-mono text-[10px] text-muted">
+                {s.notes.map(noteName).join(" ")} · borrowed
+              </span>
+            </button>
+          ))}
+        </div>
       </section>
 
       <div className="grid gap-4 lg:grid-cols-2">

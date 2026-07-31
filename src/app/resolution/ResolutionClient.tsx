@@ -7,6 +7,7 @@
 
 import { useMemo, useState } from "react";
 import { solveResolution, isLocked, GATIS, YATIS, SUBDIVISIONS } from "@/lib/theory/resolution";
+import TihaiLab from "@/components/TihaiLab";
 import Link from "next/link";
 
 const SIZES = [
@@ -213,6 +214,8 @@ export default function ResolutionClient() {
           ))}
         </div>
       </section>
+
+      <TihaiLab />
 
       <p><Link href="/practice" className="btn btn-primary">Try one of these on the practice screen</Link></p>
     </div>

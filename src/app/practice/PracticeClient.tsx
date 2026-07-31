@@ -14,12 +14,14 @@ import { midi, pc } from "@/lib/theory/note";
 import { previewAudio } from "@/lib/audio/engine";
 import CustomBuilder from "@/components/CustomBuilder";
 import MidiPanel from "@/components/MidiPanel";
+import Fretboard from "@/components/Fretboard";
 
 export default function PracticeClient() {
   const d = useDrill();
   const { state, set, scale, notes, resolution, gati, seconds, playing, index, toggle } = d;
   const [copied, setCopied] = useState(false);
   const [mobileTab, setMobileTab] = useState<"scale" | "pattern" | "rhythm">("scale");
+  const [instrument, setInstrument] = useState<"keys" | "guitar">("keys");
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -369,6 +371,11 @@ export default function PracticeClient() {
           <Toggle on={state.click} onClick={() => set("click", !state.click)}>Click</Toggle>
           <Toggle on={state.countIn} onClick={() => set("countIn", !state.countIn)}
                   title="Play a bar of clicks before the drill starts.">Count-off</Toggle>
+          <Toggle on={state.swing && state.sub === 2} disabled={state.sub !== 2}
+                  onClick={() => state.sub === 2 && set("swing", !state.swing)}
+                  title="Shuffle feel: offbeat 8ths land a triplet late. Only meaningful on 8th subdivisions.">
+            {state.sub === 2 ? "Shuffle" : "Shuffle n/a"}
+          </Toggle>
           <button className="btn btn-ghost"
                   onClick={copyLink}>
             {copied ? "✓ Link copied" : "Copy drill link"}
@@ -432,9 +439,22 @@ export default function PracticeClient() {
       )}
 
       <section className="card">
-        <Keyboard scale={scale.notes} removed={scale.removed}
-                  activeMidi={activeNote ? midi(activeNote) : null} octaves={2}
-                  onNote={(m) => { void previewAudio([m]); }} />
+        <div className="mb-4 flex items-center justify-between">
+          <p className="eyebrow">The instrument</p>
+          <Seg value={instrument} ariaLabel="Instrument"
+               options={[{ label: "Keys", value: "keys" as const },
+                         { label: "Guitar", value: "guitar" as const }]}
+               onChange={setInstrument} />
+        </div>
+        {instrument === "keys" ? (
+          <Keyboard scale={scale.notes} removed={scale.removed}
+                    activeMidi={activeNote ? midi(activeNote) : null} octaves={2}
+                    onNote={(m) => { void previewAudio([m]); }} />
+        ) : (
+          <Fretboard scale={scale.notes} removed={scale.removed}
+                     activePc={activePc}
+                     onNote={(m) => { void previewAudio([m]); }} />
+        )}
         <div className="mt-4 flex flex-wrap gap-x-7 gap-y-2 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
           <span><i className="mr-2 inline-block h-2.5 w-2.5 rounded-sm bg-gold align-middle" />sounding now</span>
           <span><i className="mr-2 inline-block h-2.5 w-2.5 rounded-sm bg-red align-middle" />the note we removed</span>

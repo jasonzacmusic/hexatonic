@@ -63,9 +63,9 @@ const LADDER: Rung[] = [
     teaching:
       "Janta means twin. Every note of the sarali is sung twice, then later three times. It builds attack and, in Carnatic singing, gamaka control.",
     steps: [
-      { label: "Paired, straight", state: { pattern: "cells", cell: 3, sub: 3, grouping: 3 },
-        note: "Cells of three at triplet speed approximate the doubled attack." },
-      { label: "Paired, faster", state: { pattern: "cells", cell: 3, sub: 6, grouping: 6 } },
+      { label: "Janta — every note doubled", state: { pattern: "janta", sub: 4, grouping: 4 },
+        note: "The real thing: CC DD EE, up and back down, exactly as the sarali doubles." },
+      { label: "Janta, faster", state: { pattern: "janta", sub: 6, grouping: 6 } },
     ],
   },
   {
@@ -76,7 +76,7 @@ const LADDER: Rung[] = [
       { label: "In thirds", state: { pattern: "thirds", sub: 4, grouping: 4 } },
       { label: "In fourths — all perfect", state: { pattern: "fourths", sub: 4, grouping: 4 } },
       { label: "In fifths", state: { pattern: "fifths", sub: 4, grouping: 4 } },
-      { label: "Triad arpeggios", state: { pattern: "triads", sub: 3, grouping: 3 } },
+      { label: "Arpeggio ladder — every real chord", state: { pattern: "chordLadder", sub: 3, grouping: 3 } },
     ],
   },
   {

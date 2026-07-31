@@ -39,8 +39,18 @@ export const METERS: Meter[] = [
     note: "Counted 2+2+3. Misra gati's Western cousin." },
 ];
 
-export const meterById = (id: string): Meter =>
-  METERS.find((m) => m.id === id) ?? METERS[0];
+/** Resolves Western meters AND tala meters ("tala-<name>-<jati>").
+ *  An earlier version searched only METERS, so every tala silently fell back
+ *  to 4/4 — the select offered them and the engine never received them. */
+export const meterById = (id: string): Meter => {
+  const western = METERS.find((m) => m.id === id);
+  if (western) return western;
+  if (id.startsWith("tala-")) {
+    const tala = allTalaMeters().find((m) => m.id === id);
+    if (tala) return tala;
+  }
+  return METERS[0];
+};
 
 /** Notes in one bar at a given subdivision. */
 export const pulsesPerBar = (m: Meter, subdivision: number) => m.top * subdivision;

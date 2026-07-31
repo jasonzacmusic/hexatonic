@@ -27,11 +27,15 @@ export interface ScheduledNote {
 }
 
 export interface PlaybackOptions {
-  notes: Note[];            // spelled notes; MIDI is derived only at the audio boundary
+  /** spelled notes; MIDI is derived only at the audio boundary. null = a rest —
+   *  the pulse advances, the click still sounds, nothing is struck. */
+  notes: (Note | null)[];
   stepDur: number;          // seconds per note
   grouping: number;         // accent every N
   subdivision: number;      // notes per beat (for the click)
   beatsPerBar?: number;
+  /** shuffle: with 8th subdivisions, offbeats land a triplet late (2:1) */
+  swing?: boolean;
   loop: boolean;
   click: boolean;
   countInBeats: number;
@@ -291,7 +295,8 @@ export class AudioEngine {
     const request = ++this.requestId;
     this.stopPlayback(true);
 
-    await this.init("/audio/salamander", opts.notes.map(midi));
+    await this.init("/audio/salamander",
+      opts.notes.filter((n): n is Note => n !== null).map(midi));
     if (request !== this.requestId) return false;
     if (request !== this.requestId || !this.ctx || !opts.notes.length) return false;
 
@@ -326,10 +331,15 @@ export class AudioEngine {
     while (this.seqStart + this.queued * o.stepDur < horizon && guard++ < 20000) {
       const i = this.queued;
       if (!o.loop && i >= len) break;
-      const when = this.seqStart + i * o.stepDur;
-      this.note(midi(o.notes[i % len]), when, o.stepDur, i % o.grouping === 0 ? 0.95 : 0.7);
+      // Shuffle: the offbeat 8th lands a triplet late. Feel only — the grid,
+      // the click and the engraving stay straight, which is how swing is written.
+      const shift =
+        o.swing && o.subdivision === 2 && i % 2 === 1 ? o.stepDur / 3 : 0;
+      const when = this.seqStart + i * o.stepDur + shift;
+      const n = o.notes[i % len];
+      if (n) this.note(midi(n), when, o.stepDur, i % o.grouping === 0 ? 0.95 : 0.7);
       if (o.click && i % o.subdivision === 0)
-        this.clickAt(when, i % (o.subdivision * (o.beatsPerBar ?? 4)) === 0);
+        this.clickAt(this.seqStart + i * o.stepDur, i % (o.subdivision * (o.beatsPerBar ?? 4)) === 0);
       this.queued++;
     }
     if (!o.loop && this.ctx.currentTime > this.seqStart + len * o.stepDur + 0.15) {

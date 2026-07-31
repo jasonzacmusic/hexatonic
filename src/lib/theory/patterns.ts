@@ -5,12 +5,14 @@
  * as notes directly, because notes-first cannot be transposed.
  */
 
-import { Note, note, intervalName, pc } from "./note";
+import { Note, note, intervalName, pc, noteName } from "./note";
+import { findChords, tertianOnly } from "./chords";
 
 export type PatternId =
   | "aroha" | "avaroha" | "both"
   | "thirds" | "fourths" | "fifths" | "sixths"
-  | "cells" | "cellsDown" | "triads";
+  | "cells" | "cellsDown" | "triads"
+  | "janta" | "chordLadder";
 
 export interface PatternDef {
   id: PatternId;
@@ -28,6 +30,8 @@ export const PATTERNS: PatternDef[] = [
   { id: "fourths",   label: "In fourths (step 3 degrees)", hint: "Every single degree yields a perfect 4th or 5th. Six for six. The major scale cannot do this — F–B comes out an augmented 4th.", usesTopNote: false, usesCell: false },
   { id: "fifths",    label: "In fifths (step 4 degrees)",  hint: "Sixths and fifths mixed. Here the heptatonic is actually the more uniform one — don't overclaim.", usesTopNote: false, usesCell: false },
   { id: "sixths",    label: "In sixths (step 5 degrees)",  hint: "Mostly sevenths, by letter-distance.", usesTopNote: false, usesCell: false },
+  { id: "janta",     label: "Janta — every note doubled",  hint: "The Carnatic twin exercise: CC DD EE, up and back down. Doubling every attack builds evenness and, on a keyboard, repeated-note control. The pattern is twice as long, and the resolution maths knows it.", usesTopNote: false, usesCell: false },
+  { id: "chordLadder", label: "Arpeggio ladder — every chord in the scale", hint: "The scale's real triads (from the chord table, not degree-skipping — Theorem 5 says those differ), each arpeggiated in turn. Four triads in the diatonic hexachord makes a 12-note pattern: the arithmetic sweet spot.", usesTopNote: false, usesCell: false },
   { id: "cells",     label: "Cells of N — running up",     hint: "Classic sequence practice. Cell of 4: C D E G / D E G A / E G A B …", usesTopNote: false, usesCell: true },
   { id: "cellsDown", label: "Cells of N — running down",   hint: "Cells descend and their contents descend. Teachers disagree about this; both are offered.", usesTopNote: false, usesCell: true },
   { id: "triads",    label: "Triad arpeggios",             hint: "The available triads, in order, through the range.", usesTopNote: false, usesCell: false },
@@ -78,6 +82,24 @@ function cells(scale: Note[], octaves: number, len: number, down: boolean): Note
   return out;
 }
 
+/** Real chords, not degree-stacks: look them up, order by scale degree of the
+ *  root, and arpeggiate each. Falls back to a plain ladder if the set contains
+ *  no tertian triad at all (some custom scales). */
+function chordLadder(scale: Note[], octaves: number): Note[] {
+  const chords = tertianOnly(findChords(scale, [3]));
+  if (!chords.length) return ladder(scale, octaves, false);
+  const degIdx = (root: string) => scale.findIndex((n) => noteName(n) === root);
+  const seq = chords
+    .map((c) => c.names.find((x) => x.family === "tertian") ?? c.names[0])
+    .filter((x) => degIdx(x.root) >= 0)
+    .sort((a, b) => degIdx(a.root) - degIdx(b.root));
+  const out: Note[] = [];
+  for (let o = 0; o < octaves; o++)
+    for (const ch of seq)
+      for (const n of ch.voicing) out.push(note(n.letter, n.alt, n.octave + o));
+  return out;
+}
+
 function triadRun(scale: Note[], octaves: number): Note[] {
   // stack thirds through the ladder: degrees 0-2-4, 1-3-5, …
   const L = ladder(scale, octaves + 1, true);
@@ -111,6 +133,9 @@ export function buildPattern(
     case "cells":     return cells(scale, octaves, cellLen, false);
     case "cellsDown": return cells(scale, octaves, cellLen, true);
     case "triads":    return triadRun(scale, octaves);
+    case "janta":     return buildPattern("both", scale, octaves, cellLen, includeTop)
+                               .flatMap((n) => [n, n]);
+    case "chordLadder": return chordLadder(scale, octaves);
   }
 }
 

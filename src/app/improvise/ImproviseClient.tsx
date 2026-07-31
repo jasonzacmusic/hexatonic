@@ -10,6 +10,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Keyboard from "@/components/Keyboard";
+import Fretboard from "@/components/Fretboard";
+import BluesLane from "@/components/BluesLane";
 import ScaleRing from "@/components/ScaleRing";
 import { Seg, Toggle } from "@/components/Panels";
 import { buildScale, KEYS, DIATONIC_MODES, FAMILIES } from "@/lib/theory/scales";
@@ -28,6 +30,8 @@ const VOICINGS: { label: string; value: VoicingStyle; hint: string }[] = [
 ];
 
 export default function ImproviseClient() {
+  const [lane, setLane] = useState<"vamp" | "blues">("vamp");
+  const [instrument, setInstrument] = useState<"keys" | "guitar">("keys");
   const [key, setKey] = useState("C");
   const [family, setFamily] = useState("diatonic");
   const [mode, setMode] = useState(0);
@@ -127,11 +131,27 @@ export default function ImproviseClient() {
         <p className="eyebrow">Improvise</p>
         <h1 className="display mt-3 text-4xl">Stop running patterns.</h1>
         <p className="lede mt-4">
-          A vamp built <em>only</em> from this scale&rsquo;s own harmony. Four triads and
-          three seventh chords is not a shortage — it is the harmonic world the scale
-          lives in, and you can hear all of it in a few bars.
+          {lane === "vamp" ? (
+            <>A vamp built <em>only</em> from this scale&rsquo;s own harmony. Four triads and
+            three seventh chords is not a shortage — it is the harmonic world the scale
+            lives in, and you can hear all of it in a few bars.</>
+          ) : (
+            <>The opposite lesson: one scale held over harmony that keeps moving.
+            Twelve bars, three dominant chords, shuffle feel — the form every band
+            on earth can call without a chart.</>
+          )}
         </p>
       </header>
+
+      <div className="seg w-fit">
+        {([["vamp", "Scale vamps"], ["blues", "12-bar blues"]] as const).map(([id, label]) => (
+          <button key={id} data-on={lane === id} onClick={() => setLane(id)}>{label}</button>
+        ))}
+      </div>
+
+      {lane === "blues" && <BluesLane instrument={instrument} setInstrument={setInstrument} />}
+
+      {lane === "vamp" && <>
 
       {/* ── the stage ─────────────────────────────────────────────────── */}
       <section className="grid gap-5 lg:grid-cols-[1fr_auto]">
@@ -303,9 +323,22 @@ export default function ImproviseClient() {
       </section>
 
       <section className="card">
-        <Keyboard scale={scale.notes} removed={scale.removed} octaves={3} startMidi={48}
-                  chordTonePcs={chordPcs} height={148}
-                  onNote={(m) => previewAudio([m])} />
+        <div className="mb-4 flex items-center justify-between">
+          <p className="eyebrow">The instrument</p>
+          <Seg value={instrument} ariaLabel="Instrument"
+               options={[{ label: "Keys", value: "keys" as const },
+                         { label: "Guitar", value: "guitar" as const }]}
+               onChange={setInstrument} />
+        </div>
+        {instrument === "keys" ? (
+          <Keyboard scale={scale.notes} removed={scale.removed} octaves={3} startMidi={48}
+                    chordTonePcs={chordPcs} height={148}
+                    onNote={(m) => previewAudio([m])} />
+        ) : (
+          <Fretboard scale={scale.notes} removed={scale.removed}
+                     chordTonePcs={chordPcs}
+                     onNote={(m) => previewAudio([m])} />
+        )}
         <div className="mt-4 flex flex-wrap gap-x-7 gap-y-2 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
           <span><i className="mr-2 inline-block h-2.5 w-2.5 rounded-sm bg-[#F0E4B8] align-middle" />chord tone right now</span>
           <span><i className="mr-2 inline-block h-2.5 w-2.5 rounded-sm bg-cream align-middle" />in the scale</span>
@@ -328,6 +361,7 @@ export default function ImproviseClient() {
           repertoire exists — so what you hear here is our own pedagogy, not a citation.
         </p>
       </section>
+      </>}
     </div>
   );
 }

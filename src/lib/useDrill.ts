@@ -35,18 +35,19 @@ export interface DrillState {
   bpm: number;
   loop: boolean;
   click: boolean;
+  swing: boolean;
 }
 
 export const DEFAULTS: DrillState = {
   key: "C", family: "diatonic", mode: 4, pattern: "both", cell: 4,
   octaves: 1, includeTop: false, sub: 4, grouping: 4, resolve: "full", meter: "4-4",
-  bpm: 84, loop: true, click: true, countIn: true, custom: "",
+  bpm: 84, loop: true, click: true, countIn: true, custom: "", swing: false,
 };
 
 const SHORT: Record<keyof DrillState, string> = {
   key: "k", family: "f", mode: "m", pattern: "p", cell: "c", octaves: "o",
   includeTop: "t", sub: "s", grouping: "g", resolve: "r", meter: "mt", bpm: "b",
-  loop: "l", click: "x", countIn: "ci", custom: "cs",
+  loop: "l", click: "x", countIn: "ci", custom: "cs", swing: "sw",
 };
 
 export function encodeState(s: DrillState): string {
@@ -100,6 +101,7 @@ export function decodeState(qs: string): DrillState {
   out.loop = bool(q.get(SHORT.loop), DEFAULTS.loop);
   out.click = bool(q.get(SHORT.click), DEFAULTS.click);
   out.countIn = bool(q.get(SHORT.countIn), DEFAULTS.countIn);
+  out.swing = bool(q.get(SHORT.swing), DEFAULTS.swing);
   const cs = q.get(SHORT.custom);
   out.custom = cs && /^[0-9a-z]{1,3}$/.test(cs) ? cs : DEFAULTS.custom;
   return out;
@@ -197,6 +199,7 @@ export function useDrill(initial?: Partial<DrillState>) {
         notes,
         stepDur, grouping: state.grouping, subdivision: state.sub,
         beatsPerBar: meter.top,
+        swing: state.swing && state.sub === 2,
         loop: state.loop, click: state.click,
         countInBeats: state.countIn ? meter.top : 0, beatDur: 60 / state.bpm,
         onStop: () => { if (guard()) pb.end(); },
@@ -211,7 +214,7 @@ export function useDrill(initial?: Partial<DrillState>) {
       raf.current = requestAnimationFrame(tick);
       return true;
     });
-  }, [notes, stepDur, state.grouping, state.sub, state.loop, state.click,
+  }, [notes, stepDur, state.grouping, state.sub, state.swing, state.loop, state.click,
       state.countIn, state.bpm, meter.top, pb]);
 
 
@@ -221,7 +224,7 @@ export function useDrill(initial?: Partial<DrillState>) {
   );
 
   // stop when the configuration changes underneath us
-  const sig = `${state.key}|${state.family}|${state.mode}|${state.pattern}|${state.cell}|${state.octaves}|${state.includeTop}|${state.sub}|${state.grouping}|${state.resolve}|${state.meter}|${state.custom}|${state.bpm}|${state.loop}|${state.click}`;
+  const sig = `${state.key}|${state.family}|${state.mode}|${state.pattern}|${state.cell}|${state.octaves}|${state.includeTop}|${state.sub}|${state.grouping}|${state.resolve}|${state.meter}|${state.custom}|${state.bpm}|${state.loop}|${state.click}|${state.swing}`;
   const lastSig = useRef(sig);
   useEffect(() => {
     if (lastSig.current !== sig) {
