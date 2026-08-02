@@ -144,7 +144,7 @@ export default function Keyboard({
               {showLabels && st !== "off" && st !== "removed" && (
                 <text x={x + W / 2} y={felt + height - 14} textAnchor="middle"
                       className="font-mono" fontSize={11}
-                      fill={st === "active" ? "#4A3B08" : "#8A8178"}>
+                      fill={st === "active" ? "#4A3B08" : "#A79E94"}>
                   {notePretty(scale.find((s) => pc(s) === ((m % 12) + 12) % 12) ?? { letter: "C", alt: 0, octave: 4 } as Note)}
                 </text>
               )}

@@ -33,7 +33,7 @@ export default async function Image() {
             extended harmony.
           </div>
           <div style={{ display: "flex", marginTop: "auto", fontSize: 19, letterSpacing: 4,
-                        color: "#8A8178" }}>
+                        color: "#A79E94" }}>
             HEXATONIC · NATHANIEL SCHOOL OF MUSIC
           </div>
         </div>

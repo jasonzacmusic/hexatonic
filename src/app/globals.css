@@ -104,7 +104,7 @@ body {
     @apply w-full appearance-none rounded-xl border border-line bg-surface2 px-3.5 py-2.5
            pr-9 text-sm text-cream transition;
     background-image:
-      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%238A8178' stroke-width='1.6' stroke-linecap='round'/></svg>");
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%23A79E94' stroke-width='1.6' stroke-linecap='round'/></svg>");
     background-repeat: no-repeat;
     background-position: right 12px center;
   }
