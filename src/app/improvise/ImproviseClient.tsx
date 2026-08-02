@@ -152,7 +152,7 @@ export default function ImproviseClient() {
                   key={i}
                   onClick={() => previewAudio([s.chord.bass, ...s.chord.voicing], 0.04)}
                   className={`rounded-xl border px-5 py-3 text-left transition ${
-                    on ? "border-gold bg-gold text-[#17130a] shadow-[0_6px_24px_-8px_rgba(201,162,39,0.8)]"
+                    on ? "border-gold bg-gold text-[#17130a] shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.45)]"
                        : "border-line bg-surface2 hover:border-gold/60"}`}
                 >
                   <span className="block text-2xl font-bold">{s.chord.label}</span>
