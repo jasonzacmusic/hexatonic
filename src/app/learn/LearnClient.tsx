@@ -35,8 +35,14 @@ function PlayLine({ notes, label, gap = 0.26 }: { notes: Note[]; label: string; 
 function Card({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
   return (
     <section className="card">
-      <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-gold">Theorem {n}</p>
-      <h2 className="mt-2 text-2xl font-extrabold">{title}</h2>
+      {/* The number used to sit above the heading as its own tracked-caps
+          block. It carries real meaning here, so rather than delete it it now
+          leads the heading itself — same information, one element instead of
+          two, and the h2 keeps the whole thought. */}
+      <h2 className="text-2xl font-extrabold">
+        <span className="font-mono text-gold">{n}.</span>{" "}
+        {title}
+      </h2>
       <div className="mt-4 space-y-4">{children}</div>
     </section>
   );
@@ -81,7 +87,7 @@ export default function LearnClient() {
                   <td className="py-1.5 pr-4 font-semibold">−{r.removedNote}</td>
                   <td className="py-1.5 pr-4 font-mono">{r.notes.join(" ")}</td>
                   <td className="py-1.5 pr-4 tabular-nums">{r.tritones} tritone{r.tritones === 1 ? "" : "s"}</td>
-                  <td className="py-1.5 font-mono text-[10px]">{r.forte.split("·")[0]}</td>
+                  <td className="py-1.5 font-mono text-[12px]">{r.forte.split("·")[0]}</td>
                 </tr>
               ))}
             </tbody>
@@ -114,10 +120,10 @@ export default function LearnClient() {
           {DIATONIC_MODES.map((m) => {
             const s = buildScale(["C", "D", "E", "G", "A", "B"][m.index], "diatonic", m.index);
             return (
-              <div key={m.index} className="rounded-lg border border-line bg-surface2 p-3">
+              <div key={m.index} className="well rounded-lg p-3">
                 <p className="text-sm font-semibold">{m.name}</p>
-                <p className="font-mono text-[11px] text-gold">{s.notes.map(notePretty).join(" ")}</p>
-                <p className="font-mono text-[10px] text-muted">{m.degrees}</p>
+                <p className="font-mono text-[12px] text-gold">{s.notes.map(notePretty).join(" ")}</p>
+                <p className="font-mono text-[12px] text-muted">{m.degrees}</p>
                 <div className="mt-2"><PlayLine notes={s.notes} label="hear it" gap={0.2} /></div>
               </div>
             );
@@ -154,7 +160,7 @@ export default function LearnClient() {
             <button key={i} className="chip hover:border-gold"
                     onClick={() => { void previewAudio(c.notes.map((n) => midi(n)), 0.05); }}>
               <span className="font-semibold">{c.names[0].symbol}</span>
-              <span className="block font-mono text-[10px] text-muted">{c.noteNames.join(" ")}</span>
+              <span className="block font-mono text-[12px] text-muted">{c.noteNames.join(" ")}</span>
             </button>
           ))}
         </div>
@@ -163,7 +169,7 @@ export default function LearnClient() {
             <button key={i} className="chip hover:border-gold"
                     onClick={() => { void previewAudio(c.notes.map((n) => midi(n)), 0.05); }}>
               <span className="font-semibold">{c.names.map((n) => n.symbol).join(" = ")}</span>
-              <span className="block font-mono text-[10px] text-muted">{c.noteNames.join(" ")}</span>
+              <span className="block font-mono text-[12px] text-muted">{c.noteNames.join(" ")}</span>
             </button>
           ))}
         </div>
@@ -188,15 +194,15 @@ export default function LearnClient() {
           that breaks it is the note we removed.
         </p>
         <div className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-lg border border-gold/40 bg-gold/5 p-3">
-            <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-gold">six notes</p>
+          <div className="well rounded-lg bg-gold/[0.07] p-3">
+            <p className="font-mono text-[12px] uppercase tracking-[0.1em] text-gold">six notes</p>
             <p className="mt-1 font-mono text-sm">
               {hexaFourths.pairs.map((p) => `${noteName(p.from)}–${noteName(p.to)} (${p.interval})`).join("  ")}
             </p>
             <div className="mt-2"><PlayLine notes={flat(hexaFourths)} label="hear it" gap={0.2} /></div>
           </div>
-          <div className="rounded-lg border border-amber/40 bg-amber/5 p-3">
-            <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-amber">seven notes</p>
+          <div className="well rounded-lg bg-amber/[0.07] p-3">
+            <p className="font-mono text-[12px] uppercase tracking-[0.1em] text-amber">seven notes</p>
             <p className="mt-1 font-mono text-sm">
               {heptFourths.pairs.map((p) => (
                 <span key={noteName(p.from)} className={p.interval === "A4" ? "text-amber" : ""}>
@@ -210,27 +216,26 @@ export default function LearnClient() {
       </Card>
 
       <section className="card">
-        <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-gold">And the consequence</p>
-        <h2 className="mt-2 text-2xl font-extrabold">Six resolves faster than seven</h2>
+        <h2 className="text-2xl font-extrabold">And the consequence: six resolves faster than seven</h2>
         <p className="mt-3 text-muted">
           Group the scale in fives against 4/4 and the accent phases against the barline.
           The phrase resolves when the tonic and the accent land on a downbeat together.
         </p>
         <div className="mt-4 grid max-w-xl gap-2 sm:grid-cols-2">
           <div className="chip text-left">
-            <span className="font-mono text-[10px] uppercase text-muted">six notes, 5s, 16ths</span>
+            <span className="font-mono text-[12px] uppercase text-muted">six notes, 5s, 16ths</span>
             <span className="block text-2xl font-extrabold text-gold">
               {solveResolution(6, 4, 4, 5, "full").bars} bars
             </span>
           </div>
           <div className="chip text-left">
-            <span className="font-mono text-[10px] uppercase text-muted">seven notes, 5s, 16ths</span>
+            <span className="font-mono text-[12px] uppercase text-muted">seven notes, 5s, 16ths</span>
             <span className="block text-2xl font-extrabold text-muted">
               {solveResolution(7, 4, 4, 5, "full").bars} bars
             </span>
           </div>
         </div>
-        <p className="mt-4 max-w-2xl text-sm text-muted">
+        <p className="mt-4 max-w-[64ch] text-sm text-muted">
           Six shares factors with almost everything. Seven shares factors with nothing.
           That is the whole reason a six-note scale is the right one to teach grouping on —
           and the reason a room full of players can land a cycle together.

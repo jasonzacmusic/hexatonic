@@ -64,9 +64,13 @@ export default function ScaleRing({
       }`}
     >
       <defs>
+        {/* The bloom is pulled in and dimmed. At 0.35/70% it spilled past the
+            ring and lit the band where the note letters sit, which is what drove
+            those labels down to ~2:1 contrast. It now fades out inside the
+            polygon and leaves the label ring on clean background. */}
         <radialGradient id={`glow${uid}`}>
-          <stop offset="0%" stopColor="#C9A227" stopOpacity="0.35" />
-          <stop offset="70%" stopColor="#C9A227" stopOpacity="0.06" />
+          <stop offset="0%" stopColor="#C9A227" stopOpacity="0.20" />
+          <stop offset="55%" stopColor="#C9A227" stopOpacity="0.04" />
           <stop offset="100%" stopColor="#C9A227" stopOpacity="0" />
         </radialGradient>
         <linearGradient id={`edge${uid}`} x1="0" y1="0" x2="1" y2="1">
@@ -78,7 +82,7 @@ export default function ScaleRing({
         </filter>
       </defs>
 
-      <circle cx={cx} cy={cy} r={R * 1.5} fill={`url(#glow${uid})`} />
+      <circle cx={cx} cy={cy} r={R * 1.15} fill={`url(#glow${uid})`} />
       <circle cx={cx} cy={cy} r={R} fill="none" stroke="#2A2523" strokeWidth={1} />
 
       {/* decorative sweep — the labels must NEVER rotate or they end up upside down */}
@@ -142,7 +146,7 @@ export default function ScaleRing({
                       strokeDasharray={`${size * 0.021} ${size * 0.013}`} />
               {showLabels && (
                 <text x={L.x} y={L.y} textAnchor="middle" className="font-mono"
-                      fill="#C4353C"
+                      fill="#F08A8F"
                       style={{ fontSize: size * 0.05, fontWeight: 700 }}>
                   {notePretty(removed!)}
                 </text>
@@ -169,7 +173,7 @@ export default function ScaleRing({
                 const L = labelFor(p, size * 0.088);
                 return (
                   <text x={L.x} y={L.y} textAnchor="middle" className="font-mono"
-                        fill={on ? "#F3D765" : "#9A9088"}
+                        fill={on ? "#F3D765" : "#CFC6BA"}
                         style={{ fontSize: size * 0.05, fontWeight: on ? 700 : 500,
                                  transition: "fill 90ms linear" }}>
                     {notePretty(n)}

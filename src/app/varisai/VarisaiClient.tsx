@@ -110,7 +110,6 @@ export default function VarisaiClient() {
   return (
     <div className="space-y-6 pb-10">
       <header className="max-w-2xl pt-2">
-        <p className="eyebrow">The ladder</p>
         <h1 className="display mt-3 text-4xl">Varisai.</h1>
         <p className="lede mt-4">
           A curriculum rather than a menu. This is the Carnatic exercise ladder, in
@@ -150,13 +149,13 @@ export default function VarisaiClient() {
           <div className="flex flex-wrap items-baseline gap-x-4">
             <span className="num text-3xl text-gold/50">{String(r.n).padStart(2, "0")}</span>
             <h2 className="display text-2xl">{r.name}</h2>
-            {r.also && <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
+            {r.also && <span className="font-mono text-[12px] uppercase tracking-[0.08em] text-muted">
               also {r.also}</span>}
           </div>
-          <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
+          <p className="mt-1 font-mono text-[12px] tracking-[0.02em] text-muted">
             {r.drills}
           </p>
-          <p className="quiet mt-3 max-w-3xl">{r.teaching}</p>
+          <p className="quiet mt-3 max-w-[68ch]">{r.teaching}</p>
           <div className="mt-4 flex flex-wrap gap-2">
             {r.steps.map((st, i) => (
               <Link key={i} href={link(st.state)}
@@ -173,9 +172,8 @@ export default function VarisaiClient() {
 
       {/* ── ragas ─────────────────────────────────────────────────────── */}
       <section className="card">
-        <p className="eyebrow">Raga mode</p>
         <h2 className="display mt-2 text-2xl">When up and down are different.</h2>
-        <p className="quiet mt-3 max-w-3xl">
+        <p className="quiet mt-3 max-w-[68ch]">
           Every scale elsewhere in this app has one note list, because a Western scale
           ascends and descends through the same notes. A raga need not. Its arohana and
           avarohana can hold different notes, and a <em>vakra</em> raga does not move in
@@ -218,14 +216,14 @@ export default function VarisaiClient() {
                 <span className="text-gold">{raga.descentOnly.map(notePretty).join(" ")}</span>
               </p>
             )}
-            <div className="flex flex-wrap gap-x-6 gap-y-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+            <div className="flex flex-wrap gap-x-6 gap-y-1 font-mono text-[12px] tracking-[0.02em] text-muted">
               <span>{raga.raga.jati.replace("-", " / ")}</span>
               {raga.raga.parent && <span>parent: {raga.raga.parent}</span>}
               {raga.raga.varjya && <span>{raga.raga.varjya} varjya</span>}
               {raga.raga.vakra && <span className="text-gold">vakra</span>}
               <span>{raga.raga.tradition}</span>
             </div>
-            <p className="quiet max-w-3xl">{raga.raga.note}</p>
+            <p className="quiet max-w-[68ch]">{raga.raga.note}</p>
             {raga.raga.caveat && (
               <p className="rounded-lg border border-amber/40 bg-amber/[0.07] px-4 py-2.5 text-sm text-amber">
                 {raga.raga.caveat}
@@ -247,7 +245,7 @@ export default function VarisaiClient() {
 function Row({ label, notes }: { label: string; notes: string }) {
   return (
     <div className="flex flex-wrap items-baseline gap-4">
-      <span className="w-24 shrink-0 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
+      <span className="w-24 shrink-0 font-mono text-[12px] uppercase tracking-[0.08em] text-muted">
         {label}
       </span>
       <span className="font-mono text-xl text-gold">{notes}</span>

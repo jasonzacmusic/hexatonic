@@ -72,9 +72,9 @@ export default function ScalesClient() {
                 {scale.notes.map(notePretty).join("  ")}
               </span>
             </div>
-            <p className="mt-3 max-w-3xl text-muted">{scale.teaching}</p>
+            <p className="mt-3 max-w-[68ch] text-muted">{scale.teaching}</p>
             {scale.aka.length > 0 && (
-              <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.08em] text-muted">
+              <p className="mt-2 font-mono text-[12px] tracking-[0.02em] text-muted">
                 also called: {scale.aka.join(" · ")}
               </p>
             )}
@@ -91,7 +91,7 @@ export default function ScalesClient() {
 
           {chords.length > 0 && (
             <section className="card">
-              <h2 className="mb-3 font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
+              <h2 className="mb-3 font-mono text-[12px] uppercase tracking-[0.12em] text-muted">
                 Tertian harmony inside it — {chords.length} distinct sets
               </h2>
               <div className="flex flex-wrap gap-2">
@@ -99,7 +99,7 @@ export default function ScalesClient() {
                   <button key={i} className="chip hover:border-gold"
                           onClick={() => { void previewAudio(c.notes.map((n) => midi(n)), 0.05); }}>
                     <span className="font-semibold">{c.names.map((n) => n.symbol).join(" = ")}</span>
-                    <span className="block font-mono text-[10px] text-muted">{c.noteNames.join(" ")}</span>
+                    <span className="block font-mono text-[12px] text-muted">{c.noteNames.join(" ")}</span>
                   </button>
                 ))}
               </div>
@@ -107,7 +107,7 @@ export default function ScalesClient() {
           )}
 
           <section className="card">
-            <h2 className="mb-3 font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
+            <h2 className="mb-3 font-mono text-[12px] uppercase tracking-[0.12em] text-muted">
               Interval cycles — what happens when you sequence it
             </h2>
             <div className="space-y-2">
@@ -116,13 +116,13 @@ export default function ScalesClient() {
                 const label = ["", "", "in thirds", "in fourths", "in fifths", "in sixths"][step];
                 return (
                   <div key={step} className="flex flex-wrap items-baseline gap-3">
-                    <span className={`w-24 shrink-0 font-mono text-[11px] uppercase ${c.allPerfect ? "text-gold" : "text-muted"}`}>
+                    <span className={`w-24 shrink-0 font-mono text-[12px] uppercase ${c.allPerfect ? "text-gold" : "text-muted"}`}>
                       {label}
                     </span>
                     <span className="font-mono text-sm">
                       {c.pairs.map((p) => `${noteName(p.from)}–${noteName(p.to)}`).join("  ")}
                     </span>
-                    <span className={`font-mono text-[11px] ${c.allPerfect ? "font-bold text-gold" : "text-muted"}`}>
+                    <span className={`font-mono text-[12px] ${c.allPerfect ? "font-bold text-gold" : "text-muted"}`}>
                       {Object.entries(c.tally).map(([k, v]) => `${v}× ${k}`).join(", ")}
                       {c.allPerfect ? " — all perfect" : ""}
                     </span>
@@ -140,7 +140,7 @@ export default function ScalesClient() {
       )}
 
       <section className="card">
-        <h2 className="mb-4 font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
+        <h2 className="mb-4 font-mono text-[12px] tracking-[0.02em] text-muted">
           The same family in every key
         </h2>
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -174,8 +174,8 @@ export default function ScalesClient() {
 
 function Fact({ label, value, tone }: { label: string; value: string; tone?: "gold" }) {
   return (
-    <div className="rounded-lg border border-line bg-surface2 px-3 py-2">
-      <p className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted">{label}</p>
+    <div className="well rounded-lg px-3 py-2">
+      <p className="font-mono text-[12px] uppercase tracking-[0.1em] text-muted">{label}</p>
       <p className={`mt-0.5 font-mono text-sm ${tone === "gold" ? "font-bold text-gold" : ""}`}>{value}</p>
     </div>
   );

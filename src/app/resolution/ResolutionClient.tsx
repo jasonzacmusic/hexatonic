@@ -119,11 +119,11 @@ export default function ResolutionClient() {
       <section className="card overflow-x-auto">
         <table className="w-full min-w-[640px] text-sm">
           <thead>
-            <tr className="border-b border-line text-left font-mono text-[10px] uppercase tracking-[0.1em] text-muted">
+            <tr className="border-b border-line text-left font-mono text-[12px] uppercase tracking-[0.1em] text-muted">
               <th className="py-2 pr-4">subdivision</th>
               {groupings.map((g) => (
                 <th key={g} className="py-2 pr-4">
-                  {g}s{GATIS[g]?.name ? <span className="block normal-case text-[9px] text-muted/70">{GATIS[g].name}</span> : null}
+                  {g}s{GATIS[g]?.name ? <span className="block normal-case text-[12px] text-muted/70">{GATIS[g].name}</span> : null}
                 </th>
               ))}
             </tr>
@@ -135,8 +135,8 @@ export default function ResolutionClient() {
                 {r.cells.map((c) => (
                   <td key={c.g} className="py-2.5 pr-4">
                     <span className={`font-bold tabular-nums ${tone(c.bars)}`}>{c.bars}</span>
-                    <span className="ml-1 text-[11px] text-muted">bar{c.bars === 1 ? "" : "s"}</span>
-                    <span className="block font-mono text-[10px] text-muted">
+                    <span className="ml-1 text-[12px] text-muted">bar{c.bars === 1 ? "" : "s"}</span>
+                    <span className="block font-mono text-[12px] text-muted">
                       {c.notes} notes · {c.secs.toFixed(0)}s
                       {c.locked ? " · locked" : ""}
                     </span>
@@ -146,7 +146,7 @@ export default function ResolutionClient() {
             ))}
           </tbody>
         </table>
-        <p className="mt-4 max-w-3xl text-sm text-muted">
+        <p className="mt-4 max-w-[68ch] text-sm text-muted">
           <span className="text-gold">Gold</span> resolves inside four bars and is
           camera-friendly. <span className="text-amber">Amber</span> is usable but long.
           Red will lose a room. &ldquo;Locked&rdquo; means the accent already returns on
@@ -155,20 +155,20 @@ export default function ResolutionClient() {
       </section>
 
       <section className="card">
-        <h2 className="mb-3 font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
+        <h2 className="mb-3 font-mono text-[12px] uppercase tracking-[0.12em] text-muted">
           Shortest combinations for this setting
         </h2>
         <div className="flex flex-wrap gap-2">
           {best.map((b, i) => (
             <div key={i} className="chip text-left">
               <span className="block text-sm font-semibold">{b.bars} bar{b.bars === 1 ? "" : "s"}</span>
-              <span className="block font-mono text-[10px] text-muted">
+              <span className="block font-mono text-[12px] text-muted">
                 {b.sub.label} · {b.g}s · {b.notes} notes
               </span>
             </div>
           ))}
         </div>
-        <p className="mt-4 max-w-3xl text-sm text-muted">
+        <p className="mt-4 max-w-[68ch] text-sm text-muted">
           The practical lesson for teaching: odd groupings want triplet subdivisions.
           Fives in straight sixteenths takes {solveResolution(6, 4, 4, 5, "full").bars} bars;
           the same fives in eighth-note triplets takes {solveResolution(6, 3, 4, 5, "full").bars}.
@@ -177,7 +177,7 @@ export default function ResolutionClient() {
 
       <section className="card">
         <h2 className="text-xl font-extrabold">The groupings have names</h2>
-        <p className="mt-2 max-w-3xl text-muted">
+        <p className="mt-2 max-w-[68ch] text-muted">
           Counting in 3s, 4s, 5s, 7s and 9s is the Carnatic <em>gati</em> system, and
           &ldquo;resolving on the one&rdquo; is landing on <em>samam</em>. The vocabulary
           is older than the idea of practising scales this way.
@@ -186,18 +186,18 @@ export default function ResolutionClient() {
           {[3, 4, 5, 7, 9].map((n) => {
             const g = GATIS[n];
             return (
-              <div key={n} className="rounded-lg border border-line bg-surface2 px-3 py-2">
+              <div key={n} className="well rounded-lg px-3 py-2">
                 <p className="text-sm font-semibold">
                   {g.name} <span className="font-normal text-muted">· {n}</span>
                 </p>
-                <p className="font-mono text-[11px] text-gold">{g.konnakol}</p>
-                {g.etymology && <p className="mt-0.5 text-[11px] text-muted">{g.etymology}</p>}
+                <p className="font-mono text-[12px] text-gold">{g.konnakol}</p>
+                {g.etymology && <p className="mt-0.5 text-[12px] text-muted">{g.etymology}</p>}
               </div>
             );
           })}
         </div>
         <h3 className="mt-6 text-sm font-semibold">And the ladders have names too</h3>
-        <p className="mt-1 max-w-3xl text-sm text-muted">
+        <p className="mt-1 max-w-[68ch] text-sm text-muted">
           Running 3 → 4 → 5 → 6 → 7 is <strong className="text-cream">srotovaha yati</strong>,
           the image being a river widening from its source. Its mirror is{" "}
           <strong className="text-cream">gopuccha</strong> — a cow&rsquo;s tail, tapering.
@@ -205,10 +205,10 @@ export default function ResolutionClient() {
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           {YATIS.map((y) => (
-            <div key={y.id} className="rounded-lg border border-line bg-surface2 px-3 py-2">
+            <div key={y.id} className="well rounded-lg px-3 py-2">
               <p className="text-sm font-semibold">{y.name}</p>
-              <p className="font-mono text-[11px] text-gold">{y.shape.join(" – ")}</p>
-              <p className="text-[11px] text-muted">{y.image}</p>
+              <p className="font-mono text-[12px] text-gold">{y.shape.join(" – ")}</p>
+              <p className="text-[12px] text-muted">{y.image}</p>
             </div>
           ))}
         </div>

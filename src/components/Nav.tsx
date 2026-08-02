@@ -54,7 +54,7 @@ export default function Nav() {
             return (
               <Link key={n.href} href={n.href}
                     aria-current={active ? "page" : undefined}
-                    className={`rounded-lg px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.14em] transition ${
+                    className={`rounded-lg px-3 py-1.5 font-mono text-[13px] uppercase tracking-[0.06em] transition ${
                       active ? "bg-white/[0.06] text-cream" : "text-muted hover:text-cream"}`}>
                 {n.label}
               </Link>
@@ -64,7 +64,7 @@ export default function Nav() {
 
         <div className="ml-auto flex items-center gap-3">
           <Link href="/practice"
-                className="hidden whitespace-nowrap rounded-xl bg-white/[0.06] px-4 py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-cream transition hover:bg-white/[0.1] lg:inline-block">
+                className="hidden whitespace-nowrap rounded-xl bg-white/[0.06] px-4 py-2 font-mono text-[13px] uppercase tracking-[0.06em] text-cream transition hover:bg-white/[0.1] lg:inline-block">
             Open the app
           </Link>
           <button className="md:hidden" aria-label="Menu" aria-expanded={open}
@@ -83,7 +83,7 @@ export default function Nav() {
           {NAV.map((n) => (
             <Link key={n.href} href={n.href} onClick={() => setOpen(false)}
                   aria-current={path === n.href ? "page" : undefined}
-                  className={`block rounded-lg px-3 py-2.5 font-mono text-[12px] uppercase tracking-[0.14em] transition ${
+                  className={`block rounded-lg px-3 py-2.5 font-mono text-[13px] uppercase tracking-[0.06em] transition ${
                     path === n.href ? "bg-white/[0.06] text-cream" : "text-muted"}`}>
               {n.label}
             </Link>

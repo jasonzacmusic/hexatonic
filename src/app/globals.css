@@ -14,7 +14,13 @@
   --red-hi: #FF8A8F;
   --red-deep: #8B1E24;
   --cream: #F4EFE4;
-  --muted: #8A8178;
+  /* Raised from #8A8178. That value cleared 4.5:1 on flat --surface2 but fell
+     under it wherever the warm body bloom lifts the local background, which is
+     most of the app. This clears 4.5:1 against the lit areas too. */
+  --muted: #A79E94;
+  /* The one legal size for small UI text. Nothing functional goes below this:
+     10px labels read fine on a 27" studio display and fail on a laptop. */
+  --micro: 12px;
 }
 
 html, body { background: var(--bg); color: var(--cream); }
@@ -41,6 +47,13 @@ body {
 @layer base {
   /* real focus rings — this app is played from a keyboard */
   :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 6px; }
+
+  /* One typographic measure for the whole app. At 1280px the content column is
+     ~1216px wide, which ran body copy out to 160+ characters a line — the eye
+     loses its place on the carriage return. :where() keeps specificity at zero,
+     so any explicit max-w-* utility still wins, and a genuinely full-width
+     block opts out with max-w-none. */
+  main :where(p, li) { max-width: 72ch; }
 }
 
 @layer components {
@@ -50,21 +63,42 @@ body {
     background:
       linear-gradient(180deg, rgba(255,255,255,0.022), rgba(255,255,255,0) 40%),
       var(--surface);
-    box-shadow: 0 1px 0 rgba(255,255,255,0.03) inset, 0 18px 40px -28px rgba(0,0,0,0.9);
+    /* A hairline border under a huge soft shadow is the stock "AI card". Real
+       elevation is short and stacked: a contact shadow that sits the card on the
+       page, then one soft lift. */
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.04) inset,
+      0 1px 2px rgba(0,0,0,0.45),
+      0 4px 10px -6px rgba(0,0,0,0.6);
   }
   .card-tight { @apply p-4; }
+  /* A panel nested inside a .card must not restate the card. It steps DOWN to a
+     recessed well: a darker fill and nothing else. No border, no shadow — not
+     even an inset highlight, because a second ring of chrome inside a card is
+     exactly the depth-stacking this replaces. The recess reads from the fill. */
+  .well {
+    @apply relative rounded-xl p-4;
+    background: rgba(0, 0, 0, 0.24);
+  }
 
   /* ── type ─────────────────────────────────────────────────────────── */
   .display { @apply font-sans font-black leading-[0.94] tracking-[-0.03em]; }
-  .eyebrow { @apply font-mono text-[10px] font-medium uppercase tracking-[0.22em] text-gold; }
-  .lede { @apply text-[17px] leading-relaxed text-cream/80; }
-  .quiet { @apply text-sm leading-relaxed text-muted; }
+  /* 0.22em tracking at 10px shredded word-shapes; 0.12em at 12px keeps the
+     mono-label character while staying readable. */
+  .eyebrow { @apply font-mono text-[12px] font-medium uppercase tracking-[0.12em] text-gold; }
+  /* Prose caps at ~68 characters. Past that the eye loses the line return. */
+  .lede { @apply max-w-[62ch] text-[17px] leading-relaxed text-cream/85; }
+  .quiet { @apply max-w-[68ch] text-sm leading-relaxed text-muted; }
   .pull { @apply font-serif text-2xl italic leading-snug text-cream/90; }
   .num { @apply font-black tabular-nums tracking-[-0.02em]; }
+  /* The single small-text primitive. Sentence case by default — reserve
+     uppercase for one or two words, never a phrase. */
+  .micro { @apply font-mono text-[12px] text-muted; }
+  .micro-caps { @apply font-mono text-[12px] uppercase tracking-[0.1em] text-muted; }
 
   /* ── controls ─────────────────────────────────────────────────────── */
   .field { @apply flex flex-col gap-2; }
-  .field > label { @apply font-mono text-[10px] uppercase tracking-[0.16em] text-muted; }
+  .field > label { @apply font-mono text-[12px] uppercase tracking-[0.08em] text-cream/70; }
 
   .sel {
     @apply w-full appearance-none rounded-xl border border-line bg-surface2 px-3.5 py-2.5
@@ -84,7 +118,9 @@ body {
   .seg button[data-on="true"] {
     background: linear-gradient(180deg, var(--gold-hi), var(--gold));
     @apply font-bold text-[#17130a];
-    box-shadow: 0 2px 10px -2px rgba(201,162,39,0.5);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.4),
+      0 1px 2px rgba(0,0,0,0.45);
   }
 
   .btn {
@@ -94,14 +130,23 @@ body {
   .btn-primary {
     background: linear-gradient(180deg, var(--gold-hi), var(--gold));
     @apply text-[#17130a];
-    box-shadow: 0 8px 24px -12px rgba(201,162,39,0.8);
+    /* Was a gold halo. A coloured glow behind a coloured button is the stock
+       AI "cool" move; light does not work that way. Neutral elevation plus a
+       top highlight reads as a real raised surface. */
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.45),
+      0 1px 2px rgba(0,0,0,0.5),
+      0 6px 14px -8px rgba(0,0,0,0.7);
   }
   .btn-primary:hover { filter: brightness(1.07); transform: translateY(-1px); }
   .btn-primary:active { transform: translateY(0); }
   .btn-stop {
     background: linear-gradient(180deg, #B72B33, var(--red-deep));
     @apply text-cream;
-    box-shadow: 0 8px 24px -12px rgba(196,53,60,0.8);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.18),
+      0 1px 2px rgba(0,0,0,0.5),
+      0 6px 14px -8px rgba(0,0,0,0.7);
   }
   .btn-ghost { @apply border border-line bg-surface2 text-muted; }
   .btn-ghost:hover { @apply border-[#3A3331] text-cream; }
@@ -115,7 +160,9 @@ body {
   .chip-lit {
     background: linear-gradient(180deg, var(--gold-hi), var(--gold));
     @apply border-gold text-[#17130a];
-    box-shadow: 0 4px 18px -6px rgba(201,162,39,0.7);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.4),
+      0 1px 2px rgba(0,0,0,0.45);
   }
   .chip-ghost { @apply border-red text-red; background: rgba(139,30,36,0.15); }
 
@@ -125,10 +172,10 @@ body {
   input[type="range"]::-webkit-slider-thumb {
     @apply h-4 w-4 appearance-none rounded-full;
     background: linear-gradient(180deg, var(--gold-hi), var(--gold));
-    box-shadow: 0 0 0 4px rgba(201,162,39,0.16);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 1px 3px rgba(0,0,0,0.6);
   }
 
-  .link-gold { @apply font-mono text-[11px] uppercase tracking-[0.14em] text-gold transition; }
+  .link-gold { @apply font-mono text-[12px] uppercase tracking-[0.08em] text-gold transition; }
   .link-gold:hover { color: var(--gold-hi); }
 }
 
@@ -143,26 +190,35 @@ body {
 
 @layer utilities {
   .text-gold-hi { color: var(--gold-hi); }
-  .glow-gold { text-shadow: 0 0 28px rgba(201,162,39,0.45); }
+  /* Was `text-shadow: 0 0 28px rgba(201,162,39,0.45)`. A zero-offset chromatic
+     halo behind type is the single most recognisable AI-UI tell, and it was
+     also smearing the numeral's edges. The ring already supplies the light. */
+  .glow-gold { text-shadow: none; }
 }
 
 /* ── motion ─────────────────────────────────────────────────────────── */
 @keyframes hx-spin { to { transform: rotate(360deg); } }
 .hx-spin { animation: hx-spin 72s linear infinite; }
 
+/* Entrances are ease-OUT: fast off the mark, settling at the end. The old
+   0.55s felt like the page was loading rather than arriving. */
 @keyframes hx-rise {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.hx-rise { animation: hx-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.hx-d1 { animation-delay: 0.06s; }
-.hx-d2 { animation-delay: 0.12s; }
-.hx-d3 { animation-delay: 0.18s; }
-.hx-d4 { animation-delay: 0.26s; }
+.hx-rise { animation: hx-rise 0.42s cubic-bezier(0.16, 1, 0.3, 1) both; }
+/* Stagger tightened to ~50ms. Beyond about 200ms total the eye stops reading a
+   group arriving together and starts watching items queue up. */
+.hx-d1 { animation-delay: 0.05s; }
+.hx-d2 { animation-delay: 0.10s; }
+.hx-d3 { animation-delay: 0.15s; }
+.hx-d4 { animation-delay: 0.20s; }
 
+/* Neutral expanding ring rather than a gold halo — same "something is live"
+   signal without the chromatic bloom. */
 @keyframes hx-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(201,162,39,0); }
-  50%      { box-shadow: 0 0 0 10px rgba(201,162,39,0.10); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(244,239,228,0); }
+  50%      { box-shadow: 0 0 0 8px rgba(244,239,228,0.07); }
 }
 .hx-pulse { animation: hx-pulse 1.1s ease-in-out infinite; }
 

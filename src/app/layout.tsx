@@ -166,14 +166,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </p>
             </div>
             <div className="flex gap-14">
-              <nav className="flex flex-col gap-2 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
+              <nav className="flex flex-col gap-2 font-mono text-[12px] uppercase tracking-[0.08em] text-muted">
                 <span className="text-cream/50">App</span>
                 <Link href="/practice" className="transition hover:text-cream">Practice</Link>
                 <Link href="/improvise" className="transition hover:text-cream">Improvise</Link>
                 <Link href="/live" className="transition hover:text-cream">Presenter</Link>
                 <Link href="/resolution" className="transition hover:text-cream">Resolution</Link>
               </nav>
-              <nav className="flex flex-col gap-2 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
+              <nav className="flex flex-col gap-2 font-mono text-[12px] uppercase tracking-[0.08em] text-muted">
                 <span className="text-cream/50">Theory</span>
                 <Link href="/learn" className="transition hover:text-cream">The five theorems</Link>
                 <Link href="/harmony" className="transition hover:text-cream">Harmony</Link>
@@ -184,9 +184,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
           </div>
           <div className="border-t border-line/60">
-            <p className="mx-auto max-w-content px-5 py-5 font-mono text-[10px] uppercase tracking-[0.16em] text-muted/70 sm:px-8">
-              Nathaniel School of Music · free to use · works offline
-            </p>
+            {/* Was uppercase at 70% alpha — a 54-character sentence in caps,
+                which strips the ascender/descender shapes the eye reads by, and
+                the alpha dropped it under 4.5:1 on top of that.
+                The padding also moved OFF the <p> and onto this wrapper: with
+                px-5 on the paragraph itself the text was inset but the element
+                box still ran to both viewport edges. */}
+            <div className="mx-auto max-w-content px-5 py-5 sm:px-8">
+              <p className="font-mono text-[12px] tracking-[0.02em] text-muted">
+                Nathaniel School of Music · free to use · works offline
+              </p>
+            </div>
           </div>
         </footer>
 
@@ -204,7 +212,7 @@ function Wordmark() {
   return (
     <span className="inline-flex items-baseline gap-2.5">
       <span className="display text-[19px] tracking-[0.02em]">Hexatonic</span>
-      <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-gold">six</span>
+      <span className="font-mono text-[12px] uppercase tracking-[0.1em] text-gold">six</span>
     </span>
   );
 }

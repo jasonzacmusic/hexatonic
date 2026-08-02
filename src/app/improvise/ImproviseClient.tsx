@@ -124,7 +124,6 @@ export default function ImproviseClient() {
   return (
     <div className="space-y-5 pb-10">
       <header className="max-w-2xl pt-2">
-        <p className="eyebrow">Improvise</p>
         <h1 className="display mt-3 text-4xl">Stop running patterns.</h1>
         <p className="lede mt-4">
           A vamp built <em>only</em> from this scale&rsquo;s own harmony. Four triads and
@@ -157,7 +156,7 @@ export default function ImproviseClient() {
                        : "border-line bg-surface2 hover:border-gold/60"}`}
                 >
                   <span className="block text-2xl font-bold">{s.chord.label}</span>
-                  <span className={`block font-mono text-[10px] ${on ? "text-[#5a4a12]" : "text-muted"}`}>
+                  <span className={`block font-mono text-[12px] ${on ? "text-[#5a4a12]" : "text-muted"}`}>
                     {s.chord.altLabel ? `= ${s.chord.altLabel} · ` : ""}{s.bars} bar{s.bars > 1 ? "s" : ""}
                   </span>
                 </button>
@@ -169,7 +168,7 @@ export default function ImproviseClient() {
           {guides && tones && (
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-xl border border-gold/35 bg-gold/[0.06] px-4 py-3">
-                <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-gold">
+                <p className="font-mono text-[12px] uppercase tracking-[0.08em] text-gold">
                   land on these
                 </p>
                 <p className="mt-1 font-mono text-xl text-gold">
@@ -177,7 +176,7 @@ export default function ImproviseClient() {
                 </p>
               </div>
               <div className="rounded-xl border border-line bg-surface2 px-4 py-3">
-                <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
+                <p className="font-mono text-[12px] uppercase tracking-[0.08em] text-muted">
                   pass through these
                 </p>
                 <p className="mt-1 font-mono text-xl text-cream/70">
@@ -201,21 +200,21 @@ export default function ImproviseClient() {
               {countdown > 0 ? (
                 <>
                   <span className="num text-5xl text-gold">{countdown}</span>
-                  <span className="mt-1 font-mono text-[9px] uppercase tracking-[0.2em] text-muted">
+                  <span className="mt-1 font-mono text-[12px] uppercase tracking-[0.1em] text-muted">
                     count in
                   </span>
                 </>
               ) : current ? (
                 <>
-                  <span className="num text-3xl text-gold glow-gold">{current.chord.label}</span>
-                  <span className="mt-1 font-mono text-[9px] uppercase tracking-[0.2em] text-muted">
+                  <span className="num text-3xl text-gold">{current.chord.label}</span>
+                  <span className="mt-1 font-mono text-[12px] uppercase tracking-[0.1em] text-muted">
                     sounding
                   </span>
                 </>
               ) : (
                 <>
                   <span className="num text-4xl text-gold">{scale.notes.length}</span>
-                  <span className="mt-1 font-mono text-[9px] uppercase tracking-[0.2em] text-muted">
+                  <span className="mt-1 font-mono text-[12px] uppercase tracking-[0.1em] text-muted">
                     notes
                   </span>
                 </>
@@ -295,7 +294,7 @@ export default function ImproviseClient() {
           <Toggle on={click} onClick={() => setClick((v) => !v)}>Click</Toggle>
           <Toggle on={countIn} onClick={() => setCountIn((v) => !v)}>Count-off</Toggle>
           <Toggle on={guides} onClick={() => setGuides((v) => !v)}>Guide tones</Toggle>
-          <span className="ml-auto font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
+          <span className="ml-auto font-mono text-[12px] uppercase tracking-[0.08em] text-muted">
             space play/stop
           </span>
         </div>
@@ -306,7 +305,7 @@ export default function ImproviseClient() {
         <Keyboard scale={scale.notes} removed={scale.removed} octaves={3} startMidi={48}
                   chordTonePcs={chordPcs} height={148}
                   onNote={(m) => previewAudio([m])} />
-        <div className="mt-4 flex flex-wrap gap-x-7 gap-y-2 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
+        <div className="mt-4 flex flex-wrap gap-x-7 gap-y-2 font-mono text-[12px] uppercase tracking-[0.08em] text-muted">
           <span><i className="mr-2 inline-block h-2.5 w-2.5 rounded-sm bg-[#F0E4B8] align-middle" />chord tone right now</span>
           <span><i className="mr-2 inline-block h-2.5 w-2.5 rounded-sm bg-cream align-middle" />in the scale</span>
           <span><i className="mr-2 inline-block h-2.5 w-2.5 rounded-sm bg-red align-middle" />removed</span>

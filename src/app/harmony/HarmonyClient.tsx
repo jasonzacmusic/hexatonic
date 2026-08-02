@@ -18,7 +18,6 @@ export default function HarmonyClient() {
   return (
     <div className="space-y-6 pb-10">
       <header className="max-w-2xl pt-2">
-        <p className="eyebrow">Harmony</p>
         <h1 className="display mt-3 text-4xl">What you can build with it.</h1>
         <p className="lede mt-4">
           Three ways into the same question. What chords live inside the scale; which
@@ -82,7 +81,7 @@ function Triads() {
 
       <section className="card">
         <p className="eyebrow">The whole scale, stacked</p>
-        <p className="mt-3 max-w-3xl text-[15px] leading-relaxed text-cream/80">
+        <p className="mt-3 max-w-[68ch] text-[15px] leading-relaxed text-cream/80">
           Stack all six notes in thirds and nothing is left over — from the tonic you
           get a 13th chord without the 11th. Every note is a chord tone, which is why
           nothing you play over it sounds like a mistake.
@@ -99,7 +98,7 @@ function Triads() {
 function ChordColumn({ title, count, chords, note }: any) {
   return (
     <section className="card">
-      <h2 className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
+      <h2 className="font-mono text-[12px] uppercase tracking-[0.08em] text-muted">
         {title} <span className="text-gold">{count}</span>
       </h2>
       <div className="mt-3 flex flex-wrap gap-2">
@@ -109,7 +108,7 @@ function ChordColumn({ title, count, chords, note }: any) {
             <span className="block text-sm font-semibold">
               {c.names.map((n: any) => n.symbol).join(" = ")}
             </span>
-            <span className="block font-mono text-[10px] text-muted">{c.noteNames.join(" ")}</span>
+            <span className="block font-mono text-[12px] text-muted">{c.noteNames.join(" ")}</span>
           </button>
         ))}
       </div>
@@ -138,7 +137,7 @@ function Pairs() {
     <div className="space-y-5">
       <section className="card">
         <p className="eyebrow">Two triads, six notes</p>
-        <p className="mt-3 max-w-3xl text-[15px] leading-relaxed text-cream/80">
+        <p className="mt-3 max-w-[68ch] text-[15px] leading-relaxed text-cream/80">
           The jazz route into hexatonics — Weiskopf, Campbell and Bergonzi all teach it
           this way. Take two triads with no note in common and you have a six-note
           scale. The catch is that most pairs <em>do</em> share a note.
@@ -195,7 +194,7 @@ function Pairs() {
                   <button key={iv} className="chip text-left hover:border-gold/60"
                           onClick={() => previewAudio(r.map((p) => 60 + p), 0.12)}>
                     <span className="block text-sm font-semibold">C + {PC_NAMES[iv]}</span>
-                    <span className="block font-mono text-[10px] text-muted">
+                    <span className="block font-mono text-[12px] text-muted">
                       {r.map((p) => PC_NAMES[p]).join(" ")}
                     </span>
                   </button>
@@ -219,7 +218,7 @@ function Pairs() {
                     <span className="block text-sm font-semibold">
                       aug{a} + aug{b} → {r.result}
                     </span>
-                    <span className="block font-mono text-[10px] text-muted">
+                    <span className="block font-mono text-[12px] text-muted">
                       {r.pcs.map((p) => PC_NAMES[p]).join(" ")}
                     </span>
                   </button>
@@ -270,7 +269,7 @@ function Barry() {
     <div className="space-y-5">
       <section className="card">
         <p className="eyebrow">Not a scale system. A movement system.</p>
-        <p className="mt-3 max-w-3xl text-[15px] leading-relaxed text-cream/80">
+        <p className="mt-3 max-w-[68ch] text-[15px] leading-relaxed text-cream/80">
           Barry Harris taught harmony as two chords alternating — a sixth chord and a
           diminished — rather than as II–V–I. Interlock them and every voice moves by
           one step, in the same direction, every time. He called it
@@ -297,7 +296,7 @@ function Barry() {
         <p className="mt-5 font-mono text-2xl text-gold">
           {scale.map(notePretty).join("  ")}
         </p>
-        <p className="quiet mt-3 max-w-3xl">{def.teaching}</p>
+        <p className="quiet mt-3 max-w-[68ch]">{def.teaching}</p>
       </section>
 
       <section className="card">
@@ -315,7 +314,7 @@ function Barry() {
               <span className={`block text-base font-bold ${s.isDiminished ? "text-cream/70" : "text-gold"}`}>
                 {s.label}
               </span>
-              <span className="block font-mono text-[10px] text-muted">
+              <span className="block font-mono text-[12px] text-muted">
                 {s.notes.map(noteName).join(" ")}
               </span>
             </button>
@@ -374,7 +373,7 @@ function Barry() {
       <section className="card">
         <Keyboard scale={scale} removed={null} octaves={2} startMidi={60}
                   onNote={(m) => previewAudio([m + 12])} />
-        <p className="quiet mt-4 max-w-3xl">
+        <p className="quiet mt-4 max-w-[68ch]">
           Two things people get wrong and this page will not:{" "}
           <strong className="text-cream">the dominant scale uses A♭, not A</strong> (the
           natural-A version is the bebop dominant scale and cannot alternate), and{" "}
@@ -389,8 +388,8 @@ function Barry() {
 
 function Fact({ label, value, tone }: { label: string; value: string; tone?: "gold" }) {
   return (
-    <div className="rounded-lg border border-line bg-surface2 px-3 py-2">
-      <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">{label}</p>
+    <div className="well rounded-lg px-3 py-2">
+      <p className="font-mono text-[12px] uppercase tracking-[0.12em] text-muted">{label}</p>
       <p className={`mt-0.5 font-mono text-sm ${tone === "gold" ? "font-bold text-gold" : ""}`}>{value}</p>
     </div>
   );

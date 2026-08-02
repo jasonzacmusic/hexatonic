@@ -60,7 +60,7 @@ export default function PracticeClient() {
 
           <ScaleChips scale={scale} activePc={activePc} size="lg" />
 
-          <div className="flex flex-wrap gap-x-6 gap-y-1 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
+          <div className="flex flex-wrap gap-x-6 gap-y-1 font-mono text-[12px] tracking-[0.02em] text-muted">
             <span>{scale.forte}</span>
             <span>vector &lt;{scale.intervalVector.join("")}&gt;</span>
             <span className={scale.tritones === 0 ? "text-gold" : ""}>
@@ -77,14 +77,14 @@ export default function PracticeClient() {
               {d.countdown > 0 ? (
                 <>
                   <span className="num text-5xl text-gold">{d.countdown}</span>
-                  <span className="mt-1 font-mono text-[9px] uppercase tracking-[0.2em] text-muted">
+                  <span className="mt-1 font-mono text-[12px] uppercase tracking-[0.1em] text-muted">
                     count in
                   </span>
                 </>
               ) : (
                 <>
-                  <span className="num text-4xl text-gold glow-gold">{resolution.bars}</span>
-                  <span className="mt-1 font-mono text-[9px] uppercase tracking-[0.2em] text-muted">
+                  <span className="num text-4xl text-gold">{resolution.bars}</span>
+                  <span className="mt-1 font-mono text-[12px] uppercase tracking-[0.1em] text-muted">
                     bars
                   </span>
                 </>
@@ -375,7 +375,7 @@ export default function PracticeClient() {
           <button className="btn btn-ghost" onClick={() => window.print()}>
             Print / PDF
           </button>
-          <span className="ml-auto font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
+          <span className="ml-auto font-mono text-[12px] uppercase tracking-[0.08em] text-muted">
             space play · l loop · c click
           </span>
           </div>
@@ -433,7 +433,7 @@ export default function PracticeClient() {
         <Keyboard scale={scale.notes} removed={scale.removed}
                   activeMidi={activeNote ? midi(activeNote) : null} octaves={2}
                   onNote={(m) => { void previewAudio([m]); }} />
-        <div className="mt-4 flex flex-wrap gap-x-7 gap-y-2 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
+        <div className="mt-4 flex flex-wrap gap-x-7 gap-y-2 font-mono text-[12px] uppercase tracking-[0.08em] text-muted">
           <span><i className="mr-2 inline-block h-2.5 w-2.5 rounded-sm bg-gold align-middle" />sounding now</span>
           <span><i className="mr-2 inline-block h-2.5 w-2.5 rounded-sm bg-red align-middle" />the note we removed</span>
           <span><i className="mr-2 inline-block h-2.5 w-2.5 rounded-sm bg-cream align-middle" />scale notes</span>
@@ -449,7 +449,7 @@ export default function PracticeClient() {
         <ChordGrid scale={scale} />
       </section>
 
-      <p className="quiet max-w-3xl">
+      <p className="quiet max-w-[68ch]">
         <span className="font-semibold text-cream">{d.patternDef.label}.</span>{" "}
         {d.patternDef.hint}
       </p>

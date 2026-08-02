@@ -74,7 +74,7 @@ export default function LiveClient() {
         {PRESETS.map((p) => (
           <button key={p.name}
                   onClick={() => setState((s) => ({ ...s, ...p.s }))}
-                  className="rounded-lg border border-line bg-surface2 px-3.5 py-2 text-left transition hover:border-gold">
+                  className="well rounded-lg px-3.5 py-2 text-left transition hover:border-gold">
             <span className="block text-base font-bold">{p.name}</span>
             <span className="block font-mono text-xs text-muted">{p.note}</span>
           </button>
@@ -123,12 +123,12 @@ export default function LiveClient() {
           landing ? "hx-land border-gold bg-gold/15" : ""}`}>
           {d.countdown > 0 ? (
             <>
-              <p className="font-mono text-xs uppercase tracking-[0.14em] text-muted">count in</p>
+              <p className="font-mono text-xs uppercase tracking-[0.08em] text-muted">count in</p>
               <p className="text-8xl font-extrabold tabular-nums text-gold">{d.countdown}</p>
             </>
           ) : playing ? (
             <>
-              <p className="font-mono text-xs uppercase tracking-[0.14em] text-muted">bar · beat</p>
+              <p className="font-mono text-xs uppercase tracking-[0.08em] text-muted">bar · beat</p>
               <p className="text-7xl font-extrabold tabular-nums">
                 {bar}<span className="text-muted">.</span>{beat}
               </p>
@@ -138,7 +138,7 @@ export default function LiveClient() {
             </>
           ) : (
             <>
-              <p className="font-mono text-xs uppercase tracking-[0.14em] text-muted">resolves in</p>
+              <p className="font-mono text-xs uppercase tracking-[0.08em] text-muted">resolves in</p>
               <p className="text-8xl font-extrabold tabular-nums text-gold">{resolution.bars}</p>
               <p className="font-mono text-sm uppercase tracking-[0.12em] text-muted">bars</p>
             </>
@@ -191,7 +191,7 @@ export default function LiveClient() {
       <Keyboard scale={scale.notes} removed={scale.removed}
                 activeMidi={activeNote ? midi(activeNote) : null} octaves={2} height={150} />
 
-      <p className="font-mono text-[11px] uppercase tracking-[0.1em] text-muted">
+      <p className="font-mono text-[12px] tracking-[0.02em] text-muted">
         space play/stop · 3–7 or 9 grouping · ↑↓ key · ←→ mode · [ ] tempo · l loop · c click · n score
       </p>
       <p className="min-h-5 text-sm text-muted" role="status" aria-live="polite">
