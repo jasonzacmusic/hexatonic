@@ -1,11 +1,6 @@
 {
   "version": "0.0.1",
   "configurations": [
-    {
-      "name": "hexatonic",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
-      "port": 3311
-    }
+    { "name": "hexatonic", "runtimeExecutable": "npm", "runtimeArgs": ["run", "start"], "port": 3311 }
   ]
 }
