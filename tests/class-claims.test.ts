@@ -15,7 +15,7 @@
 import { describe, it, expect } from "vitest";
 import { noteName, pc } from "../src/lib/theory/note";
 import { buildScale, buildDiatonic, omissionSurvey, MAJOR } from "../src/lib/theory/scales";
-import { triadPair } from "../src/lib/theory/chords";
+import { triadPair, findChords, tertianOnly } from "../src/lib/theory/chords";
 
 const spellOf = (id: string, key: string, mode = 0) =>
   buildScale(key, id, mode)!.notes.map(noteName).join(" ");
@@ -79,6 +79,44 @@ describe("slide 5 — the blues hexatonics", () => {
   });
   it("that major blues really is 1 2 b3 3 5 6", () => {
     expect(buildScale("C", "blues-major", 0)!.degrees).toEqual(["1", "2", "b3", "3", "5", "6"]);
+  });
+
+  /* Slide 6 claims they are not two scales at all: the C major blues is the
+     A minor blues, the same six pitches read from a different home. */
+  it("C major blues and A minor blues are the same six notes", () => {
+    const cMajorBlues = buildScale("C", "blues-major", 0)!.notes.map(pc).sort((a, b) => a - b);
+    const aMinorBlues = buildScale("A", "blues", 0)!.notes.map(pc).sort((a, b) => a - b);
+    expect(cMajorBlues).toEqual(aMinorBlues);
+  });
+
+  it("and that relationship is a minor third, in every key", () => {
+    for (const [maj, min] of [["C", "A"], ["G", "E"], ["F", "D"], ["Eb", "C"], ["B", "Ab"]]) {
+      const a = buildScale(maj, "blues-major", 0)!.notes.map(pc).sort((x, y) => x - y);
+      const b = buildScale(min, "blues", 0)!.notes.map(pc).sort((x, y) => x - y);
+      expect(a).toEqual(b);
+    }
+  });
+});
+
+describe("slide 4 — the consequence the deck now leads with", () => {
+  /* "Six notes leave you four triads, and the two that vanish are the ii and
+     the vii°." Both halves have to hold, or the slide is wrong. */
+  it("the diatonic hexachord contains exactly four tertian triads", () => {
+    const scale = buildScale("C", "diatonic", 0)!.notes;
+    const triads = tertianOnly(findChords(scale, [3]));
+    expect(triads).toHaveLength(4);
+  });
+
+  it("and they are C, Am, G, Em — no Dm, no B diminished", () => {
+    const scale = buildScale("C", "diatonic", 0)!.notes;
+    const sets = tertianOnly(findChords(scale, [3])).map((c) =>
+      [...c.pcs].sort((a, b) => a - b).join(","));
+    expect(sets).toContain([0, 4, 7].join(","));   // C
+    expect(sets).toContain([0, 4, 9].join(","));   // Am
+    expect(sets).toContain([2, 7, 11].join(","));  // G
+    expect(sets).toContain([4, 7, 11].join(","));  // Em
+    expect(sets).not.toContain([2, 5, 9].join(",")); // Dm needed the F
+    expect(sets).not.toContain([5, 11, 2].join(",")); // B dim needed the F
   });
 });
 
