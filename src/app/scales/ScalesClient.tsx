@@ -165,6 +165,48 @@ export default function ScalesClient() {
         </p>
       </section>
 
+      {/* Saying what is missing, and why, is part of being accurate. */}
+      <section className="card">
+        <h2 className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
+          What is deliberately not here
+        </h2>
+        <p className="mt-3 max-w-3xl">
+          This app is twelve-tone equal temperament, which is an honest limit rather than
+          an oversight. Some of the most famous scales in the world cannot be written
+          inside it, and rounding them to the nearest key on a piano would teach you
+          something false.
+        </p>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          <div>
+            <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-gold">
+              The quarter-tone maqamat
+            </p>
+            <p className="mt-1 text-sm text-muted">
+              Rast, Bayati, Saba and Sikah all use notes that sit between the keys, and a
+              maqam is a way of moving through them rather than a fixed set of pitches.
+              What we do carry is <span className="text-cream">Hijaz</span>, which is
+              genuinely playable here, and which is also the Freygish of klezmer and the
+              Phrygian dominant of flamenco.
+            </p>
+          </div>
+          <div>
+            <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-gold">
+              Slendro and pelog
+            </p>
+            <p className="mt-1 text-sm text-muted">
+              The Javanese and Balinese gamelan tunings are not twelve-tone, and pelog in
+              particular is tuned differently from one gamelan to the next. There is no
+              single correct set of piano keys for them, so we do not pretend there is.
+            </p>
+          </div>
+        </div>
+        <p className="mt-4 text-sm text-muted">
+          The Japanese pentatonics above <em>are</em> exactly representable, which is why
+          they are here. Their naming is contested in the literature, so treat the labels
+          as the common Western convention rather than a settled fact.
+        </p>
+      </section>
+
       <p>
         <Link href="/practice" className="btn btn-primary">Take this scale to the practice screen</Link>
       </p>

@@ -172,6 +172,18 @@ export const FAMILIES: Family[] = [
     note: "Scriabin's synthetic harmony. 'Mystic chord' was coined by Arthur Eaglefield Hull in 1916 — Scriabin never used the term.",
   },
   {
+    id: "petrushka", short: "Petrushka / tritone",
+    label: "Petrushka (two major triads a tritone apart)", kind: "fixed", size: 6,
+    semis: [0, 1, 4, 6, 7, 10], letters: [0, 1, 2, 3, 4, 6],
+    note: "C major and F♯ major stacked — the Petrushka chord. This is the third case of the triad-pair rule on /harmony: two major triads share no note only a semitone, a whole step, or a TRITONE apart. The semitone and whole-step pairs give you the augmented and whole-tone colours; the tritone pair gives you this.",
+  },
+  {
+    id: "messiaen5", short: "Messiaen Mode 5",
+    label: "Messiaen Mode 5 (mode of limited transposition)", kind: "fixed", size: 6,
+    semis: [0, 1, 5, 6, 7, 11], letters: [0, 1, 3, 4, 4, 6],
+    note: "Messiaen's fifth mode of limited transposition — six notes, six transpositions. Mode 1 is the whole-tone scale and Mode 2 is the octatonic, both already here, so this is the six-note member of the same family.",
+  },
+  {
     id: "dim-wh", short: "Octatonic (whole–half)",
     label: "Octatonic — whole–half diminished", kind: "symmetric8", size: 8,
     semis: [0, 2, 3, 5, 6, 8, 9, 11],
@@ -199,6 +211,50 @@ export const FAMILIES: Family[] = [
     label: "Sampurna (7) — the major scale", kind: "omitMulti", size: 7,
     parent: MAJOR, omit: [],
     note: "The parent. One tritone (F–B), and it is the note we remove that kills it.",
+  },
+
+  /* ── Scales from other traditions ─────────────────────────────────────────
+     Everything below is exactly representable in twelve-tone equal temperament.
+     What is deliberately ABSENT is as considered as what is here: the maqamat
+     that need quarter tones (Rast, Bayati, Saba, Sikah) and the Indonesian
+     slendro and pelog tunings cannot be written on a piano, and rounding them
+     to the nearest semitone would teach something false. See /scales for the
+     note that says so out loud. */
+  {
+    id: "hirajoshi", short: "Hirajoshi (Japan)",
+    label: "Hirajoshi — Japanese pentatonic", kind: "fixed", size: 5,
+    semis: [0, 2, 3, 7, 8], letters: [0, 1, 2, 4, 5],
+    note: "A koto tuning, and the sound most Western ears file under 'Japanese'. Naming here is genuinely contested — several incompatible definitions of hirajoshi circulate, differing by rotation. This is the form built on the tuning's own first degree.",
+  },
+  {
+    id: "insen", short: "In sen (Japan)",
+    label: "In sen — Japanese pentatonic", kind: "fixed", size: 5,
+    semis: [0, 1, 5, 7, 10], letters: [0, 1, 3, 4, 6],
+    note: "The in scale, with the semitone above the tonic that gives it its weight. Darker than hirajoshi because it drops the third entirely.",
+  },
+  {
+    id: "iwato", short: "Iwato (Japan)",
+    label: "Iwato — Japanese pentatonic", kind: "fixed", size: 5,
+    semis: [0, 1, 5, 6, 10], letters: [0, 1, 3, 4, 6],
+    note: "A rotation of in sen, and the most unstable of the set: two semitones and a tritone in five notes.",
+  },
+  {
+    id: "kumoi", short: "Kumoi (Japan)",
+    label: "Kumoi — Japanese pentatonic", kind: "fixed", size: 5,
+    semis: [0, 2, 3, 7, 9], letters: [0, 1, 2, 4, 5],
+    note: "Hirajoshi with a natural 6th instead of a ♭6. One note apart from hirajoshi and much brighter for it — the same lesson this whole app is built on, in a different tradition.",
+  },
+  {
+    id: "yo", short: "Yo (Japan)",
+    label: "Yo — Japanese pentatonic, no semitones", kind: "fixed", size: 5,
+    semis: [0, 2, 5, 7, 9], letters: [0, 1, 3, 4, 5],
+    note: "The bright counterpart to the in scales, and anhemitonic — no semitones at all. It is the same set as the Western minor pentatonic rotated, which is why it sounds familiar before you can place it.",
+  },
+  {
+    id: "hijaz", short: "Hijaz / Phrygian dominant",
+    label: "Hijaz — one scale, several traditions", kind: "fixed", size: 7,
+    semis: [0, 1, 4, 5, 7, 8, 10], letters: [0, 1, 2, 3, 4, 5, 6],
+    note: "The augmented second between ♭2 and 3 is the whole sound. This one scale is the core of maqam Hijaz, the Ahava Rabbah or 'Freygish' of Jewish liturgical and klezmer music, and the Phrygian dominant of flamenco. Written the same way in all three; the difference is ornament and phrasing, which no scale list can hold.",
   },
 ];
 
