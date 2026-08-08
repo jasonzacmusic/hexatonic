@@ -44,6 +44,9 @@ describe("the mechanism — alternate notes give two chords, forever", () => {
     );
     expect(h[0].notes.map(noteName)).toEqual(["C", "E", "G", "A"]);   // C6
     expect(h[1].notes.map(noteName)).toEqual(["D", "F", "Ab", "B"]);  // B°7
+    expect(h.map((step) => step.label)).toEqual([
+      "C6", "B°7/D", "C6/E", "B°7/F", "C6/G", "B°7/Ab", "C6/A", "B°7",
+    ]);
   });
   it("every voice moves by ONE scale step between adjacent steps", () => {
     for (const f of SIXTH_DIMINISHED) {

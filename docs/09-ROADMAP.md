@@ -154,6 +154,21 @@ existing code.
 segment resolving before the next begins, with a visible countdown between them.
 That is **srotovaha yati** and it is the centrepiece of the planned episode.
 
+### 3.10 ✅ Interlocked inversion movement — BUILT 2026-08-08
+`/harmony` → Movement Lab. This turns the 8 August Music Gym class into a playable
+engine rather than another chord list:
+
+- every diatonic hexachord rotation in all twelve keys splits into two triads and
+  traverses the complete three-inversion set;
+- whole-half and half-whole symmetric octatonics split into two diminished-seventh
+  sets and traverse all four inversions;
+- block/arpeggio, up/up-down and tempo controls make both usable as physical drills;
+- Barry Harris stays a separate lane because his four eight-note sixth-diminished
+  families are not the symmetric octatonic.
+
+The transcript-derived product and lesson bank is in
+`docs/10-MUSIC-GYM-MOVEMENT-LAB.md`.
+
 ---
 
 ## 4. Tier 3 — the expansion the name promises

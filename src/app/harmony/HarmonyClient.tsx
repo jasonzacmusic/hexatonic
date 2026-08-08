@@ -10,30 +10,34 @@ import { midi, noteName, notePretty, pc, primeForm, forteName, intervalVector } 
 import { previewAudio } from "@/lib/audio/engine";
 import { Seg } from "@/components/Panels";
 import Keyboard from "@/components/Keyboard";
+import MovementLab from "@/components/MovementLab";
+import { prettyChordSymbol } from "@/lib/theory/movement";
 
-type Tab = "triads" | "pairs" | "barry";
+type Tab = "movement" | "triads" | "pairs" | "barry";
 
 export default function HarmonyClient() {
-  const [tab, setTab] = useState<Tab>("triads");
+  const [tab, setTab] = useState<Tab>("movement");
   return (
     <div className="space-y-6 pb-10">
       <header className="max-w-2xl pt-2">
         <p className="eyebrow">Harmony</p>
         <h1 className="display mt-3 text-4xl">What you can build with it.</h1>
         <p className="lede mt-4">
-          Three ways into the same question. What chords live inside the scale; which
-          two triads generate it; and what happens when you stop thinking in scales
-          altogether.
+          Four ways into the same question. Move two chord shapes through every
+          inversion; find what lives inside the scale; generate it from a triad pair;
+          then enter Barry Harris&rsquo;s movement system.
         </p>
       </header>
 
       <div className="seg w-fit">
-        {([["triads", "Triads"], ["pairs", "Triad pairs"], ["barry", "Barry Harris"]] as const)
+        {([["movement", "Movement lab"], ["triads", "Triads"], ["pairs", "Triad pairs"], ["barry", "Barry Harris"]] as const)
           .map(([id, label]) => (
-            <button key={id} data-on={tab === id} onClick={() => setTab(id)}>{label}</button>
+            <button key={id} data-on={tab === id} aria-pressed={tab === id}
+                    onClick={() => setTab(id)}>{label}</button>
           ))}
       </div>
 
+      {tab === "movement" && <MovementLab onOpenBarry={() => setTab("barry")} />}
       {tab === "triads" && <Triads />}
       {tab === "pairs" && <Pairs />}
       {tab === "barry" && <Barry />}
@@ -265,6 +269,17 @@ function Barry() {
   const steps = useMemo(() => harmonise(key, fam), [key, fam]);
   const family = useMemo(() => theFamily(key, fam), [key, fam]);
   const proof = notOctatonic(fam);
+  const movementSets = useMemo(() => {
+    const chords = tertianOnly(findChords(scale, [4]));
+    const rootPc = pc(scale[0]);
+    const target = [...def.chord.map((interval) => (rootPc + interval) % 12)]
+      .sort((a, b) => a - b).join(",");
+    const parent = chords.find((chord) => chord.pcs.join(",") === target);
+    const diminished = chords.find((chord) =>
+      chord.names.some((name) => name.symbol.endsWith("dim7"))
+    );
+    return { parent, diminished };
+  }, [scale, def.chord]);
 
   const [borrowVoice, setBorrowVoice] = useState(3);
   const borrowed = useMemo(() => borrow(key, fam, borrowVoice), [key, fam, borrowVoice]);
@@ -327,6 +342,28 @@ function Barry() {
           Alternate notes of the eight give the two chords, through every inversion.
           Tap along the row and listen to the voices step.
         </p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <div className="rounded-xl border border-gold/40 bg-gold/[0.07] p-4">
+            <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">sixth / seventh set</p>
+            <p className="mt-1 text-xl font-extrabold text-gold">
+              {movementSets.parent?.names.map((name) => prettyChordSymbol(name.symbol)).join(" = ")}
+            </p>
+            <p className="quiet mt-2">
+              One pitch-class set, with every correct reading retained. This is why C6
+              can be practised as Am7, and Cm6 as Am7♭5.
+            </p>
+          </div>
+          <div className="rounded-xl border border-line bg-surface2 p-4">
+            <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">related diminished set</p>
+            <p className="mt-1 text-xl font-extrabold text-cream">
+              {movementSets.diminished?.names.map((name) => prettyChordSymbol(name.symbol)).join(" = ")}
+            </p>
+            <p className="quiet mt-2">
+              The four names are the same symmetrical diminished-seventh notes with a
+              different bass — not four unrelated chords.
+            </p>
+          </div>
+        </div>
         <div className="mt-4 flex flex-wrap gap-2">
           {steps.map((s, i) => (
             <button key={i}

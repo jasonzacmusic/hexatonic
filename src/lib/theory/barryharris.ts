@@ -131,14 +131,20 @@ export function harmonise(
       notes.push(note(b.letter, b.alt, b.octave + Math.floor(idx / 8)));
     }
     const isDim = !chordPcs.has(pc(notes[0]));
-    const dimRoot = scale[1]; // the 2nd degree is a member of the diminished
+    /* Keep one stable diminished identity and name its bass honestly. The old
+       label printed B°7 on a D-bass voicing, hiding the inversion that this
+       exercise exists to teach. A symmetrical diminished set has four valid
+       root readings, but B°7/D makes the movement visible without pretending
+       the pitch-class set changed. */
+    const dimRoot = scale[7];
+    const bassName = noteName(notes[0]);
     out.push({
       voicing: notes.map(midi),
       notes,
       isDiminished: isDim,
       degree: d,
       label: isDim
-        ? `${noteName(scale[7])}°7`
+        ? `${noteName(dimRoot)}°7${pc(notes[0]) === pc(dimRoot) ? "" : `/${bassName}`}`
         : `${noteName(root)}${def.chordName}${d === 0 ? "" : `/${noteName(notes[0])}`}`,
     });
   }
