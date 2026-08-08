@@ -130,11 +130,14 @@ describe("Theorem 2 — one hexachord, six rotations", () => {
     expect(s(cMajNo4.notes)).toBe(s(aMinNo6.notes));
     expect(s(cMajNo4.notes)).toBe(s(gHex));
   });
-  it("names all six rotations without ever saying 'gospel' or 'Sunday'", () => {
+  it("keeps Gospel Scale separate and assigns Sunday Scale only to no-7", () => {
     expect(DIATONIC_MODES.length).toBe(6);
     const blob = JSON.stringify(DIATONIC_MODES).toLowerCase();
     expect(blob).not.toContain("gospel scale");
-    expect(blob).not.toContain("sunday");
+    expect(DIATONIC_MODES[3].degrees).toBe("1 2 3 4 5 6");
+    expect(JSON.stringify(DIATONIC_MODES[3]).toLowerCase()).toContain("sunday scale");
+    expect(JSON.stringify(DIATONIC_MODES.filter((_, i) => i !== 3)).toLowerCase())
+      .not.toContain("sunday");
   });
   it("mode 2 has no third and mode 6 has no fifth", () => {
     expect(DIATONIC_MODES[1].hasThird).toBe(false);

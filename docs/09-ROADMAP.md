@@ -291,8 +291,10 @@ These were all got wrong once and corrected. Do not re-derive them wrong.
    *"the only free, browser-based app built entirely around hexatonic practice."*
 2. **Never "gospel scale"** for this collection — that name means `1 2 ♭3 3 5 6`, the
    major blues scale.
-3. **Never "Sunday scale"** — that is Peter Martin's term for a different, unverified
-   six-note scale.
+3. **Use "Sunday Scale" only for the no-7 rotation** — Peter Martin/Open Studio's
+   public B-flat demonstration verifies `1 2 3 4 5 6`, major scale without 7.
+   Do not spread the name to the other five rotations, and do not present it as a
+   universal historical name.
 4. **Never a bare "major hexatonic"** — ambiguous; it usually means the *no-7* one.
 5. **Use the modal-intersection names**: Ionian/Lydian, Ionian/Mixolydian, Dorian/
    Aeolian. Sourced to Cecil Sharp's folk-song classification, and they explain the

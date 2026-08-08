@@ -212,8 +212,9 @@ interface ModeDef {
   index: number              // 0..5
   name: string               // 'Ionian Hexatonic', 'Minor Hexatonic', ...
   aka: string[]              // 'major hexatonic (no 4)', 'Guidonian hexachord', ...
-                             // ⚠️ NEVER 'gospel scale' or 'Sunday scale' -- both
-                             // are taken and mean something else. See 08-JAZZ-GOSPEL.md
+                             // ⚠️ 'Gospel scale' commonly means major blues.
+                             // 'Sunday Scale' belongs only on the no-7 rotation.
+                             // See 08-JAZZ-GOSPEL.md
   degrees: string[]          // ['1','2','3','5','6','7']
   hasThird: boolean
   hasFifth: boolean

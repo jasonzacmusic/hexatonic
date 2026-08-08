@@ -109,8 +109,9 @@ hook and it should be a feature in the harmony module.
 
 > ⚠️ **NAMING — I got this wrong at first and it is corrected here.** Do **not**
 > call the no-4 collection the "gospel scale": that name means `1 2 b3 3 5 6`
-> (the major blues scale). Do not call it the "Sunday scale" either — that is Peter
-> Martin's term for a different (unverified) six-note scale. And a bare "major
+> (the major blues scale). Do not call this no-4 rotation the "Sunday scale" either:
+> Peter Martin/Open Studio use that name for the **no-7** collection
+> `1 2 3 4 5 6`, verified in their public B-flat demonstration. And a bare "major
 > hexatonic" more commonly means the **no-7** collection. Use the **modal-
 > intersection** names below; they are sourced (Cecil Sharp's folk-song
 > classification) and they explain themselves. Full detail: `docs/08-JAZZ-GOSPEL.md`.

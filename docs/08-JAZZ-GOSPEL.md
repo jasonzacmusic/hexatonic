@@ -51,16 +51,18 @@ There are at least **four** collections circulating under gospel-adjacent names:
 
 **Never ship a bare "major hexatonic" label.** Always qualify it.
 
-### 1.3 ⚠️ "Sunday scale" is a REAL term — but not ours, and its content is unverified
+### 1.3 "Sunday Scale" is verified — and it is the no-7 rotation
 
-**"The Sunday Scale" is established, and by a serious name: Peter Martin (Open
-Studio).** It is Lesson 2 of 8 in *Elements of Gospel Piano*, with its own funnel
-(sundayscale.com) and a free YouTube lesson. A user transcription is titled "The
-Sunday Scale Hexatonic," so it *is* six notes — **but the actual note content sits
-behind a PDF signup and paid course and could not be verified.**
+**Peter Martin/Open Studio publicly demonstrate the Sunday Scale in B-flat as
+`B♭ C D E♭ F G`: `1 2 3 4 5 6`, the major scale without its major 7th.** Martin
+states the degrees, the omitted major 7th and the term "hexatonic" in the public
+one-minute lesson *THE Sunday Scale*:
+https://www.youtube.com/watch?v=kOOUvGq8pW0
 
-**Do not call our scale the "Sunday scale."** It may well be someone else's
-six-note scale, and Peter Martin is not a person to be casually contradicted.
+That is an exact match for this app's Ionian/Mixolydian no-7 rotation. It is safe
+to show **Sunday Scale — Peter Martin/Open Studio teaching name** as an alias for
+that rotation only. It is not a standardized historical name for every six-note
+major collection, and it is not the major-blues Gospel Scale.
 
 ### 1.4 ⚠️ "Before Western music had seven notes, it had six" — DROP THIS
 

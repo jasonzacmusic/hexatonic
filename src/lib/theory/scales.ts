@@ -7,9 +7,11 @@
  * modelling them separately makes every later feature subtly inconsistent.
  *
  * NAMING: modal-intersection names, sourced to Cecil Sharp's folk-song
- * classification. Never "gospel scale" (that name means 1 2 b3 3 5 6, the major
- * blues scale), never "Sunday scale" (Peter Martin's, different scale), never a
- * bare "major hexatonic" (ambiguous — usually means the no-7 collection).
+ * classification. Never "gospel scale" (that name commonly means
+ * 1 2 b3 3 5 6, the major blues scale), and never a bare "major hexatonic"
+ * (ambiguous — usually means the no-7 collection). "Sunday Scale" is Peter
+ * Martin/Open Studio's verified teaching name for the no-7 rotation specifically:
+ * 1 2 3 4 5 6. Do not apply it to the other five rotations.
  */
 
 import {
@@ -87,10 +89,15 @@ export const DIATONIC_MODES: ModeDef[] = [
   {
     index: 3,
     name: "Ionian/Mixolydian Hexatonic",
-    aka: ["Guidonian hexachord", "major hexatonic (no 7)", "folk / bluegrass"],
+    aka: [
+      "Sunday Scale (Peter Martin / Open Studio)",
+      "Guidonian hexachord",
+      "major hexatonic (no 7)",
+      "folk / bluegrass",
+    ],
     degrees: "1 2 3 4 5 6",
     teaching:
-      "Guido d'Arezzo's ut–re–mi–fa–sol–la. For centuries Western musicians learned to sight-sing on exactly these six notes.",
+      "Peter Martin/Open Studio call this exact no-7 collection the Sunday Scale. It is also Guido d'Arezzo's ut–re–mi–fa–sol–la: for centuries Western musicians learned to sight-sing on exactly these six notes.",
     hasThird: true, hasFifth: true,
   },
   {

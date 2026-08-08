@@ -48,9 +48,10 @@ export default function Page() {
         <strong className="text-cream">&ldquo;gospel scale&rdquo;</strong> is not the scale
         here — that name means 1 2 ♭3 3 5 6, the major blues scale. And the{" "}
         <strong className="text-cream">&ldquo;Sunday scale&rdquo;</strong> is Peter
-        Martin&rsquo;s term for something else again. The names used throughout this app are
-        modal-intersection names, which follow Cecil Sharp&rsquo;s folk-song classification
-        and describe the ambiguity the removed note creates.
+        Martin/Open Studio&rsquo;s name for one exact rotation included here: the major
+        scale without 7, 1 2 3 4 5 6. The other rotations retain modal-intersection
+        names, which follow Cecil Sharp&rsquo;s folk-song classification and describe the
+        ambiguity the removed note creates.
       </p>
 
       <h2 className="pt-4 text-xl font-extrabold">Credits</h2>

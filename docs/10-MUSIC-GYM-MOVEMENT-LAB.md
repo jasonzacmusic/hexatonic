@@ -48,8 +48,9 @@ Permanent corrections:
 
 - Do **not** call `1 2 3 4 5 6` the gospel scale. The gospel scale is the major
   blues collection `1 2 b3 3 5 6`.
-- Do **not** call it the Sunday scale. That is Peter Martin's separate term for a
-  different six-note collection whose exact content has not been verified here.
+- **Sunday Scale is verified for this exact collection.** Peter Martin/Open Studio's
+  public B-flat demonstration uses `B♭ C D E♭ F G`, major scale without 7. Treat
+  it as their teaching name/alias, not as a universal historical label.
 - Barry Harris has **four** sixth-diminished families, not two: major 6, minor 6,
   dominant 7 and dominant 7 flat 5.
 - Barry's collections contain eight notes but are **not** the symmetric
