@@ -62,7 +62,7 @@ function alternateStack(scale: Note[], degree: number, voices: 3 | 4): Note[] {
   });
 }
 
-function buildMovement(
+export function exactCoverMovement(
   kind: MovementKind,
   scale: ScaleInstance,
   voices: 3 | 4,
@@ -122,7 +122,7 @@ function buildMovement(
  * gives Bb, Cm, Bb/D, Cm/Eb, Bb/F, Cm/G.
  */
 export function hexatonicTriadMovement(tonic = "Bb", mode = 3): InterlockedMovement {
-  return buildMovement("hexatonic-triads", buildScale(tonic, "diatonic", mode), 3);
+  return exactCoverMovement("hexatonic-triads", buildScale(tonic, "diatonic", mode), 3);
 }
 
 /**
@@ -135,5 +135,5 @@ export function octatonicSeventhMovement(
   tonic = "C", kind: "whole-half" | "half-whole" = "whole-half",
 ): InterlockedMovement {
   const family = kind === "whole-half" ? "dim-wh" : "dim-hw";
-  return buildMovement("octatonic-sevenths", buildScale(tonic, family, 0), 4);
+  return exactCoverMovement("octatonic-sevenths", buildScale(tonic, family, 0), 4);
 }

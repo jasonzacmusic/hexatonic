@@ -263,7 +263,7 @@ export class AudioEngine {
   }
 
   /** One-shot chord/note preview, for tapping a chip or a chord card. */
-  async preview(midis: number[], spread = 0.055): Promise<boolean> {
+  async preview(midis: number[], spread = 0.055, velocity = 0.7): Promise<boolean> {
     const request = ++this.previewId;
     await this.init("/audio/salamander", midis);
     if (request !== this.previewId || !this.ctx) return false;
@@ -273,7 +273,7 @@ export class AudioEngine {
       this.master.gain.setTargetAtTime(0.85, now, 0.008);
     }
     const t0 = this.ctx.currentTime + 0.02;
-    midis.forEach((m, i) => this.note(m, t0 + i * spread, 1.1, 0.7));
+    midis.forEach((m, i) => this.note(m, t0 + i * spread, 1.1, velocity));
     return true;
   }
 
@@ -503,9 +503,11 @@ let singleton: AudioEngine | null = null;
 export const getAudio = (): AudioEngine => (singleton ??= new AudioEngine());
 
 /** Fire-and-forget UI preview with no unhandled rejection in click handlers. */
-export async function previewAudio(midis: number[], spread = 0.055): Promise<boolean> {
+export async function previewAudio(
+  midis: number[], spread = 0.055, velocity = 0.7,
+): Promise<boolean> {
   try {
-    return await getAudio().preview(midis, spread);
+    return await getAudio().preview(midis, spread, velocity);
   } catch {
     return false;
   }

@@ -11,32 +11,34 @@ import { previewAudio } from "@/lib/audio/engine";
 import { Seg } from "@/components/Panels";
 import Keyboard from "@/components/Keyboard";
 import MovementLab from "@/components/MovementLab";
+import PairAtlas from "@/components/PairAtlas";
 import { prettyChordSymbol } from "@/lib/theory/movement";
 
-type Tab = "movement" | "triads" | "pairs" | "barry";
+type Tab = "atlas" | "movement" | "triads" | "pairs" | "barry";
 
 export default function HarmonyClient() {
-  const [tab, setTab] = useState<Tab>("movement");
+  const [tab, setTab] = useState<Tab>("atlas");
   return (
     <div className="space-y-6 pb-10">
       <header className="max-w-2xl pt-2">
         <p className="eyebrow">Harmony</p>
         <h1 className="display mt-3 text-4xl">What you can build with it.</h1>
         <p className="lede mt-4">
-          Four ways into the same question. Move two chord shapes through every
-          inversion; find what lives inside the scale; generate it from a triad pair;
-          then enter Barry Harris&rsquo;s movement system.
+          Find exact chord-pair collections, turn them into piano exercises, move
+          both shapes through every inversion, then enter Barry Harris&rsquo;s complete
+          four-family movement system.
         </p>
       </header>
 
       <div className="seg w-fit">
-        {([["movement", "Movement lab"], ["triads", "Triads"], ["pairs", "Triad pairs"], ["barry", "Barry Harris"]] as const)
+        {([["atlas", "Pair atlas"], ["movement", "Movement lab"], ["triads", "Triads"], ["pairs", "Pair finder"], ["barry", "Barry Harris"]] as const)
           .map(([id, label]) => (
             <button key={id} data-on={tab === id} aria-pressed={tab === id}
                     onClick={() => setTab(id)}>{label}</button>
           ))}
       </div>
 
+      {tab === "atlas" && <PairAtlas onOpenBarry={() => setTab("barry")} />}
       {tab === "movement" && <MovementLab onOpenBarry={() => setTab("barry")} />}
       {tab === "triads" && <Triads />}
       {tab === "pairs" && <Pairs />}
