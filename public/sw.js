@@ -28,20 +28,26 @@ self.addEventListener("fetch", (e) => {
     e.respondWith(
       caches.match(request).then((hit) =>
         hit || fetch(request).then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(request, copy));
+          if (res.ok) {
+            const copy = res.clone();
+            caches.open(CACHE).then((c) => c.put(request, copy));
+          }
           return res;
         })
       )
     );
     return;
   }
-  // everything else: network-first, fall back to cache when offline
+  // everything else: network-first, fall back to cache when offline.
+  // Only STORE a response that actually succeeded — caching a 404 or a 500 turns
+  // one bad round-trip into the offline fallback until the next deploy.
   e.respondWith(
     fetch(request)
       .then((res) => {
-        const copy = res.clone();
-        caches.open(CACHE).then((c) => c.put(request, copy));
+        if (res.ok && res.type === "basic") {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(request, copy));
+        }
         return res;
       })
       .catch(() => caches.match(request).then((hit) => hit || caches.match("/")))

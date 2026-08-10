@@ -28,14 +28,18 @@ export interface SpelledSet {
  * Spell an arbitrary set of pitch classes from a tonic.
  * `semis` are semitone offsets above the tonic, ascending, starting at 0.
  */
-export function spellSet(tonicName: string, semis: number[]): SpelledSet {
+export function spellSet(
+  tonicName: string, semis: number[], opts: { flatLean?: boolean } = {},
+): SpelledSet {
   const t = parseNoteName(tonicName);
   /* Lean flat when the set is minor-flavoured. A blues scale written
      C D# F F# G A# is legal and looks wrong; C Eb F Gb G Bb is the same cost and
-     is what a musician would write. A minor third above the tonic is the signal. */
+     is what a musician would write. A minor third above the tonic is the signal.
+     Callers that already know the lean — the symmetric families, which are
+     neither major nor minor flavoured — pass it explicitly instead. */
   const minorish = semis.includes(3) || semis.includes(6) || semis.includes(8) || semis.includes(10);
-  const flatKey =
-    (MAJOR_KEYS[tonicName] ?? 0) < 0 || tonicName.endsWith("b") || minorish;
+  const flatKey = opts.flatLean
+    ?? ((MAJOR_KEYS[tonicName] ?? 0) < 0 || tonicName.endsWith("b") || minorish);
   const n = semis.length;
   if (!n) return { notes: [], repeatedLetter: false, error: "pick at least one note" };
 
@@ -57,10 +61,40 @@ export function spellSet(tonicName: string, semis: number[]): SpelledSet {
       const flats = cand.filter((x) => x.alt < 0).length;
       const mixed = sharps > 0 && flats > 0 ? 1 : 0;
       const wrongDir = cand.filter((x) => x.alt !== 0 && (x.alt > 0) === flatKey).length;
-      const repeats = new Set(cand.map((x) => x.letter)).size < n ? 1 : 0;
+      /*
+       * THE EXCHANGE RATE BETWEEN A REPEATED LETTER AND AN ACCIDENTAL IS THE
+       * WHOLE ALGORITHM. An earlier version priced a repeat below a single
+       * accidental, which is how Db Dorian came out as Db Eb E Gb Ab Bb — and
+       * that spelling makes the Db minor triad print as Db-E-Ab, a wrong note
+       * inside a named chord.
+       *
+       * A repeat must cost MORE than one accidental, so that:
+       *
+       *   Db Dorian  saves 1 accidental by repeating a letter → refuse it,
+       *              spell Db Eb Fb Gb Ab Bb.
+       *
+       * But BOTH of the blues candidates trade exactly one accidental for one
+       * repeat too, so the count alone cannot separate them. What separates
+       * them is DIRECTION — and that is why wrongDir carries real weight here
+       * rather than being a final tiebreak:
+       *
+       *   C blues    C Eb F Gb G Bb  — 3 accidentals, all with the set's grain
+       *              C D# E# F# G A# — 4 accidentals, every one against it
+       *
+       * So a wrong-direction accidental must cost enough that four of them
+       * outweigh the repeat. Both outcomes are then what a musician writes.
+       *
+       * Repeats are only charged where the set does not force them: eight notes
+       * cannot fit into seven letters.
+       */
+      const distinct = new Set(cand.map((x) => x.letter)).size;
+      const forced = Math.max(0, n - 7);
+      const repeats = Math.max(0, n - distinct - forced);
+      const doubles = cand.filter((x) => Math.abs(x.alt) === 2).length;
+      const singles = cand.filter((x) => Math.abs(x.alt) === 1).length;
       const cost =
-        cand.reduce((a, x) => a + x.alt * x.alt, 0) * 10000 +
-        repeats * 2000 + mixed * 100 + wrongDir;
+        doubles * 1000000 + singles * 10000 + repeats * 15000 +
+        wrongDir * 2000 + mixed * 100;
       if (cost < bestCost) { bestCost = cost; best = cand; }
       return;
     }

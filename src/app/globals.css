@@ -8,6 +8,11 @@
   --surface: #14120F;
   --surface2: #1D1A16;
   --line: #2A2523;
+  /* WCAG 1.4.11 wants 3:1 for the boundary that IDENTIFIES a control, and
+     --line only reaches 1.24:1 — fine for a decorative hairline between cards,
+     not for the edge of a select. This measures 3.30:1 on --surface2, which is
+     the lightest thing a control sits on. Dividers keep --line. */
+  --line-control: #786963;
   --gold: #C9A227;
   --gold-hi: #F3D765;
   --red: #E8666C;
@@ -67,18 +72,18 @@ body {
   .field > label { @apply font-mono text-[10px] uppercase tracking-[0.16em] text-muted; }
 
   .sel {
-    @apply w-full appearance-none rounded-xl border border-line bg-surface2 px-3.5 py-2.5
+    @apply w-full appearance-none rounded-xl border border-line-control bg-surface2 px-3.5 py-2.5
            pr-9 text-sm text-cream transition;
     background-image:
       url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%238A8178' stroke-width='1.6' stroke-linecap='round'/></svg>");
     background-repeat: no-repeat;
     background-position: right 12px center;
   }
-  .sel:hover { border-color: #3A3331; }
+  .sel:hover { border-color: #8F7F78; }
   .sel:focus { border-color: var(--gold); outline: none; }
   .sel:disabled { @apply cursor-not-allowed opacity-40; }
 
-  .seg { @apply inline-flex gap-0.5 rounded-xl border border-line bg-surface2 p-1; }
+  .seg { @apply inline-flex gap-0.5 rounded-xl border border-line-control bg-surface2 p-1; }
   .seg button { @apply rounded-lg px-3 py-1.5 text-sm font-medium text-muted transition; }
   .seg button:hover { @apply bg-white/[0.04] text-cream; }
   .seg button[data-on="true"] {

@@ -66,9 +66,14 @@ export interface VampOptions {
 /** Comp patterns, in beats from the top of the bar.
  *  Kept deliberately sparse — this is a bed to improvise over, not a performance
  *  competing with the student. */
+/* Beat positions carrying a fraction of .5 are OFFBEATS, and in the swing feel
+ * those are the hits the triplet shift moves. The swing pattern used to be
+ * [1, 3] — both whole beats — so the shift below could never fire and the swing
+ * feel came out perfectly straight. Beat 2 plus an anticipation on the swung
+ * "and of 4" is the standard two-feel comp and makes the shift audible. */
 const COMP: Record<string, { chord: number[]; bass: number[] }> = {
   straight: { chord: [0, 1.5, 2.5], bass: [0, 2] },
-  swing:    { chord: [1, 3],        bass: [0, 1, 2, 3] },
+  swing:    { chord: [1, 3.5],      bass: [0, 1, 2, 3] },
   "68":     { chord: [0, 1, 2],     bass: [0, 1.5] },
 };
 

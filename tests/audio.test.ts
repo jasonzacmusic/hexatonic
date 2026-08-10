@@ -200,3 +200,65 @@ describe("audio transport", () => {
     expect(onStop).toHaveBeenCalledTimes(1);
   });
 });
+
+/**
+ * Regression lock from the 9 August 2026 audit.
+ *
+ * The vamp scheduler has always had a triplet shift for offbeats, but the swing
+ * comp pattern only ever placed hits on whole beats, so the shift was
+ * unreachable and the swing feel played dead straight.
+ */
+describe("the swing feel actually swings", () => {
+  beforeEach(() => {
+    vi.stubGlobal("window", { AudioContext: FakeAudioContext });
+    vi.stubGlobal("fetch", vi.fn(async () => ({
+      ok: true, status: 200, arrayBuffer: async () => new ArrayBuffer(1),
+    })));
+  });
+  afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
+
+  /* Samples have not finished decoding when the first bar is scheduled, so the
+     engine voices these through its synthesised fallback — collect both. */
+  const hitBeats = (context: FakeAudioContext, bar: number) =>
+    [...context.sources, ...context.oscillators]
+      .flatMap((s) => s.starts)
+      .map((t) => Math.round(((t - bar) / 0.5) * 1000) / 1000)
+      .filter((b) => b >= 0 && b < 4);
+
+  const vamp = (feel: "straight" | "swing" | "68") => ({
+    chords: [{ bass: 36, voicing: [60, 64, 67], bars: 1 }],
+    beatDur: 0.5,
+    beatsPerBar: 4,
+    feel,
+    click: false,
+    countInBeats: 0,
+    bassOn: false,
+    compOn: true,
+  });
+
+  it("places a comp hit off the beat, and lands it a triplet late", async () => {
+    const engine = new AudioEngine();
+    await engine.startVamp(vamp("swing"));
+    const context = engine.context as unknown as FakeAudioContext;
+    // vampStart is currentTime + 0.3 + the count-in, and the count-in is zero here
+    const bar = 0.3;
+    const offsets = [...new Set(hitBeats(context, bar))].sort((a, b) => a - b);
+    // beat 2 straight, and the "and of 4" pushed to 3.5 + 1/6
+    expect(offsets).toContain(1);
+    const swung = offsets.find((b) => b > 3.5);
+    expect(swung, `offsets were ${offsets.join(", ")}`).toBeDefined();
+    expect(swung!).toBeGreaterThan(3.6);
+    expect(swung!).toBeLessThan(3.7);
+    engine.stopVamp();
+  });
+
+  it("leaves the straight feel unswung", async () => {
+    const engine = new AudioEngine();
+    await engine.startVamp(vamp("straight"));
+    const context = engine.context as unknown as FakeAudioContext;
+    const offsets = [...new Set(hitBeats(context, 0.3))];
+    expect(offsets).toContain(1.5);
+    expect(offsets).toContain(2.5);
+    engine.stopVamp();
+  });
+});

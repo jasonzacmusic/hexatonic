@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hexatonic — Full Audit, 9 August 2026</title>
+<style>
+  :root{
+    --paper:#F6F1E6; --paper2:#EFE8D9; --ink:#1C1814; --ink2:#4A4137;
+    --red:#8B1E24; --red-lite:#B7343B; --gold:#9A7B12; --gold-lite:#C9A227;
+    --rule:#D8CDB6; --green:#3F6B3A;
+    --display:"Cormorant Garamond",Georgia,"Times New Roman",serif;
+    --body:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper); color:var(--ink); font-family:var(--body);
+    font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;
+  }
+  .sheet{max-width:920px;margin:0 auto;padding:0 22px 90px}
+
+  /* ── masthead: a manuscript title page ─────────────────────── */
+  .masthead{
+    position:relative; padding:54px 0 30px; margin-bottom:8px;
+    border-bottom:2px solid var(--ink);
+  }
+  .staff{
+    position:absolute; inset:auto 0 0 0; height:44px; opacity:.16;
+    background:repeating-linear-gradient(to bottom,
+      transparent 0 8px, var(--ink) 8px 9px);
+    pointer-events:none;
+  }
+  .kicker{
+    font-family:var(--mono); font-size:11px; letter-spacing:.22em;
+    text-transform:uppercase; color:var(--red); margin:0 0 14px;
+  }
+  h1{
+    font-family:var(--display); font-weight:600; font-size:clamp(40px,7.5vw,74px);
+    line-height:.98; margin:0 0 6px; letter-spacing:-.015em;
+  }
+  h1 em{font-style:italic; color:var(--red)}
+  .sub{
+    font-family:var(--mono); font-size:12px; color:var(--ink2);
+    letter-spacing:.04em; margin:16px 0 0;
+  }
+
+  /* ── verdict: an examiner's written note, not a card ───────── */
+  .verdict{margin:36px 0 46px; max-width:34em}
+  .verdict::before{
+    content:""; display:block; width:64px; height:2px;
+    background:var(--red); margin-bottom:20px;
+  }
+  .verdict p{margin:0; font-family:var(--display); font-size:clamp(22px,3.3vw,31px);
+    line-height:1.32; font-weight:500;}
+  .verdict strong{
+    color:var(--red); font-weight:600;
+    background:linear-gradient(transparent 78%, rgba(139,30,36,.20) 78%);
+  }
+
+  /* ── tally ─────────────────────────────────────────────────── */
+  .tally{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(128px,1fr));
+    gap:1px; background:var(--rule); border:1px solid var(--rule); margin:0 0 54px;
+  }
+  .tally div{background:var(--paper); padding:16px 14px}
+  .tally b{display:block; font-family:var(--display); font-size:34px;
+    line-height:1; font-weight:600; color:var(--ink)}
+  .tally b.bad{color:var(--red)} .tally b.good{color:var(--green)}
+  .tally span{display:block; font-family:var(--mono); font-size:10px;
+    text-transform:uppercase; letter-spacing:.13em; color:var(--ink2); margin-top:7px}
+
+  h2{
+    font-family:var(--display); font-size:clamp(27px,4.4vw,38px); font-weight:600;
+    margin:64px 0 6px; letter-spacing:-.01em;
+  }
+  .h2note{font-family:var(--mono); font-size:11px; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--ink2); margin:0 0 26px;
+    padding-bottom:12px; border-bottom:1px solid var(--rule)}
+
+  /* ── findings: red-pen margin marks ────────────────────────── */
+  .find{
+    display:grid; grid-template-columns:52px 1fr; gap:20px;
+    padding:24px 0; border-bottom:1px solid var(--rule);
+  }
+  .mark{
+    width:42px; height:42px; border:2px solid var(--red); border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--display); font-size:21px; font-weight:600; color:var(--red);
+    transform:rotate(-6deg);
+  }
+  .mark.low{border-color:var(--gold); color:var(--gold)}
+  .find h3{margin:2px 0 4px; font-size:19px; font-weight:650; letter-spacing:-.01em}
+  .sev{
+    font-family:var(--mono); font-size:10px; letter-spacing:.13em;
+    text-transform:uppercase; padding:3px 8px; border-radius:2px; margin-left:9px;
+    vertical-align:2px; white-space:nowrap;
+  }
+  .sev.hi{background:var(--red); color:var(--paper)}
+  .sev.md{background:var(--gold); color:#231a02}
+  .sev.lo{background:var(--rule); color:var(--ink2)}
+  .find p{margin:9px 0 0; color:var(--ink2)}
+  /* the cause line reads as a footnote, not a tabbed card */
+  .find p.where{
+    font-family:var(--mono); font-size:12px; color:var(--ink);
+    background:var(--paper2); padding:10px 13px; margin-top:13px;
+  }
+  .find p.where b{color:var(--red); font-weight:600}
+
+  /* musical example */
+  .ex{margin:14px 0 0; border:1px solid var(--rule); background:#fff}
+  .ex-row{display:grid; grid-template-columns:96px 1fr; border-bottom:1px solid var(--rule)}
+  .ex-row:last-child{border-bottom:0}
+  .ex-row span:first-child{
+    font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase;
+    padding:11px 12px; color:var(--ink2); background:var(--paper2);
+    border-right:1px solid var(--rule); display:flex; align-items:center;
+  }
+  .ex-row span:last-child{padding:11px 14px; font-family:var(--mono); font-size:14px}
+  .wrong{color:var(--red); font-weight:600}
+  .right{color:var(--green); font-weight:600}
+
+  /* ── clean list ────────────────────────────────────────────── */
+  .clean{list-style:none; padding:0; margin:0}
+  .clean li{
+    padding:13px 0 13px 34px; border-bottom:1px solid var(--rule); position:relative;
+    color:var(--ink2);
+  }
+  .clean li::before{
+    content:"✓"; position:absolute; left:4px; top:12px;
+    color:var(--green); font-weight:700; font-size:16px;
+  }
+  .clean li b{color:var(--ink); font-weight:650}
+
+  /* ── struck record ─────────────────────────────────────────── */
+  .record{list-style:none; padding:0; margin:0}
+  .record li{padding:12px 0; border-bottom:1px solid var(--rule);
+    display:grid; grid-template-columns:1fr; gap:3px}
+  .record s{color:#9C9081; text-decoration-color:var(--red);
+    text-decoration-thickness:1.5px; font-family:var(--mono); font-size:12.5px}
+  .record em{font-style:normal; color:var(--ink); font-size:14.5px}
+  .record em b{color:var(--green); font-weight:650}
+
+  /* ── missing features ──────────────────────────────────────── */
+  .gap-group{margin:0 0 30px}
+  .gap-group h4{
+    font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--red); margin:0 0 10px; padding-bottom:7px; border-bottom:1px solid var(--rule);
+  }
+  .gap{display:grid; grid-template-columns:26px 1fr auto; gap:11px;
+    padding:9px 0; align-items:baseline}
+  .gap i{
+    font-style:normal; width:15px; height:15px; border:1.5px solid var(--ink2);
+    display:inline-block; border-radius:2px; position:relative; top:2px;
+  }
+  .gap i.part{background:linear-gradient(135deg,var(--gold-lite) 50%,transparent 50%)}
+  .gap b{font-weight:600}
+  .gap span{color:var(--ink2); font-size:14px}
+  .gap code{font-family:var(--mono); font-size:11px; color:var(--ink2);
+    background:var(--paper2); padding:2px 6px; white-space:nowrap}
+
+  /* ── next ──────────────────────────────────────────────────── */
+  .next{counter-reset:n; list-style:none; padding:0; margin:0}
+  .next li{
+    counter-increment:n; padding:16px 0 16px 54px; position:relative;
+    border-bottom:1px solid var(--rule);
+  }
+  .next li::before{
+    content:counter(n); position:absolute; left:0; top:14px;
+    font-family:var(--display); font-size:30px; font-weight:600; color:var(--gold-lite);
+    line-height:1;
+  }
+  .next b{display:block; font-size:16.5px; margin-bottom:3px}
+  .next span{color:var(--ink2); font-size:14.5px}
+
+  /* ── footer ────────────────────────────────────────────────── */
+  footer{margin-top:66px; padding-top:26px; border-top:2px solid var(--ink)}
+  .share{
+    display:inline-block; background:var(--red); color:var(--paper);
+    text-decoration:none; font-family:var(--mono); font-size:12px;
+    letter-spacing:.13em; text-transform:uppercase; padding:14px 24px;
+  }
+  .share:hover{background:var(--red-lite)}
+  .colophon{font-family:var(--mono); font-size:11px; color:var(--ink2);
+    margin-top:22px; line-height:1.8}
+
+  @media (max-width:560px){
+    .find{grid-template-columns:1fr; gap:10px}
+    .mark{transform:none}
+    .ex-row{grid-template-columns:1fr}
+    .ex-row span:first-child{border-right:0; border-bottom:1px solid var(--rule)}
+    .gap{grid-template-columns:22px 1fr; }
+    .gap code{grid-column:2; justify-self:start; margin-top:3px}
+  }
+  @media print{ body{background:#fff} .share{display:none} }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <header class="masthead">
+    <div class="staff"></div>
+    <p class="kicker">Nathaniel School of Music · Engineering &amp; musical audit</p>
+    <h1>Hexatonic,<br><em>marked up</em></h1>
+    <p class="sub">9 August 2026 · commit da7ec71 · 12,792 lines · live at hexatonic.nathanielschool.com</p>
+  </header>
+
+  <div class="verdict">
+    <p>No, it is not bug-free — but nothing crashes and nothing is dangerous.
+    I found <strong>six real defects</strong>. Three of them are musical, and one of those
+    puts a <strong>wrong note inside a named chord</strong> on screen.</p>
+  </div>
+
+  <div class="tally">
+    <div><b class="good">249</b><span>tests passing</span></div>
+    <div><b class="good">0</b><span>crashes in 1,000+ generated scales</span></div>
+    <div><b class="bad">6</b><span>defects found</span></div>
+    <div><b class="bad">3</b><span>musical / notation</span></div>
+    <div><b>8</b><span>debt items already fixed</span></div>
+    <div><b>11</b><span>features still missing</span></div>
+  </div>
+
+  <h2>The red pen</h2>
+  <p class="h2note">Six defects, worst first</p>
+
+  <div class="find">
+    <div class="mark">1</div>
+    <div>
+      <h3>Three flat keys spell chords wrong<span class="sev hi">Musical</span></h3>
+      <p>On <b>/harmony → Pair atlas</b>, three of the twelve pair exercises print a chord
+      symbol whose notes contradict the symbol. A student reading D♭ minor is shown an
+      <b>E natural</b> where the flattened third belongs. Thirty individual chord displays
+      are affected across eight entry-and-key combinations.</p>
+      <div class="ex">
+        <div class="ex-row"><span>Shown</span><span>D♭m &nbsp;=&nbsp; D♭ &nbsp; <span class="wrong">E</span> &nbsp; A♭</span></div>
+        <div class="ex-row"><span>Correct</span><span>D♭m &nbsp;=&nbsp; D♭ &nbsp; <span class="right">F♭</span> &nbsp; A♭</span></div>
+        <div class="ex-row"><span>Shown</span><span>D &nbsp;=&nbsp; D &nbsp; <span class="wrong">G♭</span> &nbsp; A</span></div>
+        <div class="ex-row"><span>Correct</span><span>D &nbsp;=&nbsp; D &nbsp; <span class="right">F♯</span> &nbsp; A</span></div>
+      </div>
+      <p class="where">Cause · <b>src/lib/theory/custom.ts:61</b> — spellSet charges 10,000 per
+      accidental but only 2,000 for reusing a letter, so it prefers “D♭ E♭ E G♭ A♭ B♭”
+      (letter E twice, letter F unused) over the correct “D♭ E♭ F♭ G♭ A♭ B♭”. For six notes
+      one letter per degree is always available, so that weighting is backwards.</p>
+      <p><b>Affected:</b> Dorian pair (D♭, A♭) · Phrygian pair (D♭, A♭, E♭) ·
+      Major triads a semitone apart (D♭, A♭, E♭). All other keys are correct.</p>
+      <p><b>One honest caveat:</b> the semitone pair cannot be spelled as both a clean scale
+      <em>and</em> two clean triads — C + D♭ genuinely needs D♭ D F F♯ A♭ A. For that entry
+      the fix is to spell per triad, since the Atlas exists to show chord symbols.</p>
+    </div>
+  </div>
+
+  <div class="find">
+    <div class="mark">2</div>
+    <div>
+      <h3>Double accidentals in the symmetric scales<span class="sev md">Notation</span></h3>
+      <p>Whole-tone, augmented and Petrushka use a <em>fixed</em> letter template, so in sharp
+      keys they climb into double sharps that no musician would write. B whole-tone comes out
+      <b>B C♯ D♯ E♯ F𝄪 G𝄪</b>; the conventional spelling breaks the letter run to read
+      <b>B C♯ D♯ F G A</b>.</p>
+      <p class="where">Cause · <b>src/lib/theory/scales.ts</b> — the eight-note octatonic
+      <i>searches</i> for the cheapest letter assignment, but the six-note symmetric families
+      never got that treatment and still use a hard-coded <code>letters</code> array.</p>
+      <p><b>Affected:</b> whole-tone in A, E, B, F♯ · augmented in E, B, F♯, D♭ ·
+      Petrushka in D♭, A♭. The existing sweep passes them because it only asserts the
+      accidental is drawable, not that it is sensible.</p>
+    </div>
+  </div>
+
+  <div class="find">
+    <div class="mark">3</div>
+    <div>
+      <h3>Key signature chosen by list order, not by fit<span class="sev md">Notation</span></h3>
+      <p>A hexatonic sits inside two parent major scales — that ambiguity is the whole point of
+      the modal-intersection names. The app picks whichever parent appears first in its
+      <code>KEYS</code> array rather than the one that fits, so <b>29 of 72</b> rotations print
+      a key signature containing an accidental the scale never sounds.</p>
+      <div class="ex">
+        <div class="ex-row"><span>Example</span><span>C Dorian/Aeolian = C D E♭ F G B♭</span></div>
+        <div class="ex-row"><span>Uses</span><span><span class="wrong">E♭ major</span> — 3 flats, the A♭ never sounds</span></div>
+        <div class="ex-row"><span>Better</span><span><span class="right">B♭ major</span> — 2 flats, both used</span></div>
+      </div>
+      <p class="where">Cause · <b>src/lib/theory/scales.ts:427</b> — findParentScale returns the
+      first match instead of the one with no unused accidentals.</p>
+      <p>Nothing renders <em>wrongly</em> here — the notes are right and accidentals are drawn
+      correctly against whichever signature is chosen. It just reads as noisier than it needs to.</p>
+    </div>
+  </div>
+
+  <div class="find">
+    <div class="mark low">4</div>
+    <div>
+      <h3>The swing feel never swings<span class="sev lo">Low</span></h3>
+      <p>The vamp scheduler has a triplet-shift for offbeats, but it only fires when a comp hit
+      lands on a half-beat — and the swing pattern places chords on beats 1 and 3 and bass on all
+      four. Every hit is a whole beat, so the shift is unreachable code.</p>
+      <p class="where">Cause · <b>src/lib/audio/engine.ts:404</b> — dead branch.
+      The drill scheduler's own swing (line 337) does work correctly.</p>
+      <p>The result is not musically wrong — a two-feel with chords on 2 and 4 is a legitimate
+      comp. The real limitation is that no vamp has swung eighths at all.</p>
+    </div>
+  </div>
+
+  <div class="find">
+    <div class="mark low">5</div>
+    <div>
+      <h3>The service worker caches failed responses<span class="sev lo">Low</span></h3>
+      <p>The network-first branch stores every response it receives without checking the status,
+      so a transient 404 or 500 gets written into the offline cache and then served back as the
+      offline fallback until the next deploy.</p>
+      <p class="where">Cause · <b>public/sw.js</b> — needs a <code>res.ok</code> guard before
+      <code>cache.put</code>. One line.</p>
+    </div>
+  </div>
+
+  <div class="find">
+    <div class="mark low">6</div>
+    <div>
+      <h3>Control borders sit at 1.24:1<span class="sev lo">Access</span></h3>
+      <p>Text contrast is fine everywhere — see below. But <code>--line</code> against
+      <code>--surface</code> measures <b>1.24:1</b>, and WCAG requires <b>3:1</b> for the boundary
+      of a user-interface component. Controls whose only affordance is that border are effectively
+      edgeless for a low-vision user.</p>
+      <p class="where">Cause · <b>src/app/globals.css</b> — <code>--line:#2A2523</code> on
+      <code>--surface:#14120F</code>.</p>
+    </div>
+  </div>
+
+  <h2>What I could not break</h2>
+  <p class="h2note">Held up under brute force</p>
+  <ul class="clean">
+    <li><b>Every scale, every key, every rotation.</b> All families across all twelve keys build
+      without error, ascend, sound each pitch once, stay inside an octave, and label their degrees
+      with the intervals actually sounding.</li>
+    <li><b>The Pair Atlas exact-cover proof.</b> All twelve entries in all twelve keys — the two
+      shapes never share a note and always account for the whole scale. No throw, in 144 combinations.</li>
+    <li><b>The Movement Lab.</b> Twelve keys × six rotations, plus both octatonics, with no
+      unhandled throw — which matters because these run inside render, where an exception would
+      white-screen /harmony.</li>
+    <li><b>The Forte table.</b> I recomputed every prime form by hand, including the 6-Z47 claim
+      that minor and major blues are the same set class. All correct.</li>
+    <li><b>Colour contrast.</b> Every text token passes AA on every surface — the roadmap's guess
+      that <code>muted</code> failed is wrong. It measures 4.53 to 5.20.</li>
+    <li><b>Voicings and playback ranges.</b> Every generated exercise stays inside the piano and
+      ascends within each chord. All 17 Salamander samples are present.</li>
+  </ul>
+
+  <h2>The roadmap is out of date</h2>
+  <p class="h2note">Eight debt items listed as open are already fixed — worth correcting so nobody re-does them</p>
+  <ul class="record">
+    <li><s>“CACHE = hexatonic-v1 must be bumped on every deploy.”</s>
+      <em>Now build-stamped with the git SHA — <b>verified live</b> as <code>sw.js?v=da7ec71…</code>.</em></li>
+    <li><s>“No GitHub Actions. npm test and npm run build should gate every push.”</s>
+      <em><b>CI exists</b> and runs lint + test + build; it passed on today's push.</em></li>
+    <li><s>“Colour contrast on muted over surface is likely below AA.”</s>
+      <em><b>It passes</b> — measured, not guessed.</em></li>
+    <li><s>“Fonts loaded from Google over the network, so the offline PWA falls back.”</s>
+      <em>Uses <code>next/font/google</code>, which <b>self-hosts at build time</b>.</em></li>
+    <li><s>“Notation caps at 24 bars; a 35-bar drill shows a partial score.”</s>
+      <em>Cap is now 35 and the UI <b>says so honestly</b> when it truncates.</em></li>
+    <li><s>“56 tests cover the theory engine only.”</s>
+      <em><b>249 tests</b> across 18 files.</em></li>
+    <li><s>“The drill is hard-wired to 4/4. Biggest functional gap.”</s>
+      <em>Any meter, plus all 35 talas, with correct beaming.</em></li>
+    <li><s>“Accessibility never audited — reduced motion unknown.”</s>
+      <em><code>prefers-reduced-motion</code> <b>is handled</b> in globals.css.</em></li>
+  </ul>
+
+  <h2>Still genuinely open</h2>
+  <p class="h2note">Technical debt I confirmed is real</p>
+  <ul class="clean" style="--green:var(--red)">
+    <li><b>Zero component or end-to-end tests.</b> All 249 tests are engine-level. Nothing at all
+      covers React behaviour, and nothing would have caught a broken button.</li>
+    <li><b>Thin ARIA.</b> Ten interactive files carry no ARIA attributes at all — including the
+      ear-training game, the custom scale builder, the MIDI panel and the Tihai lab. There is no
+      skip-to-content link.</li>
+    <li><b>No automatic deploy.</b> Vercel here is manual; production had drifted <b>five days</b>
+      behind GitHub before today. This is the one I would fix first — it silently un-ships your work.</li>
+    <li><b>Leftovers.</b> <code>prototype/</code> is still in the repo, and <code>transpose</code>
+      is still a prop fixed at one octave with no interface.</li>
+    <li><b>No analytics.</b> Still no idea which drills people actually use.</li>
+  </ul>
+
+  <h2>Missing features</h2>
+  <p class="h2note">Verified absent in code — filled square means partly there</p>
+
+  <div class="gap-group">
+    <h4>Carnatic</h4>
+    <div class="gap"><i></i><div><b>Eduppu</b> <span>— off-samam starts: sama, atita, anagata.</span></div><code>3.5</code></div>
+    <div class="gap"><i></i><div><b>Korvai calculator</b> <span>— purvangam/uttarangam split with karvai absorbing the remainder.</span></div><code>3.6</code></div>
+    <div class="gap"><i></i><div><b>Konnakol audio</b> <span>— the syllables exist as text; nothing speaks them.</span></div><code>3.7</code></div>
+    <div class="gap"><i class="part"></i><div><b>Yati ladder</b> <span>— /live has a manual stepper; the automatic 3→4→5→6→7 run is not built.</span></div><code>3.9</code></div>
+  </div>
+
+  <div class="gap-group">
+    <h4>Jazz &amp; harmony</h4>
+    <div class="gap"><i></i><div><b>Lick library per mode</b> <span>— notated, playable phrases.</span></div><code>2.2</code></div>
+    <div class="gap"><i></i><div><b>Recorded backing tracks</b> <span>— real drums instead of the synthesised comp.</span></div><code>2.2</code></div>
+    <div class="gap"><i></i><div><b>Drop-voicing movement</b> <span>— the Barry Harris module stops at close position.</span></div><code>4.3</code></div>
+    <div class="gap"><i></i><div><b>Neo-Riemannian module</b> <span>— Cohn's four hexatonic systems and poles.</span></div><code>4.5</code></div>
+  </div>
+
+  <div class="gap-group">
+    <h4>Teaching</h4>
+    <div class="gap"><i></i><div><b>Assignment sheets</b> <span>— six drill links on one printable page. The links already work; nothing wraps them.</span></div><code>2.4</code></div>
+    <div class="gap"><i></i><div><b>Audava and Sampurna as real modules</b> <span>— they exist as families with no teaching of their own.</span></div><code>4.1</code></div>
+    <div class="gap"><i></i><div><b>Two-player duet mode</b> <span>— one player in 5s, one in 7s, resolving together. The solver already computes the meeting bar.</span></div><code>3.8</code></div>
+    <div class="gap"><i class="part"></i><div><b>Instrument packs</b> <span>— guitar fretboard is built; bass, wind fingerings and vocal ranges are not.</span></div><code>4.4</code></div>
+  </div>
+
+  <h2>What I would do next</h2>
+  <p class="h2note">Ranked by value per hour</p>
+  <ol class="next">
+    <li><b>Wire the GitHub → Vercel deploy.</b>
+      <span>Everything else is theoretical until shipping is automatic. Your work sat five days
+      un-deployed and nothing told you.</span></li>
+    <li><b>Fix the flat-key chord spelling.</b>
+      <span>Defect 1. It is the only finding that shows a musician something false, and it is a
+      weighting change in one cost function plus a test that locks it.</span></li>
+    <li><b>Give the six-note symmetric families the octatonic's letter search.</b>
+      <span>Defect 2. The algorithm already exists and is proven — it just needs to be shared.</span></li>
+    <li><b>Assignment sheets.</b>
+      <span>The cheapest genuinely new feature on the list: drill links already work, so this is
+      a page that collects six of them. Directly useful for Music Gym on the Saturday after next.</span></li>
+    <li><b>Prefer the parent with no unused accidentals.</b>
+      <span>Defect 3, and a handful of lines.</span></li>
+  </ol>
+
+  <footer>
+    <a class="share" id="wa" href="#">Send the summary on WhatsApp</a>
+    <p class="colophon">
+      Audited against commit da7ec71 on 9 August 2026.<br>
+      Method: full read of the theory, audio and notation layers; brute-force generation of every
+      scale in every key and rotation; exact-cover proofs across all Pair Atlas entries; hand
+      recomputation of the Forte prime forms; WCAG contrast computed from the design tokens.<br>
+      Not covered: real-device MIDI input, iOS Safari audio unlocking, and anything requiring a
+      human to listen — those need hands on hardware.
+    </p>
+  </footer>
+</div>
+
+<script>
+  var msg = [
+    "Hexatonic audit — 9 Aug 2026 (commit da7ec71)",
+    "",
+    "Not bug-free: 6 real defects, 3 musical. Nothing crashes.",
+    "",
+    "1. Three flat keys spell chords wrong on the Pair Atlas — D flat minor shows an E natural where F flat belongs. 30 chord displays affected.",
+    "2. Double accidentals in whole-tone / augmented / Petrushka in sharp keys.",
+    "3. Key signature picked by list order — 29 of 72 rotations show an unused accidental.",
+    "4. The swing vamp never swings (dead code).",
+    "5. Service worker caches failed responses.",
+    "6. Control borders at 1.24:1 vs the 3:1 required.",
+    "",
+    "Held up: 249 tests pass, zero crashes across 1,000+ generated scales, contrast passes AA, Forte table verified by hand.",
+    "",
+    "Also: 8 roadmap debt items are already fixed, and 11 features are still missing.",
+    "",
+    "Top three next: wire the auto-deploy, fix the flat-key spelling, share the octatonic letter-search with the 6-note symmetric scales."
+  ].join("\n");
+  document.getElementById("wa").href = "https://wa.me/?text=" + encodeURIComponent(msg);
+</script>
+</body>
+</html>

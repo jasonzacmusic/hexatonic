@@ -6,7 +6,10 @@
  * every note. That is the property behind Jason's inversion-switching exercise.
  */
 
-import { midi, notePretty, pc } from "./note";
+import {
+  Alt, Letter, letterIndex, midi, note, Note, notePretty, parseNoteName, pc,
+  spell, stepLetter, MAJOR_KEYS,
+} from "./note";
 import { buildScale } from "./scales";
 import {
   exactCoverMovement,
@@ -231,12 +234,136 @@ export const DIATONIC_EXACT_COVERS = [
   { pair: "vi + vii°", omitted: "5", lesson: "new theory" },
 ] as const;
 
+/* ── spelling an exact-cover pair for its CHORDS ───────────────────────────
+   A general scale speller optimises the scale as a line, and for most keys
+   that also spells the two shapes correctly. It cannot always do both: the
+   semitone pair in Db needs Db D F F# Ab A to read as Db major plus D major,
+   which uses only three letters and is a poor scale spelling by any other
+   measure. The Atlas exists to show chord symbols, so here the chords win —
+   otherwise it prints "D" over the notes D, Gb, A.
+
+   Each shape is spelled from its own root as root / root+2 / root+4 letters,
+   which is what makes a triad a triad on paper.                             */
+
+const TRIAD_SHAPES: number[][] = [[0, 4, 7], [0, 3, 7], [0, 3, 6], [0, 4, 8]];
+
+/** Root pitch class and interval shape of a three-note set, if it is tertian. */
+function tertianRoot(pcs: number[]): { root: number; shape: number[] } | null {
+  for (const root of pcs) {
+    const iv = pcs.map((p) => ((p - root) % 12 + 12) % 12).sort((a, b) => a - b);
+    const hit = TRIAD_SHAPES.find((s) => s.every((x, i) => x === iv[i]));
+    if (hit) return { root, shape: hit };
+  }
+  return null;
+}
+
+/** Spell one triad with letters a third apart, given the root's letter. */
+function spellFromRootLetter(
+  rootLetter: Letter, root: number, shape: number[],
+): Note[] | null {
+  const out: Note[] = [];
+  for (let i = 0; i < shape.length; i++) {
+    const s = spell(stepLetter(rootLetter, i * 2), (root + shape[i]) % 12, 4);
+    if (!s) return null;
+    out.push(s);
+  }
+  return out;
+}
+
+const altCost = (ns: Note[], flatLean: boolean) =>
+  ns.reduce((a, n) => a + (Math.abs(n.alt) === 2 ? 10000 : Math.abs(n.alt) === 1 ? 100 : 0), 0) +
+  ns.filter((n) => n.alt !== 0 && n.alt > 0 === flatLean).length * 10 +
+  (ns.some((n) => n.alt > 0) && ns.some((n) => n.alt < 0) ? 1 : 0);
+
+/**
+ * Spell the whole collection so that BOTH shapes read as real chords.
+ * Returns null when the set is not two tertian triads, so the caller can fall
+ * back to the ordinary scale speller.
+ */
+function spellPairForChords(tonicName: string, semis: number[]): Note[] | null {
+  if (semis.length !== 6) return null;
+  const t = parseNoteName(tonicName);
+  const pcs = semis.map((s) => (pc(t) + s) % 12);
+  const shapes = [[0, 2, 4], [1, 3, 5]].map((ix) => ix.map((i) => pcs[i]));
+  const flatLean = (MAJOR_KEYS[tonicName] ?? 0) < 0 || tonicName.endsWith("b");
+
+  const byPc = new Map<number, Note>();
+  for (const shapePcs of shapes) {
+    const found = tertianRoot(shapePcs);
+    if (!found) return null;
+    const { root, shape } = found;
+    /* An augmented triad divides the octave evenly, so it has three equally
+       good roots and no single correct spelling — C E G#, E G# B# and Ab C E
+       are the same chord. Leave those to the family that defined them. */
+    if (shape[1] === 4 && shape[2] === 8) return null;
+    /* The shape holding the tonic must keep the tonic's own letter, whichever
+       chord member the tonic happens to be. */
+    const tonicMember = shapePcs.includes(pc(t))
+      ? shape.findIndex((iv) => (root + iv) % 12 === pc(t))
+      : -1;
+    let best: Note[] | null = null;
+    let bestCost = Infinity;
+    const candidates: Letter[] = tonicMember >= 0
+      ? [stepLetter(t.letter, (7 - tonicMember * 2) % 7)]
+      : (["C", "D", "E", "F", "G", "A", "B"] as Letter[]);
+    for (const rootLetter of candidates) {
+      const cand = spellFromRootLetter(rootLetter, root, shape);
+      if (!cand) continue;
+      const cost = altCost(cand, flatLean);
+      if (cost < bestCost) { bestCost = cost; best = cand; }
+    }
+    if (!best) return null;
+    for (const n of best) byPc.set(pc(n), n);
+  }
+
+  /* Lay the six notes out ascending from the tonic. */
+  const out: Note[] = [];
+  let previous = -Infinity;
+  for (const p of pcs) {
+    const src = byPc.get(p);
+    if (!src) return null;
+    let n = note(src.letter, src.alt as Alt, t.octave);
+    while (midi(n) <= previous) n = note(n.letter, n.alt, n.octave + 1);
+    out.push(n);
+    previous = midi(n);
+  }
+  if (midi(out[out.length - 1]) - midi(out[0]) >= 12) return null;
+  return out;
+}
+
+/** Do both alternate-degree shapes already read as triads on paper? */
+function alreadyInThirds(notes: Note[]): boolean {
+  if (notes.length !== 6) return false;
+  return [[0, 2, 4], [1, 3, 5]].every((ix) => {
+    const ls = ix.map((i) => notes[i].letter);
+    if (new Set(ls).size !== 3) return false;
+    return ls.some((l) => {
+      const want = new Set([l, stepLetter(l, 2), stepLetter(l, 4)]);
+      return ls.every((x) => want.has(x));
+    });
+  });
+}
+
 export function buildAtlasMovement(entry: PairAtlasEntry, tonic: string): InterlockedMovement {
   const scale = entry.familyId
     ? buildScale(tonic, entry.familyId, entry.mode ?? 0)
     : buildScale(tonic, "custom", 0, entry.semis);
   if (scale.error) throw new Error(scale.error);
-  const namedScale = { ...scale, label: entry.title, teaching: entry.lessonAngle };
+  /* Re-spell for the chords only where the default spelling does not already
+     read as two triads. Petrushka in Ab comes out of its family as Ab A C D Eb
+     Gb, which prints the upper shape as D-Gb-A; every key where the family
+     already gets it right is left untouched. */
+  const semis = entry.semis
+    ?? scale.notes.map((n) => ((pc(n) - pc(scale.notes[0])) % 12 + 12) % 12);
+  const chordSpelled = entry.voices === 3 && !alreadyInThirds(scale.notes)
+    ? spellPairForChords(tonic, semis)
+    : null;
+  const namedScale = {
+    ...scale,
+    notes: chordSpelled ?? scale.notes,
+    label: entry.title,
+    teaching: entry.lessonAngle,
+  };
   const kind: MovementKind = entry.voices === 4 ? "octatonic-sevenths" : "hexatonic-triads";
   return exactCoverMovement(kind, namedScale, entry.voices);
 }

@@ -400,6 +400,20 @@ export function buildScale(
       if (!s) return fail(`${tonicName} needs a triple accidental in this scale. Try another key.`);
       notes.push(s);
     }
+    /* A fixed letter template cannot adapt to the key, and the symmetric
+       families break on that: whole-tone on B walks letter by letter into
+       B C# D# E# F## G##, where the convention is to skip a letter and write
+       B C# D# F G A. Only fall back to the search when the template actually
+       produced a double accidental, so every spelling that was already right —
+       the blues b5/5 pair, the major blues b3/3 pair, C augmented — is left
+       exactly as it was. */
+    if (notes.some((n) => Math.abs(n.alt) === 2)) {
+      const searched = spellSet(tonicName, family.semis!, {
+        flatLean: (MAJOR_KEYS[tonicName] ?? 0) < 0 || tonicName.endsWith("b"),
+      });
+      if (!searched.error && !searched.notes.some((n) => Math.abs(n.alt) === 2))
+        notes = searched.notes;
+    }
   }
 
   const pcs = notes.map(pc);
@@ -423,19 +437,34 @@ function degreesFromSemis(notes: Note[]): string[] {
   return notes.map((n) => SEMI_DEG[(((pc(n) - root) % 12) + 12) % 12]);
 }
 
-/** Which parent key and note produced this rotation? */
+/**
+ * Which parent key and note produced this rotation?
+ *
+ * A hexachord sits inside TWO major scales — that ambiguity is the entire point
+ * of the modal-intersection names, so there is a real choice to make here and
+ * the array order is not it. Returning the first match printed C Dorian/Aeolian
+ * against Eb major, whose Ab never sounds in the scale; Bb major spends both of
+ * its flats. Prefer the parent whose signature has no accidental the scale
+ * never uses, and keep KEYS order as the tiebreak so the sharp/flat lean of the
+ * list still decides between two equally clean parents.
+ */
 function findParentScale(notes: Note[]): { key: string; removed: Note } | null {
   const have = new Set(notes.map(pc));
+  const letters = new Set(notes.map((n) => n.letter));
+  let best: { key: string; removed: Note } | null = null;
+  let bestUnused = Infinity;
   for (const root of KEYS) {
     const full = buildDiatonic(root, MAJOR);
     if (!full) continue;
     const fpc = full.map(pc);
-    if ([...have].every((p) => fpc.includes(p))) {
-      const miss = full.filter((n) => !have.has(pc(n)));
-      if (miss.length === 1) return { key: root, removed: miss[0] };
-    }
+    if (![...have].every((p) => fpc.includes(p))) continue;
+    const miss = full.filter((n) => !have.has(pc(n)));
+    if (miss.length !== 1) continue;
+    const unused = full.filter((n) => n.alt !== 0 && !letters.has(n.letter)).length;
+    if (unused < bestUnused) { bestUnused = unused; best = { key: root, removed: miss[0] }; }
+    if (bestUnused === 0) break;
   }
-  return null;
+  return best;
 }
 
 /** Infer the relative-major signature for a complete parent scale. */

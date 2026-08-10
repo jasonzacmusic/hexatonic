@@ -12,7 +12,13 @@ describe("foundation regressions", () => {
 
   it("carries the parent major key signature through rotations", () => {
     expect(buildScale("G", "diatonic", 0).keySignature).toBe("G");
-    expect(buildScale("C", "diatonic", 4).keySignature).toBe("Eb");
+    /*
+     * C D Eb F G Bb sits inside BOTH Eb major and Bb major, so there is a real
+     * choice here. Bb spends both of its flats on notes the scale sounds; Eb
+     * would print an Ab the scale never touches. This used to return Eb purely
+     * because Eb comes first in KEYS.
+     */
+    expect(buildScale("C", "diatonic", 4).keySignature).toBe("Bb");
     expect(buildScale("Db", "penta", 0).keySignature).toBe("Db");
     expect(buildScale("C", "whole", 0).keySignature).toBeNull();
   });
