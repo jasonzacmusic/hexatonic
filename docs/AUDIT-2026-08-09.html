@@ -59,6 +59,18 @@
     background:linear-gradient(transparent 78%, rgba(139,30,36,.20) 78%);
   }
 
+  /* ── resolution strip ──────────────────────────────────────── */
+  .resolved{
+    display:grid; grid-template-columns:auto 1fr; gap:15px; align-items:start;
+    margin:0 0 34px; padding:18px 20px; background:#EAF0E4;
+    border-top:2px solid var(--green); border-bottom:1px solid var(--rule);
+    font-size:15px; color:var(--ink2); line-height:1.55;
+  }
+  .resolved .tick{
+    font-size:19px; color:var(--green); font-weight:700; line-height:1.3;
+  }
+  .resolved b{color:var(--ink); display:block; margin-bottom:3px; font-weight:650}
+
   /* ── tally ─────────────────────────────────────────────────── */
   .tally{
     display:grid; grid-template-columns:repeat(auto-fit,minmax(128px,1fr));
@@ -120,6 +132,12 @@
   .ex-row span:last-child{padding:11px 14px; font-family:var(--mono); font-size:14px}
   .wrong{color:var(--red); font-weight:600}
   .right{color:var(--green); font-weight:600}
+
+  .fixnote{
+    margin-top:13px !important; padding:9px 12px; background:#EAF0E4;
+    font-size:13.5px; color:var(--ink2) !important;
+  }
+  .fixnote b{color:var(--green); font-weight:650}
 
   /* ── clean list ────────────────────────────────────────────── */
   .clean{list-style:none; padding:0; margin:0}
@@ -207,16 +225,27 @@
   </header>
 
   <div class="verdict">
-    <p>No, it is not bug-free — but nothing crashes and nothing is dangerous.
-    I found <strong>six real defects</strong>. Three of them are musical, and one of those
-    puts a <strong>wrong note inside a named chord</strong> on screen.</p>
+    <p>Not bug-free — but nothing crashed and nothing was dangerous.
+    <strong>Six real defects</strong>, three of them musical, one putting a
+    <strong>wrong note inside a named chord</strong> on screen.
+    All six are <strong>now fixed and live</strong>.</p>
+  </div>
+
+  <div class="resolved">
+    <span class="tick">✓</span>
+    <div>
+      <b>All six fixed in commit 452a298, deployed and verified live.</b>
+      Each one is locked by a test that states the musical rule rather than the
+      implementation, so it cannot quietly come back. The suite went from 249 to 259.
+      The findings below are kept as written on the day.
+    </div>
   </div>
 
   <div class="tally">
-    <div><b class="good">249</b><span>tests passing</span></div>
+    <div><b class="good">259</b><span>tests passing</span></div>
     <div><b class="good">0</b><span>crashes in 1,000+ generated scales</span></div>
-    <div><b class="bad">6</b><span>defects found</span></div>
-    <div><b class="bad">3</b><span>musical / notation</span></div>
+    <div><b class="good">6</b><span>defects found &amp; fixed</span></div>
+    <div><b class="good">3</b><span>musical / notation</span></div>
     <div><b>8</b><span>debt items already fixed</span></div>
     <div><b>11</b><span>features still missing</span></div>
   </div>
@@ -242,6 +271,7 @@
       accidental but only 2,000 for reusing a letter, so it prefers “D♭ E♭ E G♭ A♭ B♭”
       (letter E twice, letter F unused) over the correct “D♭ E♭ F♭ G♭ A♭ B♭”. For six notes
       one letter per degree is always available, so that weighting is backwards.</p>
+      <p class="fixnote"><b>Fixed.</b> A repeated letter now costs more than one accidental, and accidental direction carries real weight — that is what separates this from the blues, where the repeat is correct. The Atlas also spells for its chords, so D♭ reads D♭ D F F♯ A♭ A and gives D♭ major plus D major. Verified in the running app.</p>
       <p><b>Affected:</b> Dorian pair (D♭, A♭) · Phrygian pair (D♭, A♭, E♭) ·
       Major triads a semitone apart (D♭, A♭, E♭). All other keys are correct.</p>
       <p><b>One honest caveat:</b> the semitone pair cannot be spelled as both a clean scale
@@ -261,6 +291,7 @@
       <p class="where">Cause · <b>src/lib/theory/scales.ts</b> — the eight-note octatonic
       <i>searches</i> for the cheapest letter assignment, but the six-note symmetric families
       never got that treatment and still use a hard-coded <code>letters</code> array.</p>
+      <p class="fixnote"><b>Fixed.</b> Those families now fall back to the letter search, but <em>only</em> when the template actually produced a double — so the blues ♭5/5 pair, the major blues ♭3/3 pair and C augmented are untouched. B whole-tone now reads B C♯ D♯ F G A.</p>
       <p><b>Affected:</b> whole-tone in A, E, B, F♯ · augmented in E, B, F♯, D♭ ·
       Petrushka in D♭, A♭. The existing sweep passes them because it only asserts the
       accidental is drawable, not that it is sensible.</p>
@@ -282,6 +313,7 @@
       </div>
       <p class="where">Cause · <b>src/lib/theory/scales.ts:427</b> — findParentScale returns the
       first match instead of the one with no unused accidentals.</p>
+      <p class="fixnote"><b>Fixed.</b> It now prefers the parent that spends every accidental it prints, keeping list order only as the tiebreak between two equally clean parents. C Dorian/Aeolian now takes B♭ major.</p>
       <p>Nothing renders <em>wrongly</em> here — the notes are right and accidentals are drawn
       correctly against whichever signature is chosen. It just reads as noisier than it needs to.</p>
     </div>
@@ -296,6 +328,7 @@
       four. Every hit is a whole beat, so the shift is unreachable code.</p>
       <p class="where">Cause · <b>src/lib/audio/engine.ts:404</b> — dead branch.
       The drill scheduler's own swing (line 337) does work correctly.</p>
+      <p class="fixnote"><b>Fixed.</b> The swing comp is now beat 2 plus an anticipation on the swung “and of 4” — the standard two-feel — so the triplet shift fires and is audible. A test asserts the hit lands a triplet late, and that the straight feel does not move.</p>
       <p>The result is not musically wrong — a two-feel with chords on 2 and 4 is a legitimate
       comp. The real limitation is that no vamp has swung eighths at all.</p>
     </div>
@@ -310,6 +343,7 @@
       offline fallback until the next deploy.</p>
       <p class="where">Cause · <b>public/sw.js</b> — needs a <code>res.ok</code> guard before
       <code>cache.put</code>. One line.</p>
+      <p class="fixnote"><b>Fixed.</b> Both cache branches now store only a successful same-origin response.</p>
     </div>
   </div>
 
@@ -323,6 +357,7 @@
       edgeless for a low-vision user.</p>
       <p class="where">Cause · <b>src/app/globals.css</b> — <code>--line:#2A2523</code> on
       <code>--surface:#14120F</code>.</p>
+      <p class="fixnote"><b>Fixed.</b> Selects and segmented controls take a new <code>--line-control</code> token measuring 3.30:1. Decorative hairlines keep <code>--line</code>, so the page does not turn into a grid of boxes.</p>
     </div>
   </div>
 
@@ -409,21 +444,21 @@
   </div>
 
   <h2>What I would do next</h2>
-  <p class="h2note">Ranked by value per hour</p>
+  <p class="h2note">Three of the five are done — what is left, ranked</p>
   <ol class="next">
     <li><b>Wire the GitHub → Vercel deploy.</b>
-      <span>Everything else is theoretical until shipping is automatic. Your work sat five days
-      un-deployed and nothing told you.</span></li>
-    <li><b>Fix the flat-key chord spelling.</b>
-      <span>Defect 1. It is the only finding that shows a musician something false, and it is a
-      weighting change in one cost function plus a test that locks it.</span></li>
-    <li><b>Give the six-note symmetric families the octatonic's letter search.</b>
-      <span>Defect 2. The algorithm already exists and is proven — it just needs to be shared.</span></li>
+      <span>The one thing still outstanding, and the most valuable. Deploys here are
+      manual, so work sits un-shipped with nothing to tell you. Needs one command
+      against the Vercel project.</span></li>
     <li><b>Assignment sheets.</b>
-      <span>The cheapest genuinely new feature on the list: drill links already work, so this is
-      a page that collects six of them. Directly useful for Music Gym on the Saturday after next.</span></li>
-    <li><b>Prefer the parent with no unused accidentals.</b>
-      <span>Defect 3, and a handful of lines.</span></li>
+      <span>The cheapest genuinely new feature: drill links already work, so this is a
+      page that collects six of them. Directly useful for the next Music Gym.</span></li>
+    <li><b>Component tests.</b>
+      <span>All 259 tests are engine-level. Nothing would catch a broken button, and the
+      audit had to drive a real browser to check the Atlas.</span></li>
+    <li><b>ARIA on the interactive pages.</b>
+      <span>Ten files carry none. The Atlas key selector and entry cards are unnamed
+      controls — I hit that while verifying, which is the tell.</span></li>
   </ol>
 
   <footer>
@@ -441,22 +476,18 @@
 
 <script>
   var msg = [
-    "Hexatonic audit — 9 Aug 2026 (commit da7ec71)",
+    "Hexatonic audit — 9 Aug 2026, all six defects now FIXED and live (commit 452a298)",
     "",
-    "Not bug-free: 6 real defects, 3 musical. Nothing crashes.",
+    "1. Three flat keys spelled chords wrong on the Pair Atlas — Db minor printed an E natural where Fb belongs. Fixed: the Atlas now spells for its chords, so Db gives Db major + D major.",
+    "2. Double accidentals in whole-tone / augmented / Petrushka in sharp keys. Fixed: B whole-tone now reads B C# D# F G A.",
+    "3. Key signature picked by list order — 29 of 72 rotations showed an unused accidental. Fixed: it now prefers the parent that spends every accidental.",
+    "4. The swing vamp never swung (unreachable code). Fixed and locked by a test.",
+    "5. Service worker cached failed responses. Fixed.",
+    "6. Control borders at 1.24:1 vs the 3:1 required. Fixed at 3.30:1 for selects and segmented controls.",
     "",
-    "1. Three flat keys spell chords wrong on the Pair Atlas — D flat minor shows an E natural where F flat belongs. 30 chord displays affected.",
-    "2. Double accidentals in whole-tone / augmented / Petrushka in sharp keys.",
-    "3. Key signature picked by list order — 29 of 72 rotations show an unused accidental.",
-    "4. The swing vamp never swings (dead code).",
-    "5. Service worker caches failed responses.",
-    "6. Control borders at 1.24:1 vs the 3:1 required.",
+    "Tests went from 249 to 259 — each fix is locked by a test stating the musical rule.",
     "",
-    "Held up: 249 tests pass, zero crashes across 1,000+ generated scales, contrast passes AA, Forte table verified by hand.",
-    "",
-    "Also: 8 roadmap debt items are already fixed, and 11 features are still missing.",
-    "",
-    "Top three next: wire the auto-deploy, fix the flat-key spelling, share the octatonic letter-search with the 6-note symmetric scales."
+    "Still open: wire the GitHub auto-deploy (production had drifted 5 days), assignment sheets, component tests, ARIA. And 11 features still missing."
   ].join("\n");
   document.getElementById("wa").href = "https://wa.me/?text=" + encodeURIComponent(msg);
 </script>
