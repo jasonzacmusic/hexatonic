@@ -8,8 +8,10 @@ Read this first, every session.
   file in the container. Teaching material (class plans, guides) is never
   published on the site; it lives in private Artifacts only.
 - Every reply that changes code says plainly whether it is **live** yet. The
-  site deploys only when a change reaches `main` (Vercel Git integration). A
-  pushed branch or an open PR is **not** live.
+  site does NOT auto-deploy from GitHub (checked 25 Sep 2026: a push to `main`
+  started no build). Ship = merge to `main`, push, then `vercel deploy --prod`
+  from the repo, then check hexatonic.nathanielschool.com. A pushed branch or
+  an open PR is **not** live.
 
 ## Design standard
 - The brand lives in `docs/DESIGN-BRIEF-CLAUDE-DESIGN.md`. Near-black #0A0908,
