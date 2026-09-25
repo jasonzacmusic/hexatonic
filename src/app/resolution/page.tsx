@@ -3,9 +3,9 @@ import ResolutionClient from "./ResolutionClient";
 
 export const metadata: Metadata = {
   alternates: { canonical: "https://hexatonic.nathanielschool.com/resolution" },
-  title: "Resolution calculator",
+  title: "Which bar does it land on?",
   description:
-    "How many bars until a scale pattern lands back on the downbeat? Pick a scale size, subdivision, grouping and meter and find out. Works for any scale, not just six-note ones.",
+    "Play a scale in accented groups and see how many bars pass before the accent and the first note land together on beat 1. Any scale size, grouping and meter, plus a tihai builder.",
 };
 
 export default function Page() { return <ResolutionClient />; }

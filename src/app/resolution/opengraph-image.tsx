@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "Hexatonic — Resolution calculator";
+export const alt = "Hexatonic — Which bar does it land on?";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -18,15 +18,15 @@ export default async function Image() {
                     color: "#F4EFE4", padding: 76, fontFamily: "sans-serif", position: "relative" }}>
         <div style={{ display: "flex", flexDirection: "column", width: 700 }}>
           <div style={{ display: "flex", fontSize: 20, letterSpacing: 7, color: "#C9A227" }}>
-            HEXATONIC · RESOLUTION CALCULATOR
+            HEXATONIC · RHYTHM
           </div>
           <div style={{ display: "flex", flexDirection: "column", marginTop: 30, fontSize: 70,
                         fontWeight: 900, lineHeight: 0.98, letterSpacing: -2 }}>
-            <span>How many bars</span><span>until it lands?</span>
+            <span>Which bar does</span><span>it land on?</span>
           </div>
           <div style={{ display: "flex", marginTop: 26, fontSize: 25, color: "#B9B0A6",
                         lineHeight: 1.35, width: 620 }}>
-            Least common multiple of the bar, the pattern and the accent. Works on any scale.
+            Pick a scale size, a grouping and a meter, and see the bar where the accent comes home. Works on any scale.
           </div>
           <div style={{ display: "flex", marginTop: "auto", fontSize: 18, letterSpacing: 4,
                         color: "#A79E94" }}>
@@ -38,7 +38,7 @@ export default async function Image() {
           const r = on || rm ? 13 : 4;
           return <div key={d.i} style={{ position: "absolute", left: d.x - r, top: d.y - r,
             width: r * 2, height: r * 2, borderRadius: r, display: "flex",
-            background: rm ? "transparent" : on ? "#C9A227" : "#3A3331",
+            background: rm ? "transparent" : on ? "#F4EFE4" : "#3A3331",
             border: rm ? "5px solid #8B1E24" : "none" }} />;
         })}
       </div>
