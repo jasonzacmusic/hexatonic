@@ -131,7 +131,7 @@ export default function MidiPanel({ expected, grouping, stepDur, playing, positi
         </div>
         <div className="ml-auto flex flex-wrap items-center gap-3">
           {lastNote !== null && (
-            <span className="rounded-lg bg-gold px-3 py-1.5 font-mono text-[12px] font-bold text-[#17130a]">
+            <span className="rounded-lg bg-gold px-3 py-1.5 font-mono text-[13px] font-bold text-[#17130a]">
               ♪ {midiNoteName(lastNote)}
             </span>
           )}
@@ -207,7 +207,7 @@ function Stat({ v, l, cls, big }: { v: string; l: string; cls?: string; big?: bo
   return (
     <div className="flex flex-col">
       <span className={`num leading-none ${big ? "text-5xl" : "text-2xl"} ${cls ?? ""}`}>{v}</span>
-      <span className="mt-1.5 font-mono text-[12px] uppercase tracking-[0.08em] text-muted">{l}</span>
+      <span className="mt-1.5 font-mono text-[13px] uppercase tracking-[0.08em] text-muted">{l}</span>
     </div>
   );
 }

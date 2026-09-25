@@ -64,7 +64,7 @@ export default function SupportPanel({ variant = "footer" }: { variant?: "footer
                 className="hx-sheen group inline-flex items-center gap-3 rounded-full px-5 py-2.5 text-[#17130a]">
           <Hex size={16} />
           <span className="font-serif text-[19px] font-semibold italic">Keep Hexatonic free</span>
-          <span className="font-mono text-[12px] opacity-70">→</span>
+          <span className="font-mono text-[13px] opacity-70">→</span>
         </button>
       ) : (
         <button type="button" onClick={() => ref.current?.showModal()} className="btn btn-ghost">
@@ -131,7 +131,7 @@ export default function SupportPanel({ variant = "footer" }: { variant?: "footer
               <dl className="mt-3 grid grid-cols-[88px_1fr] gap-x-3 gap-y-1.5 text-[14px]">
                 {SUPPORT.bank.map(([k, v]) => (
                   <div key={k} className="contents">
-                    <dt className="font-mono text-[12px] uppercase tracking-[0.06em] text-muted">{k}</dt>
+                    <dt className="font-mono text-[13px] uppercase tracking-[0.06em] text-muted">{k}</dt>
                     <dd className="font-mono text-cream select-all">{v}</dd>
                   </div>
                 ))}

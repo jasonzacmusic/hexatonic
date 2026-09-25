@@ -150,7 +150,7 @@ export default function TihaiLab() {
                   if (cell === undefined) return <span key={col} className="h-6 w-6 shrink-0" />;
                   if (i === grid.length - 1) {
                     return <span key={col} title="the last note, on beat 1 (sam)"
-                                 className={`flex h-6 w-6 shrink-0 items-center justify-center rounded font-mono text-[12px] font-bold ${
+                                 className={`flex h-6 w-6 shrink-0 items-center justify-center rounded font-mono text-[13px] font-bold ${
                       lit ? "bg-gold text-[#17130a]" : "border-2 border-cream text-cream"}`}>1</span>;
                   }
                   return (

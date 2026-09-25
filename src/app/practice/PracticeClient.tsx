@@ -292,7 +292,7 @@ function Transport({
                   onClick={() => set("bpm", Math.max(40, state.bpm - 4))}>−</button>
           <label className="flex flex-col items-center px-1">
             <span className="num text-xl leading-none text-cream">{state.bpm}</span>
-            <span className="font-mono text-[12px] uppercase text-muted">bpm</span>
+            <span className="font-mono text-[13px] uppercase text-muted">bpm</span>
           </label>
           <button className="btn btn-ghost px-3 py-2.5" aria-label="Faster"
                   onClick={() => set("bpm", Math.min(200, state.bpm + 4))}>+</button>
@@ -532,7 +532,7 @@ function RhythmControls({ d }: { d: Drill }) {
                       className={`min-w-[52px] rounded-xl border px-2.5 py-1.5 text-center transition-colors ${
                         on ? "border-cream/70 bg-cream/[0.08]" : "border-line bg-surface2 hover:border-[#3A3331]"}`}>
                 <span className="num block text-lg leading-tight text-cream">{n}</span>
-                <span className="block font-mono text-[12px] leading-tight text-muted">{trad ?? " "}</span>
+                <span className="block font-mono text-[13px] leading-tight text-muted">{trad ?? " "}</span>
               </button>
             );
           })}
