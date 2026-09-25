@@ -1,7 +1,7 @@
 /**
- * Barry Harris — the sixth-diminished system.
+ * The sixth–diminished method, as taught by Barry Harris.
  *
- * ⚠️ READ THIS BEFORE CHANGING ANYTHING HERE. His method is mangled everywhere
+ * ⚠️ READ THIS BEFORE CHANGING ANYTHING HERE. The method is mangled everywhere
  * online and the errors are specific. All of the following is verified in
  * docs/08-JAZZ-GOSPEL.md §1.6 against Kingstone and Howard Rees's workbooks.
  *
@@ -11,23 +11,20 @@
  *    scale and is NOT a sixth-diminished scale — its alternate notes give Bm7♭5,
  *    which is half-diminished and cannot interleave.
  *  · Never call these "octatonic". They are eight-note but provably not the
- *    symmetric diminished scale, which has only 3 transpositions.
- *    ⚠️ Careful with the counting though — the usual line is "these have 12", and
- *    that is true for three of them. The 7♭5 member maps to itself at the TRITONE
- *    and therefore has only 6. That is not a defect: it means C7♭5 and F♯7♭5 share
- *    one scale, so tritone substitution is built into the collection.
- *  · There is no "major 7th diminished scale". That phrase names a CHORD.
- *  · "Sixth" refers to the sixth CHORD. There is NO six-note collection anywhere
- *    in Barry's system — which is exactly why it keeps getting mis-filed under
- *    hexatonics. This module exists partly to kill that confusion.
+ *    symmetric diminished scale, which has only 3 transpositions. Three of them
+ *    have 12; the 7♭5 member maps to itself at the TRITONE and has only 6.
+ *  · "Sixth" refers to the sixth CHORD. There is no six-note collection in the
+ *    system. What this app adds is the bridge: a six-note scale that fits
+ *    inside one of these eight-note scales can be harmonised the same way.
  *
- * The point of the system is not the scale. It is the MOVEMENT: harmonise every
- * degree in four parts and you get two chords alternating through their
- * inversions, with every voice moving by one scale step in the same direction.
- * Barry taught it as "6th – 6th – 6th" instead of "II – V – I".
+ * The point of the system is the MOVEMENT: harmonise every degree in four parts
+ * and you get two chords alternating, every voice moving by one scale step.
  */
 
-import { Note, note, pc, midi, noteName, spell, stepLetter, letterIndex, parseNoteName } from "./note";
+import {
+  Letter, Note, note, pc, midi, noteName, notePretty, spell, stepLetter, letterIndex,
+  parseNoteName, LETTERS,
+} from "./note";
 
 export type SixthFamily = "major6" | "minor6" | "dominant7" | "dominant7b5";
 
@@ -46,57 +43,92 @@ export interface SixthDimDef {
 
 export const SIXTH_DIMINISHED: SixthDimDef[] = [
   {
-    id: "major6", name: "Major Sixth Diminished", chordName: "6",
+    id: "major6", name: "Major sixth diminished", chordName: "6",
     chord: [0, 4, 7, 9],
     scale: [0, 2, 4, 5, 7, 8, 9, 11],
     letters: [0, 1, 2, 3, 4, 5, 5, 6],
-    teaching:
-      "A major 6th chord interlocked with the diminished 7th on its major-7th degree. Alternate notes give C6 and B°7 forever, so harmonising the scale in four parts produces those two chords through all their inversions.",
+    teaching: "A major 6th chord interlocked with the diminished 7th a semitone below its root.",
   },
   {
-    id: "minor6", name: "Minor Sixth Diminished", chordName: "m6",
+    id: "minor6", name: "Minor sixth diminished", chordName: "m6",
     chord: [0, 3, 7, 9],
     scale: [0, 2, 3, 5, 7, 8, 9, 11],
     letters: [0, 1, 2, 3, 4, 5, 5, 6],
-    teaching:
-      "The same idea on a minor 6th chord. Barry folded m7 chords into this: a Cm7 is thought of as an E♭6 with the 6th in the bass, and an m7♭5 as a minor 6th the same way — an insight he credited to Monk.",
+    teaching: "The same idea on a minor 6th chord.",
   },
   {
-    id: "dominant7", name: "Seventh Diminished", chordName: "7",
+    id: "dominant7", name: "Seventh diminished", chordName: "7",
     chord: [0, 4, 7, 10],
     scale: [0, 2, 4, 5, 7, 8, 10, 11],
     letters: [0, 1, 2, 3, 4, 5, 6, 6],
-    teaching:
-      "C7 interlocked with B°7. Note the A♭ — this is NOT the bebop dominant scale, which has a natural A and cannot alternate, because its other four notes make a half-diminished chord rather than a diminished one.",
+    teaching: "A dominant 7th interlocked with its diminished. Note the ♭6: this is not the bebop dominant scale.",
   },
   {
-    id: "dominant7b5", name: "Seventh Flat Five Diminished", chordName: "7♭5",
+    id: "dominant7b5", name: "Seventh flat five diminished", chordName: "7♭5",
     chord: [0, 4, 6, 10],
     scale: [0, 2, 4, 5, 6, 8, 10, 11],
     letters: [0, 1, 2, 3, 4, 5, 6, 6],
-    teaching:
-      "The altered-dominant member. Unlike the other three it maps onto itself at the tritone, so it has six transpositions rather than twelve — C7♭5 and F♯7♭5 are the same scale. Tritone substitution is not a trick applied to this collection; it is a property of it.",
+    teaching: "The altered-dominant member. It maps onto itself at the tritone, so C7♭5 and F♯7♭5 share one scale.",
   },
 ];
 
 export const sixthDimById = (id: SixthFamily) =>
   SIXTH_DIMINISHED.find((s) => s.id === id) ?? SIXTH_DIMINISHED[0];
 
+const mod12 = (n: number) => ((n % 12) + 12) % 12;
+const accidentals = (ns: Note[]) => ns.reduce((a, n) => a + Math.abs(n.alt), 0);
+
 /** Build the eight-note scale, correctly spelled.
- *  Eight notes into seven letters means exactly one letter repeats; which one is
- *  a convention, so it is declared per family rather than guessed. */
+ *  Eight notes into seven letters means exactly one letter repeats. The
+ *  declared template is the convention (C6: A♭ and A share a letter). When a
+ *  key would push that template into a double flat — D♭6 would print B𝄫 — the
+ *  repeated letter moves instead: D♭ E♭ F G♭ A♭ A B♭ C. */
 export function buildSixthDim(tonic: string, family: SixthFamily, octave = 4): Note[] {
   const def = sixthDimById(family);
   const t = parseNoteName(tonic, octave);
-  const out: Note[] = [];
-  for (let i = 0; i < def.scale.length; i++) {
-    const L = stepLetter(t.letter, def.letters[i]);
-    const oct = octave + Math.floor((letterIndex(t.letter) + def.letters[i]) / 7);
-    const s = spell(L, (pc(t) + def.scale[i]) % 12, oct);
-    if (!s) throw new Error(`${tonic} ${family} needs a triple accidental`);
-    out.push(s);
-  }
-  return out;
+  const place = (letters: number[]): Note[] | null => {
+    const out: Note[] = [];
+    for (let i = 0; i < def.scale.length; i++) {
+      const L = stepLetter(t.letter, letters[i]);
+      const oct = octave + Math.floor((letterIndex(t.letter) + letters[i]) / 7);
+      const s = spell(L, (pc(t) + def.scale[i]) % 12, oct);
+      if (!s) return null;
+      out.push(s);
+    }
+    return out;
+  };
+  const template = place(def.letters);
+  if (template && !template.some((n) => Math.abs(n.alt) === 2)) return template;
+
+  /* Search every letter layout (each step keeps, or moves one or two letters).
+     Order of importance: no double accidentals; don't mix sharps and flats;
+     keep the parent chord's own letters (so the chord reads as a chord);
+     fewest accidentals; fewest repeated letters; closest to the template. */
+  const chordIdx = def.chord.map((s) => def.scale.indexOf(s));
+  let best: Note[] | null = null;
+  let bestCost = Infinity;
+  const walk = (letters: number[]) => {
+    if (letters.length === 8) {
+      if (letters[7] > 6) return;
+      const cand = place(letters);
+      if (!cand) return;
+      const doubles = cand.filter((n) => Math.abs(n.alt) === 2).length;
+      const mixed = cand.some((n) => n.alt > 0) && cand.some((n) => n.alt < 0) ? 1 : 0;
+      const chordMoved = chordIdx.filter((i) => letters[i] !== def.letters[i]).length;
+      const repeats = 8 - new Set(letters).size;
+      const moved = letters.filter((l, i) => l !== def.letters[i]).length;
+      const cost = doubles * 1e6 + mixed * 2500 + chordMoved * 1500 +
+        accidentals(cand) * 1000 + Math.max(0, repeats - 1) * 300 + moved;
+      if (cost < bestCost) { bestCost = cost; best = cand; }
+      return;
+    }
+    const prev = letters[letters.length - 1];
+    for (let step = 0; step <= 2; step++) walk([...letters, prev + step]);
+  };
+  walk([0]);
+  const result = best as Note[] | null;
+  if (!result) throw new Error(`${tonic} ${family} cannot be spelled`);
+  return result;
 }
 
 export interface HarmonisedStep {
@@ -131,11 +163,8 @@ export function harmonise(
       notes.push(note(b.letter, b.alt, b.octave + Math.floor(idx / 8)));
     }
     const isDim = !chordPcs.has(pc(notes[0]));
-    /* Keep one stable diminished identity and name its bass honestly. The old
-       label printed B°7 on a D-bass voicing, hiding the inversion that this
-       exercise exists to teach. A symmetrical diminished set has four valid
-       root readings, but B°7/D makes the movement visible without pretending
-       the pitch-class set changed. */
+    /* One stable diminished identity, with its bass named honestly, so the
+       inversion the exercise teaches stays visible. */
     const dimRoot = scale[7];
     const bassName = noteName(notes[0]);
     out.push({
@@ -152,10 +181,8 @@ export function harmonise(
 }
 
 /**
- * "Borrowing". Barry described a major 7th chord as three notes of a sixth chord
- * plus one note of its related diminished — swap the 6th for the 7th and you have
- * a maj7. Run the borrowed shape up the scale and each note keeps alternating.
- * "Borrowed notes" is his own term; Rees's workbook prints it in scare quotes.
+ * Borrowing: lift one voice of every chord to the next scale note. The
+ * alternation keeps working because each note simply moves to its neighbour.
  */
 export function borrow(
   tonic: string, family: SixthFamily, voiceIndex: number, octave = 4
@@ -181,11 +208,9 @@ export function borrow(
 }
 
 /**
- * "The family" — one diminished 7th is the shared related diminished of FOUR
- * dominant 7ths. Lower any one note of the diminished by a semitone and that note
- * becomes the root of a dominant. They sit a minor third apart and are mutually
- * substitutable. Barry's own term; Rees's contents list "The Four 'Related
- * Dominant 7th Chords'".
+ * The related dominants: one diminished 7th is shared by four dominant 7ths.
+ * Lower any one of its notes by a semitone and that note becomes a dominant
+ * root. They sit a minor third apart.
  */
 export function theFamily(tonic: string, family: SixthFamily = "major6"): {
   diminished: string[];
@@ -194,15 +219,10 @@ export function theFamily(tonic: string, family: SixthFamily = "major6"): {
   const scale = buildSixthDim(tonic, family);
   const dimNotes = [scale[1], scale[3], scale[5], scale[7]];
 
-  /* Lower each diminished note a semitone; that note becomes a dominant root.
-     Spelling matters: F lowered is E, not Fb. Try every letter and keep the one
-     needing the fewest accidentals, tie-breaking toward flats — which is how a
-     jazz musician would write it. */
-  const spellBest = (targetPc: number, nearLetter: string): Note => {
+  const spellBest = (targetPc: number, nearLetter: Letter): Note => {
     const cands: Note[] = [];
     for (let off = -1; off <= 1; off++) {
-      const L = stepLetter(nearLetter as any, off);
-      const c = spell(L, targetPc, 4);
+      const c = spell(stepLetter(nearLetter, off), targetPc, 4);
       if (c) cands.push(c);
     }
     cands.sort((a, b) => Math.abs(a.alt) - Math.abs(b.alt) || a.alt - b.alt);
@@ -210,8 +230,7 @@ export function theFamily(tonic: string, family: SixthFamily = "major6"): {
   };
 
   const dominants = dimNotes.map((n) => {
-    const rootPc = (pc(n) + 11) % 12;
-    const rootNote = spellBest(rootPc, n.letter);
+    const rootNote = spellBest((pc(n) + 11) % 12, n.letter);
     const rest = dimNotes.filter((x) => pc(x) !== pc(n));
     return { root: noteName(rootNote), notes: [noteName(rootNote), ...rest.map(noteName)] };
   });
@@ -225,19 +244,243 @@ export function notOctatonic(family: SixthFamily): {
 } {
   const def = sixthDimById(family);
   const s = def.scale;
-  const steps = s.map((v, i) => ((s[(i + 1) % 8] ?? s[0] + 12) - v + 12) % 12 || 12)
-    .map((v, i) => (i === 7 ? 12 - s[7] : v));
+  const steps = s.map((v, i) => (i === 7 ? 12 - v : s[i + 1] - v));
   const distinct = (pcs: number[]) => {
     const seen = new Set<string>();
     for (let t = 0; t < 12; t++)
       seen.add([...pcs.map((p) => (p + t) % 12)].sort((a, b) => a - b).join(","));
     return seen.size;
   };
-  const symmetric = [0, 2, 3, 5, 6, 8, 9, 11];
   return {
     steps,
     transpositions: distinct(s),
     symmetricSteps: [2, 1, 2, 1, 2, 1, 2, 1],
-    symmetricTranspositions: distinct(symmetric),
+    symmetricTranspositions: distinct([0, 2, 3, 5, 6, 8, 9, 11]),
   };
 }
+
+/* ══ Harmonise a SIX-NOTE scale the sixth–diminished way ═══════════════════
+
+   The method: find the eight-note sixth–diminished scale that holds your six
+   notes. Under every melody note that belongs to the sixth chord, play the
+   sixth chord; under every other note, play the diminished seventh. Voice it
+   close (all four notes inside an octave, melody on top) or drop 2 (the
+   second note from the top dropped an octave).                              */
+
+export interface SixthDimFit {
+  family: SixthFamily;
+  familyName: string;
+  /** root of the parent 6th/7th chord, spelled to match your scale */
+  root: Note;
+  /** the eight notes, spelled with your scale's own letters where it has them */
+  scale: Note[];
+  /** the two notes the eight-note scale adds to yours */
+  added: Note[];
+  /** the parent chord's four notes, root first */
+  chord: Note[];
+  /** the diminished seventh's four notes, stacked in thirds from its root */
+  dim: Note[];
+  /** e.g. "G6", "Ebm6", "C7" (ASCII accidentals, like every symbol here) */
+  chordSymbol: string;
+  /** e.g. "F#dim7" */
+  dimSymbol: string;
+  /** when the parent chord is rooted elsewhere, the same four notes read from
+   *  your tonic: Cm7 for E♭6. null when the tonic is the parent's root, or when
+   *  no standard seventh-chord reading from the tonic exists. */
+  tonicReading: string | null;
+  /** melody notes of your scale that the parent chord harmonises */
+  chordTones: Note[];
+  /** melody notes of your scale that the diminished harmonises */
+  dimTones: Note[];
+}
+
+const FAMILY_ORDER: SixthFamily[] = ["major6", "minor6", "dominant7", "dominant7b5"];
+
+/** Tetrad names read from a chosen root, for the "Cm7 = E♭6" line. */
+const TETRAD_READING: Record<string, string> = {
+  "0,4,7,11": "maj7", "0,4,7,10": "7", "0,3,7,10": "m7", "0,3,6,10": "m7b5",
+  "0,4,7,9": "6", "0,3,7,9": "m6", "0,3,6,9": "dim7",
+};
+
+/** Spell a pitch class that your scale does not contain: fewest accidentals,
+ *  avoid a letter your scale already uses, and lean flat on a tie (the ♭6
+ *  and the diminished tones are written flat in this system). */
+function spellAdded(p: number, usedLetters: Set<Letter>, octave: number): Note {
+  let best: Note | null = null;
+  let bestCost = Infinity;
+  for (const L of LETTERS as unknown as Letter[]) {
+    const s = spell(L, p, octave);
+    if (!s || Math.abs(s.alt) > 1) continue;
+    const cost = Math.abs(s.alt) * 10 + (usedLetters.has(L) ? 5 : 0) + (s.alt > 0 ? 1 : 0);
+    if (cost < bestCost) { bestCost = cost; best = s; }
+  }
+  return best!;
+}
+
+/** Four diminished notes, reordered so the letters stack in thirds from a root. */
+function dimInThirds(ns: Note[]): Note[] {
+  for (const r of ns) {
+    const want = [0, 2, 4, 6].map((k) => stepLetter(r.letter, k));
+    const ordered = want.map((L) => ns.find((n) => n.letter === L));
+    if (ordered.every(Boolean)) return ordered as Note[];
+  }
+  return [...ns].sort((a, b) => pc(a) - pc(b));
+}
+
+/**
+ * Every sixth–diminished scale that holds all six notes, best first: the ones
+ * rooted on your tonic, then the others, in family order. Empty when none
+ * fits (the augmented scale, the whole-tone scale).
+ */
+export function fitSixthDim(hex: Note[]): SixthDimFit[] {
+  if (!hex.length) return [];
+  const byPc = new Map<number, Note>();
+  for (const n of hex) if (!byPc.has(pc(n))) byPc.set(pc(n), n);
+  const used = new Set(hex.map((n) => n.letter));
+  const tonic = hex[0];
+  const out: SixthDimFit[] = [];
+
+  for (const fam of FAMILY_ORDER) {
+    const def = sixthDimById(fam);
+    for (let r = 0; r < 12; r++) {
+      const pcs = def.scale.map((s) => (r + s) % 12);
+      if (![...byPc.keys()].every((p) => pcs.includes(p))) continue;
+      const spelled = pcs.map((p) => byPc.get(p) ?? spellAdded(p, used, 4));
+      const root = spelled[0];
+      const chord = def.chord.map((s) => spelled[def.scale.indexOf(s)]);
+      const chordSet = new Set(chord.map(pc));
+      const dim = dimInThirds(spelled.filter((n) => !chordSet.has(pc(n))));
+      let tonicReading: string | null = null;
+      if (pc(root) !== pc(tonic)) {
+        const iv = chord.map((n) => mod12(pc(n) - pc(tonic))).sort((a, b) => a - b).join(",");
+        const suffix = TETRAD_READING[iv];
+        if (suffix && chordSet.has(pc(tonic))) tonicReading = noteName(tonic) + suffix;
+      }
+      out.push({
+        family: fam,
+        familyName: def.name,
+        root,
+        scale: spelled,
+        added: spelled.filter((n) => !byPc.has(pc(n))),
+        chord,
+        dim,
+        chordSymbol: noteName(root) + (fam === "dominant7b5" ? "7b5" : def.chordName),
+        dimSymbol: `${noteName(dim[0])}dim7`,
+        tonicReading,
+        chordTones: hex.filter((n) => chordSet.has(pc(n))),
+        dimTones: hex.filter((n) => !chordSet.has(pc(n))),
+      });
+    }
+  }
+  const rank = (f: SixthDimFit) =>
+    (pc(f.root) === pc(tonic) ? 0 : f.tonicReading ? 50 : 100) + FAMILY_ORDER.indexOf(f.family) * 10;
+  return out.sort((a, b) => rank(a) - rank(b));
+}
+
+/* ── voicings ───────────────────────────────────────────────────────────── */
+
+/** Close position: the melody on top and the other three chord tones packed
+ *  directly below it, all inside one octave. Returned ascending. */
+export function closeVoicing(melody: Note, chordTones: Note[]): Note[] {
+  const top = midi(melody);
+  const below = chordTones
+    .filter((n) => pc(n) !== pc(melody))
+    .map((n) => {
+      let v = note(n.letter, n.alt, melody.octave);
+      while (midi(v) >= top) v = note(v.letter, v.alt, v.octave - 1);
+      while (midi(v) < top - 12) v = note(v.letter, v.alt, v.octave + 1);
+      return v;
+    });
+  return [...below, melody].sort((a, b) => midi(a) - midi(b));
+}
+
+/** Drop 2: take a close-position four-note chord and drop the SECOND NOTE
+ *  FROM THE TOP an octave. Returned ascending. */
+export function drop2(close: Note[]): Note[] {
+  if (close.length !== 4) throw new Error("drop 2 needs a four-note close-position chord");
+  const sorted = [...close].sort((a, b) => midi(a) - midi(b));
+  const second = sorted[2];
+  const dropped = note(second.letter, second.alt, second.octave - 1);
+  return [dropped, sorted[0], sorted[1], sorted[3]];
+}
+
+/* ── borrowing ─────────────────────────────────────────────────────────── */
+
+export type Borrowing = "none" | "maj7" | "add9";
+
+/** Which borrowings a family allows: the 6 → maj7 swap needs a sixth to swap. */
+export function borrowingsFor(family: SixthFamily): Borrowing[] {
+  return family === "major6" || family === "minor6" ? ["none", "maj7", "add9"] : ["none", "add9"];
+}
+
+/** The chord a borrowing produces, named for what it IS, not what it was. */
+const BORROWED_NAME: Record<SixthFamily, Partial<Record<Exclude<Borrowing, "none">, string>>> = {
+  major6: { maj7: "maj7", add9: "6/9 (no root)" },
+  minor6: { maj7: "m(maj7)", add9: "m6/9 (no root)" },
+  dominant7: { add9: "9 (no root)" },
+  dominant7b5: { add9: "9b5 (no root)" },
+};
+
+export interface MelodyChord {
+  /** the melody note, with its octave */
+  melody: Note;
+  /** true when the diminished harmonises it */
+  isDiminished: boolean;
+  /** close position, ascending, melody on top */
+  close: Note[];
+  /** drop 2, ascending, melody on top */
+  drop2: Note[];
+  /** the chord's name as it sounds, ASCII accidentals ("Gmaj7", "F#dim7") */
+  symbol: string;
+  /** what borrowing changed, e.g. "E→F#", or "" */
+  change: string;
+}
+
+/**
+ * Harmonise a six-note scale, one chord per melody note, up one octave:
+ * tonic to tonic, seven chords.
+ */
+export function harmoniseMelody(
+  hex: Note[], fit: SixthDimFit, borrowing: Borrowing = "none", octave = 4,
+): MelodyChord[] {
+  const t = hex[0];
+  const line: Note[] = hex.map((n) => note(n.letter, n.alt, n.octave - t.octave + octave));
+  line.push(note(t.letter, t.alt, octave + 1));
+  const chordSet = new Set(fit.chord.map(pc));
+  const def = sixthDimById(fit.family);
+  const rootPc = pc(fit.root);
+  const at = (semis: number) => fit.scale.find((n) => pc(n) === (rootPc + semis) % 12)!;
+
+  return line.map((m) => {
+    const isDim = !chordSet.has(pc(m));
+    let tones = isDim ? fit.dim : fit.chord;
+    let symbol = isDim ? fit.dimSymbol : fit.chordSymbol;
+    let change = "";
+    if (!isDim && borrowing !== "none" && borrowingsFor(fit.family).includes(borrowing)) {
+      /* 6 → maj7 swaps the sixth for the major seventh; add 9 swaps the root
+         for the ninth. The melody note is never the one that moves. */
+      const [from, to] = borrowing === "maj7" ? [9, 11] : [0, 2];
+      const fromNote = at(from);
+      if (fromNote && def.chord.includes(from) && pc(fromNote) !== pc(m)) {
+        const toNote = at(to);
+        tones = tones.map((n) => (pc(n) === pc(fromNote) ? toNote : n));
+        symbol = noteName(fit.root) + BORROWED_NAME[fit.family][borrowing];
+        change = `${noteName(fromNote)}→${noteName(toNote)}`;
+      }
+    }
+    const close = closeVoicing(m, tones);
+    return { melody: m, isDiminished: isDim, close, drop2: drop2(close), symbol, change };
+  });
+}
+
+/** Display form of any symbol this module produces: ♭ ♯ ° glyphs. */
+export function prettySymbol(symbol: string): string {
+  const m = symbol.match(/^([A-G])(bb|##|b|#)?(.*)$/);
+  if (!m) return symbol;
+  const acc = ({ b: "♭", "#": "♯", bb: "♭♭", "##": "♯♯" } as Record<string, string>)[m[2] ?? ""] ?? "";
+  const rest = m[3].replace("dim7", "°7").replace(/b(?=\d)/g, "♭").replace(/#(?=\d)/g, "♯")
+    .replace(/\/([A-G])b/, "/$1♭").replace(/\/([A-G])#/, "/$1♯");
+  return `${m[1]}${acc}${rest}`;
+}
+
+export const prettyNotes = (ns: Note[]) => ns.map(notePretty).join(" ");

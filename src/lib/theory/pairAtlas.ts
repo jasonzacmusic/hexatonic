@@ -1,238 +1,140 @@
 /**
- * Pair Atlas — curated exact-cover collections for the lesson/practice engine.
+ * Two-triad pairs — curated exact-cover collections.
  *
  * "Exact cover" is deliberately stricter than "two chords that fit a scale":
  * the two pitch-class sets may not overlap, and together they must account for
- * every note. That is the property behind Jason's inversion-switching exercise.
+ * every note. That is what lets the two shapes alternate through every
+ * inversion with each voice moving one scale step.
  */
 
 import {
-  Alt, Letter, letterIndex, midi, note, Note, notePretty, parseNoteName, pc,
+  Alt, Letter, letterIndex, midi, note, Note, notePretty, noteName, parseNoteName, pc,
   spell, stepLetter, MAJOR_KEYS,
 } from "./note";
-import { buildScale } from "./scales";
+import { buildDiatonic, buildScale, FAMILIES, MAJOR } from "./scales";
 import {
   exactCoverMovement,
   InterlockedMovement,
   MovementKind,
 } from "./movement";
 
-export type AtlasStatus = "new-lesson" | "taught-2025";
-export type AtlasEvidence = "documented" | "specialist" | "theory";
-
 export interface PairAtlasEntry {
   id: string;
   title: string;
+  /** the two chords, in roman numerals or words */
   subtitle: string;
+  /** scale degrees; tests check it against `semis` */
   formula: string;
   voices: 3 | 4;
-  status: AtlasStatus;
-  evidence: AtlasEvidence;
   defaultKey: string;
-  lessonAngle: string;
-  sourceLabel: string;
-  sourceUrl: string;
+  /** one short, true line about the sound */
+  description: string;
+  /** semitones above the tonic — always given, so nothing depends on a menu */
+  semis: number[];
+  /** use this scale family's own spelling when the app still has it */
   familyId?: string;
-  mode?: number;
-  semis?: number[];
 }
-
-const JASON_LESSON = "https://www.youtube.com/watch?v=qakASBgKQ9U";
-const CAMPBELL = "https://www.alfred.com/triad-pairs-for-jazz/p/00-0482B/";
-const OPEN_STUDIO = "https://www.openstudiojazz.com/wp-content/uploads/2024/03/Triad-Pair-Training-Workbook.pdf";
-const SYMMETRIC = "https://pressbooks.uiowa.edu/twentieth-and-twenty-first-century-music/chapter/symmetrical-scale/";
-const NON_DIATONIC = "https://intmus.github.io/inttheory21-22/23-intro-to-non-diatonic-materials/a1-ex-nondiatonicscales.html";
 
 export const PAIR_ATLAS: PairAtlasEntry[] = [
   {
-    id: "major-no3",
-    title: "Major without 3",
-    subtitle: "IV + V · the missing-third pair",
-    formula: "1 2 4 5 6 7",
-    voices: 3,
-    status: "new-lesson",
-    evidence: "documented",
-    defaultKey: "C",
-    semis: [0, 2, 5, 7, 9, 11],
-    lessonAngle:
-      "F + G covers C major except E. The tonic quality stays suspended while two familiar major shapes climb through their inversions.",
-    sourceLabel: "Gary Campbell · triad-pair practice",
-    sourceUrl: CAMPBELL,
+    id: "major-no7", title: "Major, no 7th", subtitle: "I + ii",
+    formula: "1 2 3 4 5 6", voices: 3, defaultKey: "G", semis: [0, 2, 4, 5, 7, 9],
+    description: "The tonic chord and the chord a step above it. The friendliest place to start.",
   },
   {
-    id: "major-pair-semitone",
-    title: "Major triads a semitone apart",
-    subtitle: "I + ♭II · chromatic hexatonic",
-    formula: "1 ♭2 3 4 5 ♭6",
-    voices: 3,
-    status: "new-lesson",
-    evidence: "specialist",
-    defaultKey: "C",
-    semis: [0, 1, 4, 5, 7, 8],
-    lessonAngle:
-      "C + D♭ is an exact six-note cover with maximal visual simplicity: keep one major-triad fingering and move every note by a semitone.",
-    sourceLabel: "Gary Campbell · triad-pair practice",
-    sourceUrl: CAMPBELL,
+    id: "minor-no6", title: "Minor, no ♭6", subtitle: "i + ♭VII",
+    formula: "1 2 ♭3 4 5 ♭7", voices: 3, defaultKey: "G", semis: [0, 2, 3, 5, 7, 10],
+    description: "A minor triad and the major triad a whole step below it.",
   },
   {
-    id: "whole-tone-augmented-pair",
-    title: "Whole-tone pair",
-    subtitle: "two augmented triads a whole step apart",
-    formula: "1 2 3 ♯4 ♯5 ♭7",
-    voices: 3,
-    status: "new-lesson",
-    evidence: "documented",
-    defaultKey: "C",
-    familyId: "whole",
-    lessonAngle:
-      "C+ + D+ exhaust the whole-tone scale. The fingering repeats and the harmony loses any single gravitational root.",
-    sourceLabel: "University of Iowa · symmetrical scales",
-    sourceUrl: SYMMETRIC,
+    id: "major-no3", title: "Major, no 3rd", subtitle: "IV + V",
+    formula: "1 2 4 5 6 7", voices: 3, defaultKey: "G", semis: [0, 2, 5, 7, 9, 11],
+    description: "No 3rd, so the tonic never says major or minor. Two major shapes do all the work.",
   },
   {
-    id: "augmented-scale-pair",
-    title: "Augmented-scale pair",
-    subtitle: "two augmented triads a minor third apart",
-    formula: "1 ♭3 3 5 ♭6 7",
-    voices: 3,
-    status: "new-lesson",
-    evidence: "documented",
-    defaultKey: "C",
-    familyId: "aug",
-    lessonAngle:
-      "C+ + E♭+ interlock into the jazz augmented scale. It sounds tonal enough to phrase, but symmetric enough to surprise.",
-    sourceLabel: "University of Iowa · symmetrical scales",
-    sourceUrl: SYMMETRIC,
+    id: "dorian-pair", title: "Minor, no 7th", subtitle: "i + ii",
+    formula: "1 2 ♭3 4 5 6", voices: 3, defaultKey: "G", semis: [0, 2, 3, 5, 7, 9],
+    description: "Two minor triads a whole step apart. The natural 6 gives it the Dorian colour.",
   },
   {
-    id: "petrushka-pair",
-    title: "Petrushka pair",
-    subtitle: "two major triads a tritone apart",
-    formula: "1 ♭2 3 ♭5 5 ♭7",
-    voices: 3,
-    status: "new-lesson",
-    evidence: "specialist",
-    defaultKey: "C",
-    familyId: "petrushka",
-    lessonAngle:
-      "C + G♭ is the third and final interval at which two major triads share no pitch: semitone, whole step, tritone.",
-    sourceLabel: "Integrated Music Theory · non-diatonic scales",
-    sourceUrl: NON_DIATONIC,
+    id: "lydian-pair", title: "Lydian pair", subtitle: "I + II",
+    formula: "1 2 3 ♯4 5 6", voices: 3, defaultKey: "G", semis: [0, 2, 4, 6, 7, 9],
+    description: "Two major triads a whole step apart. The ♯4 is the bright note.",
   },
   {
-    id: "true-octatonic",
-    title: "True symmetric diminished",
-    subtitle: "two diminished sevenths · four inversions each",
-    formula: "whole–half alternating",
-    voices: 4,
-    status: "new-lesson",
-    evidence: "documented",
-    defaultKey: "C",
-    familyId: "dim-wh",
-    lessonAngle:
-      "C°7 + D°7 exhaust one octatonic collection. This is the genuinely symmetric eight-note counterpart to the two-triad exercise.",
-    sourceLabel: "Integrated Music Theory · octatonic division",
-    sourceUrl: NON_DIATONIC,
+    id: "mixolydian-pair", title: "Mixolydian pair", subtitle: "I + ♭VII",
+    formula: "1 2 3 4 5 ♭7", voices: 3, defaultKey: "G", semis: [0, 2, 4, 5, 7, 10],
+    description: "Two major triads a whole step apart, the second one below the tonic.",
   },
   {
-    id: "sunday",
-    title: "Sunday Scale",
-    subtitle: "I + ii · major without 7",
-    formula: "1 2 3 4 5 6",
-    voices: 3,
-    status: "taught-2025",
-    evidence: "documented",
-    defaultKey: "Bb",
-    familyId: "diatonic",
-    mode: 3,
-    lessonAngle:
-      "B♭ + Cm through all inversions. This remains the ideal onboarding exercise, but it is not the new video's headline.",
-    sourceLabel: "Jason Zac · 2025 public lesson",
-    sourceUrl: JASON_LESSON,
+    id: "phrygian-pair", title: "Phrygian pair", subtitle: "i + ♭II",
+    formula: "1 ♭2 ♭3 4 5 ♭6", voices: 3, defaultKey: "G", semis: [0, 1, 3, 5, 7, 8],
+    description: "A minor triad and the major triad a semitone above it.",
   },
   {
-    id: "minor-no6",
-    title: "Minor pentatonic + 2",
-    subtitle: "i + ♭VII · minor without ♭6",
-    formula: "1 2 ♭3 4 5 ♭7",
-    voices: 3,
-    status: "taught-2025",
-    evidence: "documented",
-    defaultKey: "A",
-    familyId: "diatonic",
-    mode: 4,
-    lessonAngle: "A minor + G major was already demonstrated with inversion voice leading.",
-    sourceLabel: "Jason Zac · 2025 public lesson",
-    sourceUrl: JASON_LESSON,
+    id: "major-pair-semitone", title: "Semitone pair", subtitle: "I + ♭II",
+    formula: "1 ♭2 3 4 5 ♭6", voices: 3, defaultKey: "G", semis: [0, 1, 4, 5, 7, 8],
+    description: "One major-triad shape, then the same shape a semitone higher.",
   },
   {
-    id: "dorian-pair",
-    title: "Dorian pair",
-    subtitle: "i + ii · two minor triads",
-    formula: "1 2 ♭3 4 5 6",
-    voices: 3,
-    status: "taught-2025",
-    evidence: "documented",
-    defaultKey: "G",
-    semis: [0, 2, 3, 5, 7, 9],
-    lessonAngle: "The public lesson already used Gm + Am to expose Dorian colour.",
-    sourceLabel: "Jason Zac · 2025 public lesson",
-    sourceUrl: JASON_LESSON,
+    id: "tritone-pair", title: "Tritone pair", subtitle: "two major triads a tritone apart (e.g. G + D♭)",
+    formula: "1 ♭2 3 ♭5 5 ♭7", voices: 3, defaultKey: "G", semis: [0, 1, 4, 6, 7, 10],
+    description: "The third and last distance at which two major triads share no note. Also called the Petrushka chord.",
   },
   {
-    id: "lydian-pair",
-    title: "Lydian pair",
-    subtitle: "I + II · two major triads",
-    formula: "1 2 3 ♯4 5 6",
-    voices: 3,
-    status: "taught-2025",
-    evidence: "documented",
-    defaultKey: "G",
-    semis: [0, 2, 4, 6, 7, 9],
-    lessonAngle: "The public lesson already used G + A and inversions for Lydian.",
-    sourceLabel: "Jason Zac · 2025 public lesson",
-    sourceUrl: JASON_LESSON,
+    id: "whole-tone-augmented-pair", title: "Whole-tone pair", subtitle: "two augmented triads a whole step apart",
+    formula: "1 2 3 ♯4 ♯5 ♭7", voices: 3, defaultKey: "G", semis: [0, 2, 4, 6, 8, 10], familyId: "whole",
+    description: "Together they make the whole-tone scale. The shape never changes, so neither does the fingering.",
   },
   {
-    id: "phrygian-pair",
-    title: "Phrygian pair",
-    subtitle: "i + ♭II · minor plus major",
-    formula: "1 ♭2 ♭3 4 5 ♭6",
-    voices: 3,
-    status: "taught-2025",
-    evidence: "documented",
-    defaultKey: "G",
-    semis: [0, 1, 3, 5, 7, 8],
-    lessonAngle: "The public lesson already used one minor plus flat-two major.",
-    sourceLabel: "Jason Zac · 2025 public lesson",
-    sourceUrl: JASON_LESSON,
+    id: "augmented-scale-pair", title: "Augmented pair", subtitle: "two augmented triads a semitone apart",
+    formula: "1 ♭3 3 5 ♯5 7", voices: 3, defaultKey: "G", semis: [0, 3, 4, 7, 8, 11], familyId: "aug",
+    description: "Together they make the augmented scale.",
   },
   {
-    id: "mixolydian-pair",
-    title: "Mixolydian pair",
-    subtitle: "I + ♭VII · two major triads",
-    formula: "1 2 3 4 5 ♭7",
-    voices: 3,
-    status: "taught-2025",
-    evidence: "documented",
-    defaultKey: "G",
-    semis: [0, 2, 4, 5, 7, 10],
-    lessonAngle: "The public lesson already used one major plus flat-seven major.",
-    sourceLabel: "Jason Zac · 2025 public lesson",
-    sourceUrl: JASON_LESSON,
+    id: "true-octatonic", title: "Two diminished sevenths", subtitle: "eight notes · four inversions each",
+    formula: "1 2 ♭3 4 ♭5 ♭6 6 7", voices: 4, defaultKey: "G", semis: [0, 2, 3, 5, 6, 8, 9, 11], familyId: "dim-wh",
+    description: "The same idea with eight notes: alternate notes of the whole–half diminished scale give two diminished 7th chords.",
   },
 ];
 
-/** Every adjacent diatonic triad pair omits exactly one major-scale degree. */
-export const DIATONIC_EXACT_COVERS = [
-  { pair: "I + ii", omitted: "7", lesson: "taught" },
-  { pair: "I + vii°", omitted: "6", lesson: "new theory" },
-  { pair: "ii + iii", omitted: "1", lesson: "new theory" },
-  { pair: "iii + IV", omitted: "2", lesson: "new theory" },
-  { pair: "IV + V", omitted: "3", lesson: "new headline" },
-  { pair: "V + vi", omitted: "4", lesson: "same pitch set as taught Am + G" },
-  { pair: "vi + vii°", omitted: "5", lesson: "new theory" },
-] as const;
+/* ── the seven adjacent triad pairs of a major scale ──────────────────────
+   Neighbouring triads of a major scale never share a note, so each pair is an
+   exact six-note cover that leaves out one degree. Computed, not listed.   */
+
+const ROMAN = ["I", "ii", "iii", "IV", "V", "vi", "vii°"];
+
+export interface AdjacentPair {
+  pair: string;          // "I + ii"
+  chords: [string, string];
+  omitted: string;       // the note left out, e.g. "F#"
+  omittedDegree: number; // 1-7
+}
+
+export function adjacentDiatonicPairs(key = "G"): AdjacentPair[] {
+  const full = buildDiatonic(key, MAJOR)!;
+  const triad = (d: number) => [0, 2, 4].map((k) => full[(d + k) % 7]);
+  const quality = (ns: Note[]) => {
+    const a = ((pc(ns[1]) - pc(ns[0])) % 12 + 12) % 12;
+    const b = ((pc(ns[2]) - pc(ns[0])) % 12 + 12) % 12;
+    return a === 4 ? "" : b === 6 ? "°" : "m";
+  };
+  return full.map((_, d) => {
+    const e = (d + 1) % 7;
+    const [a, b] = [triad(d), triad(e)];
+    const used = new Set([...a, ...b].map(pc));
+    const omittedIdx = full.findIndex((n) => !used.has(pc(n)));
+    return {
+      pair: `${ROMAN[d]} + ${ROMAN[e]}`,
+      chords: [noteName(a[0]) + quality(a), noteName(b[0]) + quality(b)] as [string, string],
+      omitted: noteName(full[omittedIdx]),
+      omittedDegree: omittedIdx + 1,
+    };
+  });
+}
+
+/** The seven adjacent pairs in G, the app's default key. */
+export const DIATONIC_EXACT_COVERS = adjacentDiatonicPairs("G");
 
 /* ── spelling an exact-cover pair for its CHORDS ───────────────────────────
    A general scale speller optimises the scale as a line, and for most keys
@@ -335,37 +237,53 @@ function spellPairForChords(tonicName: string, semis: number[]): Note[] | null {
 function alreadyInThirds(notes: Note[]): boolean {
   if (notes.length !== 6) return false;
   return [[0, 2, 4], [1, 3, 5]].every((ix) => {
-    const ls = ix.map((i) => notes[i].letter);
-    if (new Set(ls).size !== 3) return false;
-    return ls.some((l) => {
-      const want = new Set([l, stepLetter(l, 2), stepLetter(l, 4)]);
-      return ls.every((x) => want.has(x));
+    const shape = ix.map((i) => notes[i]);
+    /* The letters must stack in thirds FROM THE CHORD'S OWN ROOT: F A♭ C♯
+       stacks by letter from F, but its root is D♭, so it is not D♭ major on
+       paper. Augmented triads have no single root; letters alone decide. */
+    const found = tertianRoot(shape.map(pc));
+    const roots = found && !(found.shape[1] === 4 && found.shape[2] === 8)
+      ? shape.filter((n) => pc(n) === found.root)
+      : shape;
+    return roots.some((r) => {
+      const want = new Set([r.letter, stepLetter(r.letter, 2), stepLetter(r.letter, 4)]);
+      return new Set(shape.map((n) => n.letter)).size === 3 && shape.every((n) => want.has(n.letter));
     });
   });
 }
 
 export function buildAtlasMovement(entry: PairAtlasEntry, tonic: string): InterlockedMovement {
-  const scale = entry.familyId
-    ? buildScale(tonic, entry.familyId, entry.mode ?? 0)
-    : buildScale(tonic, "custom", 0, entry.semis);
+  return pairMovement(tonic, entry.semis, entry.voices, entry.title, entry.description, entry.familyId);
+}
+
+/**
+ * Any exact-cover pair as an inversion ladder: the scale spelled so both
+ * shapes read as chords, then split into alternate degrees. Throws when the
+ * alternate degrees do not form two chords (the caller shows the notes only).
+ */
+export function pairMovement(
+  tonic: string, semis: number[], voices: 3 | 4, title = "", description = "", familyId?: string,
+): InterlockedMovement {
+  const useFamily = !!familyId && FAMILIES.some((f) => f.id === familyId);
+  const scale = useFamily
+    ? buildScale(tonic, familyId!, 0)
+    : buildScale(tonic, "custom", 0, semis);
   if (scale.error) throw new Error(scale.error);
   /* Re-spell for the chords only where the default spelling does not already
-     read as two triads. Petrushka in Ab comes out of its family as Ab A C D Eb
-     Gb, which prints the upper shape as D-Gb-A; every key where the family
-     already gets it right is left untouched. */
-  const semis = entry.semis
-    ?? scale.notes.map((n) => ((pc(n) - pc(scale.notes[0])) % 12 + 12) % 12);
-  const chordSpelled = entry.voices === 3 && !alreadyInThirds(scale.notes)
+     read as two triads. The tritone pair in Ab can come out as Ab A C D Eb Gb,
+     which prints the upper shape as D-Gb-A; every key that already reads
+     correctly is left untouched. */
+  const chordSpelled = voices === 3 && !alreadyInThirds(scale.notes)
     ? spellPairForChords(tonic, semis)
     : null;
   const namedScale = {
     ...scale,
     notes: chordSpelled ?? scale.notes,
-    label: entry.title,
-    teaching: entry.lessonAngle,
+    label: title || scale.label,
+    teaching: description,
   };
-  const kind: MovementKind = entry.voices === 4 ? "octatonic-sevenths" : "hexatonic-triads";
-  return exactCoverMovement(kind, namedScale, entry.voices);
+  const kind: MovementKind = voices === 4 ? "octatonic-sevenths" : "hexatonic-triads";
+  return exactCoverMovement(kind, namedScale, voices);
 }
 
 export interface ExactCoverProof {
@@ -411,7 +329,7 @@ function scaleEvents(movement: InterlockedMovement, octaves: 1 | 2): PairExercis
   const ascending = Array.from({ length: octaves }, (_, octave) =>
     movement.scale.notes.map((pitch, degree) => ({
       id: `scale-${octave}-${degree}`,
-      label: `${notePretty(pitch)}${pitch.octave + octave}`,
+      label: notePretty(pitch),
       voicing: [midi(pitch) + octave * 12],
       pair: null,
       accent: false,
@@ -420,7 +338,7 @@ function scaleEvents(movement: InterlockedMovement, octaves: 1 | 2): PairExercis
   const top = movement.scale.notes[0];
   ascending.push({
     id: `scale-top-${octaves}`,
-    label: `${notePretty(top)}${top.octave + octaves}`,
+    label: notePretty(top),
     voicing: [midi(top) + octaves * 12],
     pair: null,
     accent: false,

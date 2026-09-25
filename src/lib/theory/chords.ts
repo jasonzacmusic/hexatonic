@@ -7,7 +7,7 @@
  * the most valuable teaching moment in the app.
  */
 
-import { midi, Note, note, noteName, pc } from "./note";
+import { intervalName, letterIndex, midi, Note, note, noteName, pc } from "./note";
 
 type Family = "tertian" | "sus" | "quartal";
 
@@ -156,4 +156,154 @@ export function augmentedPair(a: 0 | 1 | 2 | 3, b: 0 | 1 | 2 | 3): {
   const t = (r: number) => [r % 12, (r + 4) % 12, (r + 8) % 12];
   const pcs = [...new Set([...t(a), ...t(b)])].sort((x, y) => x - y);
   return { pcs, result: a % 2 === b % 2 ? "whole-tone" : "augmented" };
+}
+
+/* ── what goes under each note ───────────────────────────────────────────── */
+
+const ROLE: Record<number, string> = {
+  0: "root", 3: "3rd", 4: "3rd", 6: "5th", 7: "5th", 8: "5th", 9: "6th", 10: "7th", 11: "7th",
+};
+
+export interface NoteHarmony {
+  note: Note;
+  /** tertian chords rooted on this note */
+  rooted: string[];
+  /** every tertian chord of the scale containing this note, voiced with it on top */
+  under: { symbol: string; role: string; voicing: number[] }[];
+}
+
+/** For each scale note: every chord built only from the scale's own notes that
+ *  contains it, with the note's job in that chord and a voicing that puts the
+ *  note on top — the way you harmonise a melody. */
+export function chordsUnderEachNote(notes: Note[]): NoteHarmony[] {
+  const chords = tertianOnly(findChords(notes, [3, 4]));
+  return notes.map((n) => {
+    const p = pc(n);
+    const rooted: string[] = [];
+    const under: NoteHarmony["under"] = [];
+    for (const c of chords) {
+      if (!c.pcs.includes(p)) continue;
+      for (const name of c.names)
+        if (name.family === "tertian" && pc(name.voicing[0]) === p) rooted.push(name.symbol);
+      const primary = c.names[0];
+      const rel = (((p - pc(primary.voicing[0])) % 12) + 12) % 12;
+      const top = midi(n);
+      const below = primary.voicing
+        .filter((v) => pc(v) !== p)
+        .map((v) => { let m = midi(v); while (m >= top) m -= 12; while (m < top - 12) m += 12; return m; })
+        .sort((a, b) => a - b);
+      under.push({
+        symbol: c.names.map((x) => x.symbol).join(" = "),
+        role: ROLE[rel] ?? "?",
+        voicing: [...below, top],
+      });
+    }
+    return { note: n, rooted, under };
+  });
+}
+
+/* ── the whole scale as one chord ───────────────────────────────────────── */
+
+export interface ThirdsStack {
+  /** the notes bottom to top, with octaves */
+  notes: Note[];
+  /** the gap between each neighbouring pair, by interval name (M3, m3, P4…) */
+  gaps: string[];
+  /** how many of those gaps are thirds */
+  thirds: number;
+  /** each note's place in the chain 1 3 5 7 9 11 13, with ♭/♯ — only when the
+   *  scale can be stacked purely by letter; otherwise empty */
+  degrees: string[];
+  /** the links of 1 3 5 7 9 11 13 the scale does not have ("11") */
+  missing: string[];
+}
+
+const CHAIN = ["1", "3", "5", "7", "9", "11", "13"];
+const CHAIN_SEMIS = [0, 4, 7, 11, 2, 5, 9];
+
+/**
+ * Stack the scale in thirds from its tonic. Where the letters allow it this is
+ * exact — 1 3 5 7 9 11 13, keeping the ones the scale has. A scale that uses a
+ * letter twice (the blues ♭5 and 5) cannot be stacked purely by letter, so it
+ * is stacked by ear instead: the nearest note a third above, or the nearest
+ * note of any kind when no third is left. The gaps are reported, so nothing is
+ * claimed that the stack does not show.
+ */
+export function stackInThirds(scale: Note[]): ThirdsStack {
+  if (!scale.length) return { notes: [], gaps: [], thirds: 0, degrees: [], missing: [] };
+  const t = scale[0];
+  const letters = new Set(scale.map((n) => n.letter));
+  let order: Note[];
+  const degrees: string[] = [];
+  const missing: string[] = [];
+  if (letters.size === scale.length) {
+    const offset = (n: Note) => (((letterIndex(n.letter) - letterIndex(t.letter)) % 7) + 7) % 7;
+    order = [];
+    [0, 2, 4, 6, 1, 3, 5].forEach((o, i) => {
+      const n = scale.find((x) => offset(x) === o);
+      if (!n) { missing.push(CHAIN[i]); return; }
+      order.push(n);
+      const d = (((pc(n) - pc(t) - CHAIN_SEMIS[i]) % 12) + 18) % 12 - 6;
+      degrees.push((d < 0 ? "♭".repeat(-d) : "♯".repeat(d)) + CHAIN[i]);
+    });
+  } else {
+    order = [t];
+    const left = scale.slice(1);
+    while (left.length) {
+      const top = order[order.length - 1];
+      const up = (n: Note) => (((pc(n) - pc(top)) % 12) + 12) % 12;
+      let i = left.findIndex((n) => up(n) === 3 || up(n) === 4);
+      if (i < 0) i = left.reduce((b, n, j) => (up(n) < up(left[b]) ? j : b), 0);
+      order.push(left.splice(i, 1)[0]);
+    }
+  }
+  const out: Note[] = [];
+  let prev = -Infinity;
+  for (const n of order) {
+    let v = note(n.letter, n.alt, t.octave);
+    while (midi(v) <= prev) v = note(v.letter, v.alt, v.octave + 1);
+    out.push(v);
+    prev = midi(v);
+  }
+  const gaps = out.slice(1).map((n, i) => intervalName(out[i], n));
+  return { notes: out, gaps, thirds: gaps.filter((g) => g === "m3" || g === "M3").length, degrees, missing };
+}
+
+/* ── what the removed note took with it ─────────────────────────────────── */
+
+/** Triads of the seven-note parent that the six-note scale no longer has. */
+export function lostTriads(parent: Note[], scale: Note[]): ChordSet[] {
+  const have = new Set(tertianOnly(findChords(scale, [3])).map((c) => c.pcs.join(",")));
+  return tertianOnly(findChords(parent, [3])).filter((c) => !have.has(c.pcs.join(",")));
+}
+
+/* ── which triad pairs make a given six-note set ─────────────────────────── */
+
+export type TriadQuality = "maj" | "min" | "dim" | "aug";
+
+export interface TriadPairCover {
+  a: { root: number; qual: TriadQuality };
+  b: { root: number; qual: TriadQuality };
+}
+
+/** Every pair of triads (no shared note) whose six notes are exactly `pcs`. */
+export function triadPairsCovering(pcs: number[]): TriadPairCover[] {
+  const target = [...new Set(pcs.map((p) => ((p % 12) + 12) % 12))].sort((a, b) => a - b).join(",");
+  const quals: TriadQuality[] = ["maj", "min", "dim", "aug"];
+  const triads: { root: number; qual: TriadQuality }[] = [];
+  const seen = new Set<string>();
+  for (const qual of quals)
+    for (let root = 0; root < 12; root++) {
+      const k = TRIAD_SHAPES[qual].map((i) => (root + i) % 12).sort((a, b) => a - b).join(",");
+      if (seen.has(k)) continue;           // C+ = E+ = G♯+: one triad, not three
+      seen.add(k);
+      triads.push({ root, qual });
+    }
+  const out: TriadPairCover[] = [];
+  for (let i = 0; i < triads.length; i++)
+    for (let j = i + 1; j < triads.length; j++) {
+      const pair = triadPair(triads[i].root, triads[i].qual, triads[j].root, triads[j].qual);
+      if (pair && pair.join(",") === target) out.push({ a: triads[i], b: triads[j] });
+    }
+  return out;
 }

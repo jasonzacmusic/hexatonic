@@ -3,6 +3,7 @@ import {
   buildAtlasMovement,
   buildPairExercise,
   DIATONIC_EXACT_COVERS,
+  adjacentDiatonicPairs,
   PAIR_ATLAS,
   proveExactCover,
 } from "../src/lib/theory/pairAtlas";
@@ -21,12 +22,28 @@ describe("Pair Atlas exact-cover catalogue", () => {
     }
   });
 
-  it("keeps the new headline separate from Jason's 2025 examples", () => {
-    const newIds = PAIR_ATLAS.filter((entry) => entry.status === "new-lesson").map((entry) => entry.id);
-    expect(newIds).toContain("major-no3");
-    expect(newIds).toContain("true-octatonic");
-    expect(newIds).not.toContain("sunday");
-    expect(newIds).not.toContain("lydian-pair");
+  it("every formula matches the notes it describes", () => {
+    const DEG: Record<string, number> = {
+      "1": 0, "♭2": 1, "2": 2, "♭3": 3, "3": 4, "4": 5, "♯4": 6, "♭5": 6,
+      "5": 7, "♯5": 8, "♭6": 8, "6": 9, "♭7": 10, "7": 11,
+    };
+    for (const entry of PAIR_ATLAS)
+      expect(entry.formula.split(" ").map((d) => DEG[d]), entry.id).toEqual(entry.semis);
+  });
+
+  it("carries no private lesson notes", () => {
+    for (const entry of PAIR_ATLAS)
+      expect(JSON.stringify(entry), entry.id).not.toMatch(/2025|lesson|headline/i);
+  });
+
+  it("names the tritone pair plainly and spells it as two major triads", () => {
+    const entry = PAIR_ATLAS.find((e) => e.id === "tritone-pair")!;
+    expect(entry.title).toBe("Tritone pair");
+    expect(entry.subtitle).toContain("G + D♭");
+    const m = buildAtlasMovement(entry, "G");
+    expect(m.pairLabels).toEqual(["G", "D♭"]);
+    const db = m.steps.find((s) => s.label === "D♭")!;
+    expect(db.notes.map(noteName)).toEqual(["Db", "F", "Ab"]);
   });
 
   it("builds C major-without-3 as F plus G through all inversions", () => {
@@ -52,5 +69,12 @@ describe("Pair Atlas exact-cover catalogue", () => {
   it("enumerates all seven adjacent diatonic exact covers", () => {
     expect(DIATONIC_EXACT_COVERS).toHaveLength(7);
     expect(new Set(DIATONIC_EXACT_COVERS.map((item) => item.omitted)).size).toBe(7);
+  });
+
+  it("computes which note each neighbouring pair of G major leaves out", () => {
+    expect(adjacentDiatonicPairs("G").map((p) => `${p.chords.join("+")} no ${p.omitted}`)).toEqual([
+      "G+Am no F#", "Am+Bm no G", "Bm+C no A", "C+D no B", "D+Em no C", "Em+F#° no D", "F#°+G no E",
+    ]);
+    expect(adjacentDiatonicPairs("F")[0]).toMatchObject({ chords: ["F", "Gm"], omitted: "E" });
   });
 });

@@ -20,7 +20,7 @@ import { useId } from "react";
 interface Props {
   scale: Note[];
   removed: Note | null;
-  activeMidi?: number | null;
+  activeMidi?: number | number[] | null;
   /** additional pitch classes to mark — used by improvise mode for chord tones */
   chordTonePcs?: number[];
   startMidi?: number;
@@ -82,7 +82,7 @@ export default function Keyboard({
 
   const state = (m: number) => {
     const p = ((m % 12) + 12) % 12;
-    if (activeMidi === m) return "active";
+    if (Array.isArray(activeMidi) ? activeMidi.includes(m) : activeMidi === m) return "active";
     if (p === removedPc) return "removed";
     if (chordSet?.has(p)) return "chord";
     if (inScale.has(p)) return "scale";
