@@ -18,6 +18,14 @@ Read this first, every session.
   IBM Plex Mono for labels, Cormorant italic for spoken or editorial lines.
 - Founder: **Jason Zac**. Never "world's first".
 
+## Playback rule
+- Changing any setting while playing must never stop the music. Tempo changes
+  land on the next beat; everything else lands on the next bar or cycle. The
+  sounding note and the beat count are always visible.
+- New players use `useLiveDrill` / `useLiveVamp` (`src/lib/audio/useLive.ts`),
+  which hand changed settings to the running scheduler. Never stop-and-restart
+  on a settings change; `tests/playback-contract.test.ts` fails if you do.
+
 ## Musical claims
 - Every claim the app or a class makes out loud is computed by `src/lib/theory`
   and locked by a test. Naming guardrails are in `docs/09-ROADMAP.md §7`.

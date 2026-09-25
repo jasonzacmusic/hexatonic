@@ -7,7 +7,8 @@ import {
   SIXTH_DIMINISHED, buildSixthDim, harmonise, borrow, theFamily, notOctatonic, SixthFamily,
 } from "@/lib/theory/barryharris";
 import { midi, noteName, notePretty, pc, primeForm, forteName, intervalVector } from "@/lib/theory/note";
-import { previewAudio } from "@/lib/audio/engine";
+import { DrillPlan, previewAudio } from "@/lib/audio/engine";
+import { useLiveDrill } from "@/lib/audio/useLive";
 import { Seg } from "@/components/Panels";
 import Keyboard from "@/components/Keyboard";
 import MovementLab from "@/components/MovementLab";
@@ -291,23 +292,36 @@ function Barry() {
   const [borrowVoice, setBorrowVoice] = useState(3);
   const borrowed = useMemo(() => borrow(key, fam, borrowVoice), [key, fam, borrowVoice]);
 
-  /* Movement runs schedule ten previews; they must die with the component (or
-     with a second click), not keep sounding after navigation. */
-  const runTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
-  const cancelRun = () => {
-    for (const t of runTimers.current) clearTimeout(t);
-    runTimers.current = [];
+  /* Movement runs play on the audio clock through the drill scheduler, so they
+     stop with the page like every other player — and, by the playback rule, a
+     new key, scale or lifted voice mid-run lands on the next chord and the new
+     movement carries on from its first chord instead of cutting out. */
+  const [runWhich, setRunWhich] = useState<"movement" | "borrowed">("movement");
+  const runList = runWhich === "borrowed" ? borrowed : steps;
+  const runChords = useMemo(() => runList.map((s) => s.voicing.map((m) => m + 12)), [runList]);
+  const runPlan = useMemo<DrillPlan | null>(() => runChords.length ? {
+    notes: [], chords: runChords, accents: runChords.map(() => false), spread: 0.015,
+    stepDur: 0.48, grouping: runChords.length, subdivision: 1, beatsPerBar: 1,
+    loop: false, click: false,
+  } : null, [runChords]);
+  const run = useLiveDrill(runPlan, () => ({ countInBeats: 0, beatDur: 0.48 }));
+  const runAt = run.position && run.position.plan.chords === runChords ? run.position.index : -1;
+  const lit = (which: "movement" | "borrowed", i: number) =>
+    runWhich === which && runAt === i ? " ring-2 ring-gold" : "";
+  // Play after the render that puts this list's plan in place.
+  const [runRequest, setRunRequest] = useState(0);
+  const playRun = run.play;
+  const handledRun = useRef(0);
+  useEffect(() => {
+    if (runRequest === handledRun.current) return;
+    handledRun.current = runRequest;
+    void playRun();
+  }, [runRequest, playRun]);
+  const runSteps = (which: "movement" | "borrowed") => {
+    setRunWhich(which);
+    setRunRequest((n) => n + 1);
   };
-  useEffect(() => cancelRun, [key, fam, borrowVoice]);
-  const runSteps = (list: { voicing: number[] }[]) => {
-    cancelRun();
-    list.forEach((s, i) => {
-      runTimers.current.push(
-        setTimeout(() => previewAudio(s.voicing.map((m) => m + 12), 0.015), i * 480)
-      );
-    });
-  };
-  const runMovement = () => runSteps(steps);
+  const runMovement = () => runSteps("movement");
 
   return (
     <div className="space-y-5">
@@ -376,7 +390,7 @@ function Barry() {
             <button key={i}
               onClick={() => previewAudio(s.voicing.map((m) => m + 12), 0.02)}
               className={`rounded-xl border px-4 py-3 text-left transition hover:border-gold/60 ${
-                s.isDiminished ? "border-line bg-surface2" : "border-gold/40 bg-gold/[0.07]"}`}>
+                s.isDiminished ? "border-line bg-surface2" : "border-gold/40 bg-gold/[0.07]"}${lit("movement", i)}`}>
               <span className={`block text-base font-bold ${s.isDiminished ? "text-cream/70" : "text-gold"}`}>
                 {s.label}
               </span>
@@ -407,7 +421,7 @@ function Barry() {
                            { label: "3rd", value: 2 }, { label: "top", value: 3 }]}
                  onChange={setBorrowVoice} />
           </div>
-          <button className="btn btn-ghost" onClick={() => runSteps(borrowed)}>
+          <button className="btn btn-ghost" onClick={() => runSteps("borrowed")}>
             ▶ Run the borrowed movement
           </button>
         </div>
@@ -416,7 +430,7 @@ function Barry() {
             <button key={i}
               onClick={() => previewAudio(s.voicing.map((m) => m + 12), 0.02)}
               className={`rounded-xl border px-4 py-3 text-left transition hover:border-gold/60 ${
-                s.isDiminished ? "border-line bg-surface2" : "border-gold/40 bg-gold/[0.07]"}`}>
+                s.isDiminished ? "border-line bg-surface2" : "border-gold/40 bg-gold/[0.07]"}${lit("borrowed", i)}`}>
               <span className={`block text-base font-bold ${s.isDiminished ? "text-cream/70" : "text-gold"}`}>
                 {s.label.replace(" (borrowed)", "")}
               </span>

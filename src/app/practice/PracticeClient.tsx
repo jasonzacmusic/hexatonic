@@ -15,6 +15,7 @@ import { previewAudio } from "@/lib/audio/engine";
 import CustomBuilder from "@/components/CustomBuilder";
 import MidiPanel from "@/components/MidiPanel";
 import Fretboard from "@/components/Fretboard";
+import BeatCounter from "@/components/BeatCounter";
 
 export default function PracticeClient() {
   const d = useDrill();
@@ -35,7 +36,7 @@ export default function PracticeClient() {
     return () => window.removeEventListener("keydown", onKey);
   }, [set, state.loop, state.click, toggle]);
 
-  const activeNote = index >= 0 && notes[index] ? notes[index] : null;
+  const activeNote = d.activeNote;
   const activePc = activeNote ? pc(activeNote) : null;
   const isRotation = scale.family.kind === "rotation";
   const usesTop = d.patternDef.usesTopNote;
@@ -431,6 +432,9 @@ export default function PracticeClient() {
         </p>
       )}
 
+      <BeatCounter at={d.position} beats={d.meter.top} bars={resolution.bars}
+                   countdown={d.countdown} className="card py-4" />
+
       {!scale.error && notes.length > 0 && (
         <Notation notes={notes} subdivision={state.sub} grouping={state.grouping}
                   meterId={state.meter} beatsPerBar={d.meter.top}
@@ -464,7 +468,7 @@ export default function PracticeClient() {
       </section>
 
       <MidiPanel expected={notes} grouping={state.grouping}
-                 stepDur={d.stepDur} playing={playing} />
+                 stepDur={d.stepDur} playing={playing} position={d.position} />
 
       <section className="card">
         <h2 className="eyebrow">Available harmony</h2>

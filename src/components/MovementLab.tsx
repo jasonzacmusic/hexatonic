@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   hexatonicTriadMovement,
   InterlockedMovement,
@@ -9,48 +9,39 @@ import {
 } from "@/lib/theory/movement";
 import { DIATONIC_MODES, KEYS } from "@/lib/theory/scales";
 import { notePretty } from "@/lib/theory/note";
-import { previewAudio } from "@/lib/audio/engine";
+import { DrillPlan, previewAudio } from "@/lib/audio/engine";
+import { useLiveDrill } from "@/lib/audio/useLive";
 import { Seg } from "@/components/Panels";
 
 type Shape = "block" | "arpeggio";
 type Direction = "up" | "up-down";
 
-function useMovementRun() {
-  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
-  const [active, setActive] = useState<number | null>(null);
-
-  const cancel = useCallback(() => {
-    for (const timer of timers.current) clearTimeout(timer);
-    timers.current = [];
-    setActive(null);
-  }, []);
-
-  useEffect(() => cancel, [cancel]);
-
-  const run = useCallback((
-    steps: MovementStep[], bpm: number, shape: Shape, direction: Direction,
-  ) => {
-    cancel();
-    const sequence = direction === "up-down"
-      ? [...steps, ...steps.slice(0, -1).reverse()]
-      : steps;
-    const beatMs = 60_000 / bpm;
-    const spread = shape === "block" ? 0.015 : 0.12;
-
-    sequence.forEach((step, index) => {
-      timers.current.push(setTimeout(() => {
-        setActive(step.degree);
-        void previewAudio(step.voicing, spread);
-      }, index * beatMs));
-    });
-    timers.current.push(setTimeout(() => setActive(null), sequence.length * beatMs));
-  }, [cancel]);
-
-  return { active, cancel, run };
+/* The playback rule: the ladder runs on the audio clock (the drill scheduler)
+   and never stops for a change. Tempo and block/arpeggio land on the next
+   chord and carry on; a new key, rotation or direction lands on the next chord
+   and starts the new ladder from its first shape. */
+function useMovementRun(
+  steps: MovementStep[], bpm: number, shape: Shape, direction: Direction,
+) {
+  const sequence = useMemo(
+    () => (direction === "up-down" ? [...steps, ...steps.slice(0, -1).reverse()] : steps),
+    [steps, direction]
+  );
+  const chords = useMemo(() => sequence.map((step) => step.voicing), [sequence]);
+  const plan = useMemo<DrillPlan | null>(() => chords.length ? {
+    notes: [], chords, accents: chords.map(() => false),
+    spread: shape === "block" ? 0.015 : 0.12,
+    stepDur: 60 / bpm, grouping: chords.length, subdivision: 1, beatsPerBar: 1,
+    loop: false, click: false,
+  } : null, [chords, shape, bpm]);
+  const live = useLiveDrill(plan, () => ({ countInBeats: 0, beatDur: 60 / bpm }));
+  const p = live.position;
+  const active = p && p.plan.chords === chords ? sequence[p.index]?.degree ?? null : null;
+  return { active, playing: live.playing, toggle: live.toggle };
 }
 
 function MovementControls({
-  id, bpm, setBpm, shape, setShape, direction, setDirection, onRun,
+  id, bpm, setBpm, shape, setShape, direction, setDirection, onRun, playing,
 }: {
   id: string;
   bpm: number;
@@ -60,6 +51,7 @@ function MovementControls({
   direction: Direction;
   setDirection: (value: Direction) => void;
   onRun: () => void;
+  playing: boolean;
 }) {
   return (
     <div className="mt-5 flex flex-wrap items-end gap-4">
@@ -83,7 +75,9 @@ function MovementControls({
                onChange={(event) => setBpm(Number(event.target.value))}
                className="w-40 accent-[#C9A227]" />
       </div>
-      <button className="btn btn-primary" onClick={onRun}>▶ Run the movement</button>
+      <button className={`btn ${playing ? "btn-stop" : "btn-primary"}`} onClick={onRun}>
+        {playing ? "■ Stop" : "▶ Run the movement"}
+      </button>
     </div>
   );
 }
@@ -158,8 +152,7 @@ function HexatonicMovement() {
   const [shape, setShape] = useState<Shape>("block");
   const [direction, setDirection] = useState<Direction>("up-down");
   const movement = useMemo(() => hexatonicTriadMovement(key, mode), [key, mode]);
-  const runner = useMovementRun();
-  useEffect(() => runner.cancel(), [key, mode, runner.cancel]);
+  const runner = useMovementRun(movement.steps, bpm, shape, direction);
 
   return (
     <section className="card">
@@ -195,7 +188,7 @@ function HexatonicMovement() {
       <PairSummary movement={movement} />
       <MovementControls id="hexatonic-movement" bpm={bpm} setBpm={setBpm} shape={shape} setShape={setShape}
                         direction={direction} setDirection={setDirection}
-                        onRun={() => runner.run(movement.steps, bpm, shape, direction)} />
+                        onRun={runner.toggle} playing={runner.playing} />
       <MovementRow movement={movement} active={runner.active} shape={shape} />
       <p className="quiet mt-4">
         The B♭ default is the class example: B♭ major and C minor. Change the
@@ -212,8 +205,7 @@ function OctatonicMovement() {
   const [shape, setShape] = useState<Shape>("block");
   const [direction, setDirection] = useState<Direction>("up-down");
   const movement = useMemo(() => octatonicSeventhMovement(key, kind), [key, kind]);
-  const runner = useMovementRun();
-  useEffect(() => runner.cancel(), [key, kind, runner.cancel]);
+  const runner = useMovementRun(movement.steps, bpm, shape, direction);
 
   return (
     <section className="card">
@@ -247,7 +239,7 @@ function OctatonicMovement() {
       <PairSummary movement={movement} />
       <MovementControls id="octatonic-movement" bpm={bpm} setBpm={setBpm} shape={shape} setShape={setShape}
                         direction={direction} setDirection={setDirection}
-                        onRun={() => runner.run(movement.steps, bpm, shape, direction)} />
+                        onRun={runner.toggle} playing={runner.playing} />
       <MovementRow movement={movement} active={runner.active} shape={shape} />
     </section>
   );

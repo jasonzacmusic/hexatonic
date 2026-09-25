@@ -8,7 +8,7 @@
  * the keyboard show what is available and what the current chord is leaning on.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Keyboard from "@/components/Keyboard";
 import Fretboard from "@/components/Fretboard";
 import BluesLane from "@/components/BluesLane";
@@ -19,8 +19,9 @@ import {
   buildVamp, vampsFor, vampById, guideTones, VoicingStyle, VampStep,
 } from "@/lib/theory/vamps";
 import { midi, notePretty, pc } from "@/lib/theory/note";
-import { getAudio, previewAudio } from "@/lib/audio/engine";
-import { usePlayback } from "@/lib/audio/usePlayback";
+import { previewAudio, VampPlan } from "@/lib/audio/engine";
+import { useLiveVamp } from "@/lib/audio/useLive";
+import BeatCounter from "@/components/BeatCounter";
 
 const VOICINGS: { label: string; value: VoicingStyle; hint: string }[] = [
   { label: "Shell", value: "shell", hint: "root, 3rd and 7th — the jazz default" },
@@ -46,10 +47,6 @@ export default function ImproviseClient() {
   const [click, setClick] = useState(false);
   const [countIn, setCountIn] = useState(true);
   const [guides, setGuides] = useState(true);
-  const [chordIdx, setChordIdx] = useState(-1);
-  const [countdown, setCountdown] = useState(0);
-  const [err, setErr] = useState<string | null>(null);
-  const raf = useRef<number | null>(null);
 
   const scale = useMemo(() => buildScale(key, family, mode), [key, family, mode]);
   const available = useMemo(() => (scale.error ? [] : vampsFor(scale)), [scale]);
@@ -59,8 +56,6 @@ export default function ImproviseClient() {
     [scale, vamp, voicing]
   );
 
-  const current = chordIdx >= 0 ? steps[chordIdx] : undefined;
-  const tones = current && !scale.error ? guideTones(scale, current.chord) : null;
 
   // keep the selected vamp legal for the mode
   useEffect(() => {
@@ -68,55 +63,34 @@ export default function ImproviseClient() {
       setVampId(available[0].id);
   }, [available, vampId]);
 
-  /* Managed by usePlayback so unmount, route change, tab hide and unload all
-     stop the vamp without this screen having to remember. */
-  const clearVisuals = useCallback(() => {
-    setChordIdx(-1);
-    setCountdown(0);
-    if (raf.current) cancelAnimationFrame(raf.current);
-    raf.current = null;
-  }, []);
-  const pb = usePlayback("vamp", clearVisuals);
-  const playing = pb.playing;
-  const stop = useCallback(() => { pb.end(); }, [pb]);
+  /* The playback rule: the vamp never stops for a change. useLiveVamp hands
+     every new plan to the running scheduler — tempo, click, bass and chords
+     on/off land on the next beat; a new key, mode, vamp or voicing lands on
+     the next bar and starts from its first chord. usePlayback, underneath,
+     still stops it on unmount, route change, tab hide and unload. */
+  const chords = useMemo(
+    () => steps.map((s) => ({ bass: s.chord.bass, voicing: s.chord.voicing, bars: s.bars })),
+    [steps]
+  );
+  const plan = useMemo<VampPlan | null>(() => chords.length ? {
+    chords, beatDur: 60 / bpm,
+    beatsPerBar: vamp.feel === "68" ? 6 : 4,
+    feel: vamp.feel, click, bassOn: bass, compOn: comp,
+  } : null, [chords, bpm, vamp.feel, click, bass, comp]);
+  const live = useLiveVamp(plan, () => ({ countInBeats: countIn ? 4 : 0 }));
+  const { playing, stop, play, countdown, position } = live;
+  const err = live.error;
+  // Light a chord only when the progression on screen is the one sounding.
+  const chordIdx = position && position.plan.chords === chords ? position.chordIndex : -1;
+  const current = chordIdx >= 0 ? steps[chordIdx] : undefined;
+  const tones = current && !scale.error ? guideTones(scale, current.chord) : null;
 
-  const play = useCallback(async () => {
-    if (!steps.length) return;
-    setErr(null);
-    await pb.begin(async (guard) => {
-      const a = getAudio();
-      const ok = await a.startVamp({
-        chords: steps.map((s) => ({
-          bass: s.chord.bass, voicing: s.chord.voicing, bars: s.bars,
-        })),
-        beatDur: 60 / bpm,
-        beatsPerBar: vamp.feel === "68" ? 6 : 4,
-        feel: vamp.feel,
-        click, countInBeats: countIn ? 4 : 0, bassOn: bass, compOn: comp,
-      });
-      if (!ok) { setErr("audio could not start"); return false; }
-      if (!guard()) return false;
-      const tick = () => {
-        if (!guard()) return;
-        setChordIdx(a.currentChordIndex());
-        setCountdown(a.vampCountdown());
-        raf.current = requestAnimationFrame(tick);
-      };
-      raf.current = requestAnimationFrame(tick);
-      return true;
-    });
-  }, [steps, bpm, vamp.feel, click, bass, comp, countIn, pb]);
-
-  // restart cleanly whenever the musical content changes underneath
-  /* The lane is part of the signature: the blues lane hides this vamp's Stop
-     button, so leaving the lane must not leave the vamp playing with no way to
-     stop it on screen. */
-  const sig = `${lane}|${key}|${family}|${mode}|${vampId}|${voicing}|${bpm}|${bass}|${comp}|${click}|${countIn}`;
-  const last = useRef(sig);
+  /* Leaving the lane still stops: the blues lane hides this vamp's Stop button,
+     so the vamp must not keep playing with no way to stop it on screen. */
+  const lastLane = useRef(lane);
   useEffect(() => {
-    if (last.current !== sig) { last.current = sig; if (playing) { stop(); } }
-  }, [sig, playing, stop]);
-
+    if (lastLane.current !== lane) { lastLane.current = lane; if (playing) stop(); }
+  }, [lane, playing, stop]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -189,6 +163,9 @@ export default function ImproviseClient() {
               );
             })}
           </div>
+
+          <BeatCounter at={position} beats={vamp.feel === "68" ? 6 : 4}
+                       bars={chords.reduce((n, c) => n + c.bars, 0)} countdown={countdown} />
 
           {/* guide tones */}
           {guides && tones && (
