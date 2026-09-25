@@ -93,12 +93,15 @@ describe("a custom scale behaves like any other", () => {
 });
 
 describe("the default drill", () => {
-  it("opens on the minor hexatonic — the one Jason actually uses", async () => {
+  it("opens on the major hexatonic (no 4) in G, with the drone on", async () => {
     const { DEFAULTS } = await import("../src/lib/useDrill");
+    expect(DEFAULTS.key).toBe("G");
     expect(DEFAULTS.family).toBe("diatonic");
-    expect(DEFAULTS.mode).toBe(4);
+    expect(DEFAULTS.mode).toBe(0);
+    expect(DEFAULTS.drone).toBe(true);
     const s = buildScale(DEFAULTS.key, DEFAULTS.family, DEFAULTS.mode);
-    expect(s.notes.map(noteName)).toEqual(["C", "D", "Eb", "F", "G", "Bb"]);
-    expect(s.label).toContain("Dorian/Aeolian");
+    expect(s.notes.map(noteName)).toEqual(["G", "A", "B", "D", "E", "F#"]);
+    expect(s.removed && noteName(s.removed)).toBe("C");
+    expect(s.degrees).toEqual(["1", "2", "3", "5", "6", "7"]);
   });
 });

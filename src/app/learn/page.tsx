@@ -3,9 +3,9 @@ import LearnClient from "./LearnClient";
 
 export const metadata: Metadata = {
   alternates: { canonical: "https://hexatonic.nathanielschool.com/learn" },
-  title: "Learn — the five theorems",
+  title: "Why six notes: five things you can hear",
   description:
-    "Why you remove the 4th or the 7th and nothing else; why the major and minor hexatonics are the same six notes; why the scale is a chord; why the harmony is tiny; and why you cannot practise it in thirds. Each with an audible proof.",
+    "Take one note out of a major scale and hear what the six left can do: the tritone disappears, major and minor share one set, the scale stacks into one chord, four chords fit, and every fourth is perfect. Each idea has a button that proves it by ear.",
 };
 
 export default function Page() { return <LearnClient />; }

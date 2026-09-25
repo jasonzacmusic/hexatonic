@@ -3,6 +3,7 @@ import { Archivo, Cormorant, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import Nav from "@/components/Nav";
 import Link from "next/link";
+import SupportPanel from "@/components/SupportPanel";
 
 const SITE = "https://hexatonic.nathanielschool.com";
 const BUILD_VERSION = process.env.NEXT_PUBLIC_BUILD_VERSION || "local";
@@ -18,16 +19,15 @@ const plex = IBM_Plex_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
   title: {
-    default: "Hexatonic — the six-note practice engine",
+    default: "Hexatonic — practise six-note scales",
     template: "%s · Hexatonic",
   },
   description:
-    "The only free, browser-based app built entirely around hexatonic practice. Six-note scales in every key, with generated pattern drills in Carnatic groupings that tell you exactly which bar they resolve on. Real notation, real piano.",
+    "A free practice app for six-note scales. Hear major, minor, blues, whole tone, augmented and more, then drill any of them in any key with real notation and a real piano.",
   keywords: [
-    "hexatonic scale", "six note scale", "scale practice", "music theory",
-    "tisra", "chatusra", "khanda", "misra", "gati", "konnakol",
-    "triad pairs", "augmented scale", "Guidonian hexachord",
-    "Nathaniel School of Music", "Jason Zac",
+    "hexatonic scale", "six note scale", "scale practice", "blues scale",
+    "whole tone scale", "augmented scale", "major blues scale", "ear training",
+    "music theory", "piano practice", "Nathaniel School of Music", "Jason Zac",
   ],
   authors: [{ name: "Jason Zac", url: "https://nathanielschool.com" }],
   creator: "Jason Zac",
@@ -36,24 +36,34 @@ export const metadata: Metadata = {
     type: "website",
     url: SITE,
     siteName: "Hexatonic",
-    title: "Hexatonic — the six-note practice engine",
+    title: "Hexatonic — practise six-note scales",
     description:
-      "Remove one note and the tritone goes with it. Practise six-note scales in any key, in groupings of 3, 4, 5, 6 or 7, and see exactly which bar they land on.",
+      "Six notes, a world of sounds. Pick a sound, pick a key, and play along with real notation and a real piano. Free, no account.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Hexatonic — the six-note practice engine",
-    description: "Six-note scales, Carnatic groupings, real notation, real piano.",
+    title: "Hexatonic — practise six-note scales",
+    description: "Six notes, a world of sounds. Free, with real notation and a real piano.",
   },
   manifest: "/manifest.webmanifest",
   icons: { icon: "/icon.svg", apple: "/apple-icon.png" },
   alternates: { canonical: SITE },
 };
 
+/* The page is dark in both schemes, so both status bars match the header.
+   viewport-fit=cover lets the header paint under the notch; the header and
+   footer pad themselves back out with env(safe-area-inset-*). Zoom is never
+   disabled: inputs are 16px on touch screens instead. */
 export const viewport: Viewport = {
-  themeColor: "#0A0908",
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#0A0908" },
+    { media: "(prefers-color-scheme: light)", color: "#0A0908" },
+  ],
+  colorScheme: "dark",
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
+  interactiveWidget: "resizes-content",
 };
 
 const SITE_URL = SITE;
@@ -70,7 +80,7 @@ const APP = {
   "@type": "WebApplication",
   "@id": `${SITE_URL}#app`,
   name: "Hexatonic",
-  alternateName: "Hexatonic — the six-note practice engine",
+  alternateName: "Hexatonic — practise six-note scales",
   url: SITE_URL,
   applicationCategory: "EducationalApplication",
   applicationSubCategory: "Music education",
@@ -78,13 +88,12 @@ const APP = {
   browserRequirements: "Requires JavaScript and Web Audio",
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
   featureList: [
-    "Hexatonic scales in all twelve keys",
-    "Generated pattern drills in groupings of three to nine",
-    "Resolution solver — the bar a pattern lands on",
-    "Carnatic gati and konnakol",
+    "Six-note scales in all twelve keys: major, minor, blues, whole tone, augmented and more",
+    "Pattern drills in groups of three to nine, with the bar count shown",
     "Live staff notation",
     "Sampled grand piano",
-    "Improvisation vamps built from the scale's own harmony",
+    "Backing loops built from the scale's own chords",
+    "Ear-training games",
     "Works offline",
   ],
   creator: { "@type": "Person", name: "Jason Zac", url: "https://nathanielschool.com" },
@@ -120,7 +129,7 @@ const FAQ = {
       name: "Is the hexatonic scale the same as the gospel scale?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "No. The term gospel scale usually means 1 2 b3 3 5 6, the major blues scale. The six-note collection here is better called the Ionian/Lydian hexatonic, after the two modes it sits between.",
+        text: "Not the major scale without its 4th. The name gospel scale usually means 1 2 b3 3 5 6, the major blues scale, which is also in the app. The major scale without its 4th (1 2 3 5 6 7) is sometimes called the Ionian/Lydian hexatonic, after the two modes it sits between.",
       },
     },
     {
@@ -133,10 +142,10 @@ const FAQ = {
     },
     {
       "@type": "Question",
-      name: "What are tisra, chatusra, khanda and misra?",
+      name: "What does practising in groups of 5 mean?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "They are the Carnatic gati — the number of pulses subdividing each beat. Tisra is three, chatusra four, khanda five, misra seven and sankeerna nine. Misra means mixed, because seven is three plus four.",
+        text: "You play the scale steadily and accent every fifth note. The accent drifts against the beat until it lands back on the downbeat, and the app shows how many bars that takes. In Carnatic music a phrase of five is called khanda.",
       },
     },
   ],
@@ -151,42 +160,38 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(JSONLD) }} />
       </head>
-      <body className={`${archivo.variable} ${cormorant.variable} ${plex.variable} min-h-screen font-sans antialiased`}>
+      <body className={`${archivo.variable} ${cormorant.variable} ${plex.variable} min-h-dvh font-sans antialiased`}>
         <Nav />
-        <main className="mx-auto max-w-content px-5 pb-28 pt-8 sm:px-8">{children}</main>
+        <main className="mx-auto max-w-content pb-28 pl-[max(20px,env(safe-area-inset-left))] pr-[max(20px,env(safe-area-inset-right))] pt-8 sm:px-8">{children}</main>
 
-        <footer className="mt-10 border-t border-line">
+        <footer className="mt-10 border-t border-line pb-[env(safe-area-inset-bottom)]">
           <div className="mx-auto flex max-w-content flex-wrap items-start justify-between gap-10 px-5 py-12 sm:px-8">
             <div className="max-w-sm">
               <Wordmark />
               <p className="quiet mt-3">
-                Built by <span className="text-cream">Jason Zac</span> at Nathaniel School
-                of Music. The theory here is computed rather than asserted — every claim
-                the app makes is reproducible from its own engine.
+                Made by <span className="text-cream">Jason Zac</span> at Nathaniel School
+                of Music. Every spelling, chord and bar count is calculated by the app and
+                checked by tests.
               </p>
+              <div className="mt-5"><SupportPanel /></div>
             </div>
             <div className="flex gap-14">
-              <nav className="flex flex-col gap-2 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
-                <span className="text-cream/50">App</span>
-                <Link href="/practice" className="transition hover:text-cream">Practice</Link>
-                <Link href="/improvise" className="transition hover:text-cream">Improvise</Link>
-                <Link href="/live" className="transition hover:text-cream">Presenter</Link>
-                <Link href="/resolution" className="transition hover:text-cream">Resolution</Link>
-              </nav>
-              <nav className="flex flex-col gap-2 font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
-                <span className="text-cream/50">Theory</span>
-                <Link href="/learn" className="transition hover:text-cream">The five theorems</Link>
-                <Link href="/harmony" className="transition hover:text-cream">Harmony</Link>
-                <Link href="/varisai" className="transition hover:text-cream">Varisai</Link>
-                <Link href="/scales" className="transition hover:text-cream">Scale library</Link>
-                <Link href="/about" className="transition hover:text-cream">About</Link>
-              </nav>
+              <FooterLinks title="Play" links={[
+                ["/practice", "Practice"], ["/sounds", "Sounds"],
+                ["/improvise", "Improvise"], ["/ear", "Ear"],
+              ]} />
+              <FooterLinks title="Understand" links={[
+                ["/harmony", "Harmony"], ["/learn", "Why six notes"],
+                ["/resolution", "Bar-count calculator"], ["/about", "About"],
+              ]} />
             </div>
           </div>
           <div className="border-t border-line/60">
-            <p className="mx-auto max-w-content px-5 py-5 font-mono text-[10px] uppercase tracking-[0.16em] text-muted/70 sm:px-8">
-              Nathaniel School of Music · free to use · works offline
-            </p>
+            <div className="mx-auto max-w-content px-5 py-5 sm:px-8">
+              <p className="font-mono text-[13px] text-muted">
+                Nathaniel School of Music · free to use · works offline
+              </p>
+            </div>
           </div>
         </footer>
 
@@ -200,11 +205,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   );
 }
 
+function FooterLinks({ title, links }: { title: string; links: [string, string][] }) {
+  return (
+    <nav aria-label={title} className="flex flex-col gap-2.5 font-mono text-[13px] uppercase tracking-[0.06em] text-muted">
+      <span className="text-cream">{title}</span>
+      {links.map(([href, label]) => (
+        <Link key={href} href={href} className="transition-colors hover:text-cream">{label}</Link>
+      ))}
+    </nav>
+  );
+}
+
 function Wordmark() {
   return (
     <span className="inline-flex items-baseline gap-2.5">
       <span className="display text-[19px] tracking-[0.02em]">Hexatonic</span>
-      <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-gold">six</span>
+      <span className="font-mono text-[13px] uppercase tracking-[0.1em] text-muted">six notes</span>
     </span>
   );
 }

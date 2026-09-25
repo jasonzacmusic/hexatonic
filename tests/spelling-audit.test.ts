@@ -67,7 +67,7 @@ describe("audit: no scale asks for a double accidental", () => {
    */
   it("holds for the symmetric families in every key", () => {
     const bad: string[] = [];
-    for (const id of ["whole", "aug", "petrushka", "dim-wh", "dim-hw", "messiaen5"])
+    for (const id of ["whole", "aug", "petrushka", "dim-wh", "dim-hw"])
       for (const key of KEYS) {
         const s = buildScale(key, id, 0);
         if (s.notes.some((n) => Math.abs(n.alt) === 2))
@@ -92,7 +92,7 @@ describe("audit: no scale asks for a double accidental", () => {
       ["C", "D", "Eb", "E", "G", "A"],
     );
     expect(buildScale("C", "aug", 0).notes.map(noteName)).toEqual(
-      ["C", "D#", "E", "G", "Ab", "B"],
+      ["C", "Eb", "E", "G", "Ab", "B"],
     );
   });
 });

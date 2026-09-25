@@ -60,6 +60,18 @@ export function parseNoteName(s: string, octave = 4): Note {
   return note(letter, alt as Alt, octave);
 }
 
+/** The other single-accidental spelling of a tonic: Db ↔ C#, Ab ↔ G#, and so on.
+ *  Naturals have none worth offering here, so they return null. */
+export function enharmonicTonic(s: string): string | null {
+  const n = parseNoteName(s);
+  if (n.alt === 0 || Math.abs(n.alt) === 2) return null;
+  const letter = stepLetter(n.letter, n.alt < 0 ? -1 : 1);
+  const alt = pc(n) - LETTER_PC[letter];
+  const a = ((alt % 12) + 18) % 12 - 6;
+  if (Math.abs(a) !== 1) return null;
+  return letter + (a > 0 ? "#" : "b");
+}
+
 /* ── intervals ─────────────────────────────────────────────────────────────
    Named from the LETTER distance plus the semitone distance, so an augmented
    4th is never mislabelled a perfect 4th. That distinction is the whole point

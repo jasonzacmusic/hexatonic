@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "Hexatonic — The five theorems";
+export const alt = "Hexatonic — Why six notes";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -18,18 +18,18 @@ export default async function Image() {
                     color: "#F4EFE4", padding: 76, fontFamily: "sans-serif", position: "relative" }}>
         <div style={{ display: "flex", flexDirection: "column", width: 700 }}>
           <div style={{ display: "flex", fontSize: 20, letterSpacing: 7, color: "#C9A227" }}>
-            HEXATONIC · THE FIVE THEOREMS
+            HEXATONIC · LEARN
           </div>
           <div style={{ display: "flex", flexDirection: "column", marginTop: 30, fontSize: 74,
                         fontWeight: 900, lineHeight: 0.98, letterSpacing: -2 }}>
-            <span>Remove one note.</span><span>Here is the proof.</span>
+            <span>Why six notes.</span>
           </div>
           <div style={{ display: "flex", marginTop: 26, fontSize: 25, color: "#B9B0A6",
                         lineHeight: 1.35, width: 620 }}>
-            Five theorems, each with a button that proves it by ear.
+            Five things you can hear, each with a button that proves it by ear.
           </div>
           <div style={{ display: "flex", marginTop: "auto", fontSize: 18, letterSpacing: 4,
-                        color: "#8A8178" }}>
+                        color: "#A79E94" }}>
             NATHANIEL SCHOOL OF MUSIC
           </div>
         </div>
@@ -38,7 +38,7 @@ export default async function Image() {
           const r = on || rm ? 13 : 4;
           return <div key={d.i} style={{ position: "absolute", left: d.x - r, top: d.y - r,
             width: r * 2, height: r * 2, borderRadius: r, display: "flex",
-            background: rm ? "transparent" : on ? "#C9A227" : "#3A3331",
+            background: rm ? "transparent" : on ? "#F4EFE4" : "#3A3331",
             border: rm ? "5px solid #8B1E24" : "none" }} />;
         })}
       </div>

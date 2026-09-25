@@ -44,7 +44,7 @@ describe("knock one out", () => {
   it("C major without 4 is the Ionian/Lydian hexatonic and A minor without ♭6", () => {
     const row = knockOut("C", "major")[3];
     expect(names(row.notes)).toBe("C D E G A B");
-    expect(row.names).toContain("C Ionian/Lydian Hexatonic");
+    expect(row.names).toContain("C Major (no 4)");
     expect(row.names).toContain("A natural minor without ♭6");
   });
 
@@ -58,7 +58,7 @@ describe("identity and neighbours", () => {
   it("C blues and E♭ major blues are one set", () => {
     const m = maskOf(buildScale("C", "blues").pcs);
     expect(identify(m).map((e) => e.name)).toEqual(
-      expect.arrayContaining(["C Blues hexatonic", "E♭ Major blues hexatonic"]));
+      expect.arrayContaining(["C Blues", "E♭ Major blues"]));
   });
 
   it("every neighbour shares exactly five notes and names the one move", () => {

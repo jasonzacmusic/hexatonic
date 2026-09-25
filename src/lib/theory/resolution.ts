@@ -1,5 +1,5 @@
 /**
- * THE RESOLUTION SOLVER — the app's actual moat.
+ * THE RESOLUTION SOLVER: which bar does a grouped scale pattern land on?
  *
  * Jason's ask: "we go in accents of threes, fours, fives, sixes or sevens … such
  * that a time signature is respected, until the scale resolves at the one of the
@@ -11,11 +11,10 @@
  *   the accent = grouping                       (groups of 5 = 5)
  * Resolution = LCM of the clocks you care about.
  *
- * Verified against engine/VERIFIED-OUTPUT.txt. No generator of melodic groupings
- * against a tala exists in any market — this function is why.
+ * Verified against engine/VERIFIED-OUTPUT.txt.
  */
 
-const gcd = (a: number, b: number): number => (b ? gcd(b, a % b) : a);
+export const gcd = (a: number, b: number): number => (b ? gcd(b, a % b) : a);
 export const lcm = (a: number, b: number): number => (a * b) / gcd(a, b);
 
 /** 'accent' — only the accent must return to beat 1 (shorter, groovier).
@@ -56,10 +55,36 @@ export function solveResolution(
   };
 }
 
-/** "Locked" = the accent already returns on beat 1 of the very next bar.
- *  Only 5 and 7 genuinely fight a 4/4 bar; 3, 4 and 6 lock in triplets. */
+/** "Locked" = the accent already returns on beat 1 of the very next bar, which
+ *  happens exactly when the grouping divides the notes in one bar. */
 export function isLocked(subdivision: number, beatsPerBar: number, grouping: number): boolean {
   return solveResolution(1, subdivision, beatsPerBar, grouping, "accent").bars === 1;
+}
+
+/** A scale of n notes and groups of g "line up" when they share a factor: the
+ *  groups then realign with the scale before n × g notes have gone by. */
+export const sharesFactor = (n: number, g: number): boolean => gcd(n, g) > 1;
+
+export interface SixSevenRow {
+  grouping: number;
+  six: number;
+  seven: number;
+  sixShares: boolean;
+  sevenShares: boolean;
+}
+
+/** The six-against-seven comparison on Learn: bars to land (scale start, accent
+ *  and downbeat together) for a six- and a seven-note scale, one octave. */
+export function sixVsSeven(
+  groupings = [3, 4, 5, 6, 7, 9], subdivision = 4, beatsPerBar = 4,
+): SixSevenRow[] {
+  return groupings.map((g) => ({
+    grouping: g,
+    six: solveResolution(6, subdivision, beatsPerBar, g, "full").bars,
+    seven: solveResolution(7, subdivision, beatsPerBar, g, "full").bars,
+    sixShares: sharesFactor(6, g),
+    sevenShares: sharesFactor(7, g),
+  }));
 }
 
 export interface GridRow {

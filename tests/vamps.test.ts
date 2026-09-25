@@ -72,9 +72,12 @@ describe("quartal voicings really are quartal", () => {
 });
 
 describe("vamp selection and guide tones", () => {
-  it("offers the minor-only vamp only in minor modes", () => {
-    expect(vampsFor(major).some((v) => v.id === "i-VII")).toBe(false);
-    expect(vampsFor(minor).some((v) => v.id === "i-VII")).toBe(true);
+  it("the two-chord bed is I–vi in major and i–♭VII in minor", () => {
+    const two = vampById("two");
+    expect(buildVamp(major, two, "rootless").map((s) => s.roman)).toEqual(["I", "vi"]);
+    expect(buildVamp(minor, two, "rootless").map((s) => s.roman)).toEqual(["i", "♭VII"]);
+    const g = buildScale("G", "diatonic", 0);
+    expect(buildVamp(g, two, "rootless").map((s) => s.chord.label)).toEqual(["Gmaj7", "Em7"]);
   });
   it("guide tones split the scale with nothing lost or duplicated", () => {
     const chord = voiceDegree(major, 0, "spread");

@@ -54,7 +54,7 @@ export const RAGAS: Raga[] = [
     arohana: ["S", "R2", "G2", "M1", "P", "N2"],
     avarohana: ["N2", "P", "M1", "G2", "R2", "S"],
     parent: "22 Kharaharapriya", varjya: "dhaivata", jati: "shadava-shadava",
-    note: "This is the minor hexatonic. Dr M. Radhakrishnan's Rare Raga Series derives it exactly as Jason did — by adding a note to Madhyamavathi, or by making Manirangu's descent into its ascent. First composed in by Swathi Thirunal.",
+    note: "This is the minor hexatonic. Dr M. Radhakrishnan's Rare Raga Series derives it by adding G2 to Madhyamavathi, or by using Manirangu's descent for its ascent too. He calls it a rare raga, seldom heard in concerts.",
   },
   {
     id: "sriranjani", name: "Sriranjani", tradition: "carnatic",

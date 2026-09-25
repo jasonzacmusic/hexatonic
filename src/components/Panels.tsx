@@ -12,40 +12,46 @@ import { useMemo, useState } from "react";
    before play is pressed. This element is what makes the app feel like it knows
    something.                                                                */
 
+/** "Groups of 5 · khanda": plain words first, the Carnatic name second. These
+ *  are accent groupings (phrases), not gati: gati is pulses per beat. */
+export function groupingLabel(n: number, gati: Gati | null = null): { plain: string; trad: string | null } {
+  return { plain: `Groups of ${n}`, trad: gati?.name ? gati.name.toLowerCase() : null };
+}
+
 export function ResolutionBanner({
-  resolution, gati, seconds, bpm, big = false, playing = false,
+  resolution, gati, seconds, bpm, big = false, playing = false, hint,
 }: {
   resolution: Resolution; gati: Gati | null; seconds: number; bpm: number;
   big?: boolean; playing?: boolean;
+  /** a computed suggestion, e.g. how many bars the same drill takes in triplets */
+  hint?: string | null;
 }) {
   const bars = resolution.bars;
-  const accent = bars <= 4 ? "#C9A227" : "#D08A2C";
+  const grouping = resolution.groups ? resolution.totalNotes / resolution.groups : null;
+  const label = grouping ? groupingLabel(grouping, gati) : null;
   const verdict =
-    bars <= 4 ? "Short and camera-friendly."
-    : bars <= 8 ? "Usable, but long for a live take."
-    : "Too long for camera. Try a triplet subdivision for odd groupings.";
+    bars <= 4 ? "A short cycle: the one comes round quickly."
+    : bars <= 8 ? "A longer cycle. Count the bars as you go."
+    : "A long cycle.";
 
   return (
-    <div
-      className={`card relative overflow-hidden ${big ? "py-7" : "py-5"} ${playing ? "hx-pulse" : ""}`}
-      style={{ borderColor: `${accent}44` }}
-    >
-      <div className="pointer-events-none absolute inset-y-0 left-0 w-1" style={{ background: accent }} />
-      <div
-        className="pointer-events-none absolute -left-24 top-1/2 h-56 w-56 -translate-y-1/2 rounded-full opacity-[0.13]"
-        style={{ background: `radial-gradient(circle, ${accent}, transparent 70%)` }}
-      />
-      <div className="relative flex flex-wrap items-center gap-x-10 gap-y-5 pl-3">
-        <Stat v={bars} l="bars to resolve" accent={accent} big={big} lead />
-        <Stat v={resolution.totalNotes} l="notes" accent={accent} big={big} />
-        <Stat v={resolution.reps} l="pattern reps" accent={accent} big={big} />
-        <Stat v={`${seconds.toFixed(0)}s`} l={`at ${bpm} bpm`} accent={accent} big={big} />
-        <div className={`max-w-sm ${big ? "text-base" : "text-sm"}`}>
-          <p className="font-semibold">
-            {gati?.name ? `${gati.name} gati` : `groups of ${resolution.totalNotes / (resolution.groups ?? 1)}`}
+    <div className={`card relative overflow-hidden ${big ? "py-7" : "py-5"} ${playing ? "hx-pulse" : ""}`}>
+      <div className="relative flex flex-wrap items-center gap-x-10 gap-y-5">
+        <Stat v={bars} l={bars === 1 ? "bar to land on the one" : "bars to land on the one"} big={big} lead />
+        <Stat v={resolution.totalNotes} l="notes" big={big} />
+        <Stat v={resolution.reps} l={resolution.reps === 1 ? "time through the pattern" : "times through the pattern"} big={big} />
+        <Stat v={`${seconds.toFixed(0)}s`} l={`at ${bpm} bpm`} big={big} />
+        <div className={`max-w-sm ${big ? "text-lg" : "text-[15px]"}`}>
+          {label && (
+            <p className="font-semibold text-cream">
+              {label.plain}
+              {label.trad && <span className="font-normal text-muted"> · {label.trad}</span>}
+            </p>
+          )}
+          {gati?.konnakol && <p className="font-mono text-[13px] text-muted">{gati.konnakol}</p>}
+          <p className="mt-1 text-[15px] leading-relaxed text-cream/75">
+            {verdict}{hint ? ` ${hint}` : ""}
           </p>
-          <p className="font-mono text-[12px] text-gold">{gati?.konnakol}</p>
-          <p className="quiet mt-1">{verdict}</p>
         </div>
       </div>
     </div>
@@ -53,17 +59,16 @@ export function ResolutionBanner({
 }
 
 function Stat({
-  v, l, accent, big, lead,
-}: { v: string | number; l: string; accent: string; big?: boolean; lead?: boolean }) {
+  v, l, big, lead,
+}: { v: string | number; l: string; big?: boolean; lead?: boolean }) {
   return (
     <div className="flex flex-col">
       <span
-        className={`num leading-none ${big ? (lead ? "text-6xl" : "text-4xl") : lead ? "text-4xl" : "text-3xl"}`}
-        style={{ color: lead ? accent : "#F4EFE4" }}
+        className={`num leading-none text-cream ${big ? (lead ? "text-6xl" : "text-4xl") : lead ? "text-4xl" : "text-3xl"}`}
       >
         {v}
       </span>
-      <span className="mt-2 font-mono text-[10px] uppercase tracking-[0.16em] text-muted">{l}</span>
+      <span className="mt-2 font-mono text-[13px] uppercase tracking-[0.06em] text-muted">{l}</span>
     </div>
   );
 }
@@ -104,7 +109,7 @@ export function ScaleChips({
                   as a deletion mark instead of a hyperlink style */}
               <span aria-hidden className="pointer-events-none absolute inset-x-2.5 top-1/2 h-[2px]
                                            -translate-y-[3px] -rotate-12 rounded bg-red-hi/80" />
-              <span className="mt-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-red-hi/70">
+              <span className="mt-0.5 font-mono text-[13px] uppercase tracking-[0.08em] text-red-hi/80">
                 removed
               </span>
             </div>
@@ -115,13 +120,17 @@ export function ScaleChips({
           <button
             key={i}
             onClick={() => void previewAudio([midi(item.note) + 12 * transpose])}
-            className={`chip ${lit ? "chip-lit" : ""} ${lg ? "min-w-[74px] px-5 py-3" : "min-w-[58px]"}`}
+            className={`chip ${lit ? "chip-lit" : ""} ${lg ? "min-w-[64px] px-4 py-2.5 sm:min-w-[74px] sm:px-5 sm:py-3" : "min-w-[58px]"}`}
+            /* Exactly one lit note: the lit state arrives instantly and leaves
+               in 60ms, so two chips are never half-lit at once. */
+            style={{ transition: lit ? "none"
+              : "background 60ms ease-out, border-color 60ms ease-out, color 60ms ease-out, box-shadow 60ms ease-out" }}
           >
-            <span className={`block font-semibold ${lg ? "text-3xl" : "text-lg"}`}>
+            <span className={`block font-semibold ${lg ? "text-2xl sm:text-3xl" : "text-lg"}`}>
               {notePretty(item.note)}
             </span>
-            <span className={`block font-mono text-[9px] ${lit ? "text-[#5a4a12]" : "text-muted"}`}>
-              {item.degree}
+            <span className={`block font-mono text-[13px] ${lit ? "text-[#2A2208]" : "text-muted"}`}>
+              {item.degree?.replace(/b/g, "♭").replace(/#/g, "♯")}
             </span>
           </button>
         );
@@ -147,8 +156,8 @@ export function ChordGrid({ scale }: { scale: ScaleInstance }) {
       {groups.map(([label, list]) =>
         list.length ? (
           <div key={label}>
-            <h3 className="mb-3 font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
-              {label} <span className="text-gold">{list.length}</span>
+            <h3 className="mb-3 font-mono text-[13px] uppercase tracking-[0.06em] text-muted">
+              {label} <span className="text-cream">{list.length}</span>
             </h3>
             <div className="flex flex-wrap gap-2">
               {list.map((c, i) => <ChordCard key={i} chord={c} />)}
@@ -174,9 +183,9 @@ function ChordCard({ chord }: { chord: ChordSet }) {
       title={multi ? "tap to hear it, and again to flip the reading" : "tap to hear it"}
     >
       <span className="block text-[15px] font-semibold">{name.symbol}</span>
-      <span className="block font-mono text-[10px] text-muted">
+      <span className="block font-mono text-[13px] text-muted">
         {name.notes.join(" ")}
-        {multi && <span className="ml-1 text-gold/70 opacity-0 transition group-hover:opacity-100">⇄</span>}
+        {multi && <span className="ml-1 text-cream/70 opacity-0 transition group-hover:opacity-100">⇄</span>}
       </span>
     </button>
   );
@@ -191,6 +200,7 @@ export function Seg<T extends string | number>({
     <div className="seg" role="group" aria-label={ariaLabel}>
       {options.map((o) => (
         <button key={String(o.value)} type="button" data-on={o.value === value}
+                className="data-[on=true]:![background:#F4EFE4] data-[on=true]:!text-[#0A0908]"
                 aria-pressed={o.value === value}
                 onClick={() => onChange(o.value)}>
           {o.label}
@@ -204,7 +214,8 @@ export function Toggle({
   on, onClick, children, title, disabled,
 }: { on: boolean; onClick: () => void; children: React.ReactNode; title?: string; disabled?: boolean }) {
   return (
-    <button type="button" className="btn btn-ghost" data-on={on} onClick={onClick}
+    <button type="button" data-on={on} onClick={onClick}
+            className="btn btn-ghost data-[on=true]:!border-cream/70 data-[on=true]:!bg-cream/[0.08] data-[on=true]:!text-cream"
             aria-pressed={on} title={title} disabled={disabled}>
       {children}
     </button>

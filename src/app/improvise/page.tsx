@@ -4,7 +4,7 @@ import ImproviseClient from "./ImproviseClient";
 export const metadata: Metadata = {
   title: "Improvise",
   description:
-    "Improvise over a vamp built only from the hexatonic scale's own harmony. Drones, two-chord vamps, quartal beds and a 6/8 feel, with guide tones showing what to land on. Real piano, any key, any mode.",
+    "Improvise over six backing beds: a drone, a two-chord vamp, a four-chord loop, a suspended pad, swing and a 12-bar blues. The notes to land on light up as the chords change. Any six-note scale, any key.",
   alternates: { canonical: "https://hexatonic.nathanielschool.com/improvise" },
 };
 

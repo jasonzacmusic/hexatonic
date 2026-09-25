@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "Hexatonic — the ear game: which note is missing?";
+export const alt = "Hexatonic ear training: modes, families, missing notes and accents";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -11,7 +11,7 @@ export default async function Image() {
     const a = (i / 12) * Math.PI * 2 - Math.PI / 2;
     return { x: cx + R * Math.cos(a), y: cy + R * Math.sin(a), i };
   });
-  /* C major with the 4th silently removed — the game's opening riddle. */
+  /* A major scale with the 4th removed: six notes sounding, one missing (red). */
   const sounding = [0, 2, 4, 7, 9, 11];
   const missing = 5;
   return new ImageResponse(
@@ -20,15 +20,15 @@ export default async function Image() {
                     color: "#F4EFE4", padding: 76, fontFamily: "sans-serif", position: "relative" }}>
         <div style={{ display: "flex", flexDirection: "column", width: 700 }}>
           <div style={{ display: "flex", fontSize: 20, letterSpacing: 7, color: "#C9A227" }}>
-            HEXATONIC · THE EAR GAME
+            HEXATONIC · EAR TRAINING
           </div>
           <div style={{ display: "flex", flexDirection: "column", marginTop: 30, fontSize: 74,
                         fontWeight: 900, lineHeight: 0.98, letterSpacing: -2 }}>
-            <span>Which note</span><span>is missing?</span>
+            <span>Train</span><span>your ear</span>
           </div>
           <div style={{ display: "flex", marginTop: 26, fontSize: 25, color: "#B9B0A6",
                         lineHeight: 1.35, width: 620 }}>
-            Six notes of a scale, one degree silently removed. Name the hole — score, streak, share.
+            Major or minor, which mode, which family, the missing note, groups of 3, 4, 5 or 7.
           </div>
           <div style={{ display: "flex", marginTop: "auto", fontSize: 18, letterSpacing: 4,
                         color: "#8A8178" }}>
@@ -41,9 +41,9 @@ export default async function Image() {
           return <div key={d.i} style={{ position: "absolute", left: d.x - r, top: d.y - r,
             width: r * 2, height: r * 2, borderRadius: r, display: "flex",
             alignItems: "center", justifyContent: "center",
-            fontSize: 20, fontWeight: 900, color: "#C9A227",
+            fontSize: 20, fontWeight: 900, color: "#E8666C",
             background: rm || !on ? (rm ? "transparent" : "#3A3331") : "#C9A227",
-            border: rm ? "4px dashed #C9A227" : "none" }}>{rm ? "?" : ""}</div>;
+            border: rm ? "4px dashed #E8666C" : "none" }}>{rm ? "?" : ""}</div>;
         })}
       </div>
     ), size);

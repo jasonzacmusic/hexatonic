@@ -1,376 +1,242 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+/**
+ * Two-triad pairs: the finder, the curated pairs, and the movement lab for
+ * whichever pair is chosen. Every fact on screen is computed: whether two
+ * triads share a note, how many pairs make a given six notes, and which note
+ * each neighbouring pair of a major scale leaves out.
+ */
+
+import { useMemo, useState } from "react";
 import { previewAudio } from "@/lib/audio/engine";
+import MovementLab from "@/components/MovementLab";
+import { augmentedPair, triadPair, triadPairsCovering, TriadQuality } from "@/lib/theory/chords";
 import { notePretty } from "@/lib/theory/note";
 import { KEYS } from "@/lib/theory/scales";
+import { InterlockedMovement } from "@/lib/theory/movement";
 import {
-  buildAtlasMovement,
-  buildPairExercise,
-  DIATONIC_EXACT_COVERS,
-  PAIR_ATLAS,
-  PairAtlasEntry,
-  PairExerciseId,
-  proveExactCover,
+  adjacentDiatonicPairs, buildAtlasMovement, PAIR_ATLAS, pairMovement,
 } from "@/lib/theory/pairAtlas";
-import { Seg } from "@/components/Panels";
 
-type View = "new" | "all";
-type Voicing = "block" | "arpeggio";
-
-const EXERCISES: { id: PairExerciseId; title: string; note: string }[] = [
-  { id: "scale-up-down", title: "Scale up + down", note: "one note per pulse" },
-  { id: "shape-a", title: "Shape A inversions", note: "one chord family only" },
-  { id: "shape-b", title: "Shape B inversions", note: "the partner family" },
-  { id: "alternating", title: "Alternating ladder", note: "switch every pulse" },
-  { id: "scale-chord", title: "Note → chord answer", note: "hear degree and harmony" },
+const PC_NAMES = ["C", "D♭", "D", "E♭", "E", "F", "F♯", "G", "A♭", "A", "B♭", "B"];
+const PC_ASCII = ["C", "Db", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
+const QUALS: { id: TriadQuality; label: string; suffix: string }[] = [
+  { id: "maj", label: "major", suffix: "" },
+  { id: "min", label: "minor", suffix: "m" },
+  { id: "dim", label: "diminished", suffix: "°" },
+  { id: "aug", label: "augmented", suffix: "+" },
 ];
+const SHAPE: Record<TriadQuality, number[]> = { maj: [0, 4, 7], min: [0, 3, 7], dim: [0, 3, 6], aug: [0, 4, 8] };
+const triName = (root: number, q: TriadQuality) => PC_NAMES[root] + QUALS.find((x) => x.id === q)!.suffix;
+const pretty = (s: string) => s.replace(/([A-G])b/g, "$1♭").replace(/#/g, "♯");
 
-const EVIDENCE_LABEL = {
-  documented: "popular / documented",
-  specialist: "specialist repertoire",
-  theory: "theory discovery",
-} as const;
+type Pick = { kind: "atlas"; id: string } | { kind: "custom" };
 
-function AtlasCard({ entry, selected, onSelect }: {
-  entry: PairAtlasEntry;
-  selected: boolean;
-  onSelect: () => void;
-}) {
-  return (
-    <button
-      onClick={onSelect}
-      aria-pressed={selected}
-      className={`rounded-xl border p-4 text-left transition ${
-        selected
-          ? "border-gold bg-gold/[0.09] shadow-[0_0_28px_rgba(201,162,39,0.12)]"
-          : "border-line bg-surface2 hover:border-cream/30"
-      }`}
-    >
-      <div className="flex flex-wrap gap-2">
-        <span className={`rounded-full border px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.11em] ${
-          entry.status === "new-lesson"
-            ? "border-gold/45 bg-gold/10 text-gold"
-            : "border-line text-muted"
-        }`}>
-          {entry.status === "new-lesson" ? "new lesson" : "taught 2025"}
-        </span>
-        <span className="rounded-full border border-line px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.11em] text-muted">
-          {EVIDENCE_LABEL[entry.evidence]}
-        </span>
-      </div>
-      <h3 className="mt-3 text-lg font-extrabold text-cream">{entry.title}</h3>
-      <p className="mt-1 text-xs text-muted">{entry.subtitle}</p>
-      <p className="mt-3 font-mono text-xs text-gold">{entry.formula}</p>
-    </button>
-  );
-}
+export default function PairAtlas() {
+  /* The finder: G + Am by default, the pair that makes G's no-4 neighbour. */
+  const [rootA, setRootA] = useState(7);
+  const [qualA, setQualA] = useState<TriadQuality>("maj");
+  const [rootB, setRootB] = useState(9);
+  const [qualB, setQualB] = useState<TriadQuality>("min");
+  const [pick, setPick] = useState<Pick>({ kind: "atlas", id: PAIR_ATLAS[0].id });
+  const [key, setKey] = useState("G");
 
-function useExerciseRunner() {
-  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
-  const [active, setActive] = useState<number | null>(null);
+  const pcs = triadPair(rootA, qualA, rootB, qualB);
+  const aPcs = SHAPE[qualA].map((i) => (rootA + i) % 12);
+  const bPcs = SHAPE[qualB].map((i) => (rootB + i) % 12);
+  const shared = aPcs.filter((p) => bPcs.includes(p));
+  const covers = useMemo(() => (pcs ? triadPairsCovering(pcs) : []), [pcs?.join()]);
 
-  const cancel = useCallback(() => {
-    for (const timer of timers.current) clearTimeout(timer);
-    timers.current = [];
-    setActive(null);
-  }, []);
+  /* The custom pair as a movement, spelled from the first triad's root. */
+  const custom = useMemo<InterlockedMovement | null>(() => {
+    if (!pcs) return null;
+    const semis = [...new Set([...aPcs, ...bPcs].map((p) => (p - rootA + 12) % 12))].sort((x, y) => x - y);
+    try { return pairMovement(PC_ASCII[rootA], semis, 3, `${triName(rootA, qualA)} + ${triName(rootB, qualB)}`); }
+    catch { return null; }
+  }, [pcs?.join(), rootA, qualA, rootB, qualB]);
 
-  useEffect(() => cancel, [cancel]);
+  const entry = pick.kind === "atlas" ? PAIR_ATLAS.find((e) => e.id === pick.id) ?? PAIR_ATLAS[0] : null;
+  const movement = useMemo<InterlockedMovement | null>(() => {
+    if (pick.kind === "custom") return custom;
+    try { return buildAtlasMovement(entry!, key); } catch { return null; }
+  }, [pick, custom, entry, key]);
 
-  const run = useCallback((
-    events: ReturnType<typeof buildPairExercise>,
-    bpm: number,
-    voicing: Voicing,
-  ) => {
-    cancel();
-    const pulseMs = 60_000 / bpm;
-    events.forEach((event, index) => {
-      timers.current.push(setTimeout(() => {
-        setActive(index);
-        const spread = event.voicing.length === 1 ? 0 : voicing === "block" ? 0.012 : 0.11;
-        void previewAudio(event.voicing, spread, event.accent ? 0.95 : 0.62);
-      }, index * pulseMs));
-    });
-    timers.current.push(setTimeout(() => setActive(null), events.length * pulseMs));
-  }, [cancel]);
-
-  return { active, cancel, run };
-}
-
-export default function PairAtlas({ onOpenBarry }: { onOpenBarry: () => void }) {
-  const [view, setView] = useState<View>("new");
-  const [entryId, setEntryId] = useState(PAIR_ATLAS[0].id);
-  const entry = PAIR_ATLAS.find((item) => item.id === entryId) ?? PAIR_ATLAS[0];
-  const [keyName, setKeyName] = useState(entry.defaultKey);
-  const [exerciseId, setExerciseId] = useState<PairExerciseId>("alternating");
-  const [octaves, setOctaves] = useState<1 | 2>(2);
-  const [bpm, setBpm] = useState(88);
-  const [accentEvery, setAccentEvery] = useState(3);
-  const [voicing, setVoicing] = useState<Voicing>("block");
-  const runner = useExerciseRunner();
-
-  const visibleEntries = view === "new"
-    ? PAIR_ATLAS.filter((item) => item.status === "new-lesson")
-    : PAIR_ATLAS;
-  const movement = useMemo(() => buildAtlasMovement(entry, keyName), [entry, keyName]);
-  const proof = useMemo(() => proveExactCover(movement), [movement]);
-  const events = useMemo(
-    () => buildPairExercise(movement, exerciseId, octaves, accentEvery),
-    [movement, exerciseId, octaves, accentEvery],
-  );
-
-  const selectEntry = (next: PairAtlasEntry) => {
-    runner.cancel();
-    setEntryId(next.id);
-    setKeyName(next.defaultKey);
-  };
+  const sameMajor = [1, 2, 6].map((iv) => ({ iv, pcs: triadPair(7, "maj", (7 + iv) % 12, "maj")! }));
+  const neighbours = useMemo(() => adjacentDiatonicPairs(key), [key]);
+  const spelled = custom?.scale.notes.map(notePretty) ?? (pcs ?? []).map((p) => PC_NAMES[p]);
 
   return (
     <div className="space-y-5">
-      <section className="card border-gold/35">
-        <p className="eyebrow">Pair Atlas · exact-cover finder</p>
-        <h2 className="mt-2 max-w-3xl text-3xl font-extrabold">
-          Two shapes. No shared notes. Nothing left over.
-        </h2>
-        <p className="mt-3 max-w-3xl text-[15px] leading-relaxed text-cream/80">
-          This is the property behind the inversion-switching exercise. The atlas
-          proves the cover, labels what your 2025 lesson already taught, and keeps
-          the next video on genuinely new musical ground.
-        </p>
-        <div className="mt-5">
-          <Seg
-            value={view}
-            ariaLabel="Pair atlas lesson filter"
-            options={[
-              { label: "new lesson only", value: "new" as const },
-              { label: "include 2025 lesson", value: "all" as const },
-            ]}
-            onChange={setView}
-          />
-        </div>
-      </section>
-
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {visibleEntries.map((item) => (
-          <AtlasCard
-            key={item.id}
-            entry={item}
-            selected={item.id === entry.id}
-            onSelect={() => selectEntry(item)}
-          />
-        ))}
-      </section>
-
+      {/* ── the finder ─────────────────────────────────────────────────── */}
       <section className="card">
-        <div className="flex flex-wrap items-start justify-between gap-5">
-          <div className="max-w-3xl">
-            <div className="flex flex-wrap gap-2">
-              <span className="rounded-full border border-gold/45 bg-gold/10 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.11em] text-gold">
-                {entry.voices === 3 ? "hexatonic · two triads" : "octatonic · two seventh chords"}
-              </span>
-              <span className="rounded-full border border-line px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.11em] text-muted">
-                {EVIDENCE_LABEL[entry.evidence]}
-              </span>
-            </div>
-            <h2 className="mt-3 text-3xl font-extrabold">{entry.title}</h2>
-            <p className="quiet mt-2">{entry.lessonAngle}</p>
-          </div>
-          <div className="field">
-            <label htmlFor="atlas-key">Key</label>
-            <select
-              id="atlas-key"
-              className="sel"
-              value={keyName}
-              onChange={(event) => setKeyName(event.target.value)}
-            >
-              {KEYS.map((key) => <option key={key}>{key}</option>)}
-            </select>
-          </div>
+        <p className="eyebrow">Two triads, six notes</p>
+        <p className="mt-3 max-w-[68ch] text-[15px] leading-relaxed text-cream/80">
+          Pick two triads. If they share no note, together they make a six-note scale, and the
+          two shapes can alternate through every inversion.
+        </p>
+        <div className="mt-5 flex flex-wrap items-end gap-3">
+          <TriadPicker label="First triad" root={rootA} qual={qualA} setRoot={setRootA} setQual={setQualA} />
+          <span className="pb-2.5 text-2xl text-muted">+</span>
+          <TriadPicker label="Second triad" root={rootB} qual={qualB} setRoot={setRootB} setQual={setQualB} />
         </div>
 
-        <p className="mt-5 font-mono text-2xl text-gold">
-          {movement.scale.notes.map(notePretty).join("  ")}
-        </p>
+        {pcs ? (
+          <div className="well mt-5 rounded-xl p-4">
+            <p className="font-mono text-[13px] uppercase tracking-[0.1em] text-muted">six notes, none shared</p>
+            <p className="mt-1 font-mono text-2xl tracking-wide text-cream">{spelled.join("  ")}</p>
+            <p className="mt-2 text-[15px] text-cream/80">
+              {covers.length === 1
+                ? "This is the only pair of triads that makes these six notes."
+                : `${covers.length} different pairs of triads make these six notes: ${covers
+                    .map((c) => `${triName(c.a.root, c.a.qual)} + ${triName(c.b.root, c.b.qual)}`).join(", ")}.`}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <button className="btn btn-ghost" onClick={() => previewAudio(
+                        pcs.map((p) => (p - rootA + 12) % 12).sort((x, y) => x - y)
+                          .map((rel) => 55 + ((rootA - 7 + 12) % 12) + rel), 0.14)}>
+                ▶ Hear the six notes
+              </button>
+              {custom && (
+                <button className="btn btn-primary" onClick={() => setPick({ kind: "custom" })}>
+                  Practise this pair ↓
+                </button>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="well mt-5 rounded-xl p-4">
+            <p className="font-mono text-[13px] uppercase tracking-[0.1em] text-muted">not a pair</p>
+            <p className="mt-1 text-[15px] text-cream/85">
+              {triName(rootA, qualA)} and {triName(rootB, qualB)} share {shared.map((p) => PC_NAMES[p]).join(" and ")},
+              so together they make only {new Set([...aPcs, ...bPcs]).size} notes, not six.
+            </p>
+          </div>
+        )}
 
-        <div className="mt-5 grid gap-3 sm:grid-cols-2">
-          {movement.pairLabels.map((label, pair) => {
-            const steps = movement.steps.filter((step) => step.pair === pair);
+        <div className="mt-5 grid gap-5 border-t border-line pt-5 lg:grid-cols-2">
+          <div>
+            <h3 className="text-[17px] font-bold">Two major triads: only three distances work</h3>
+            <p className="mt-1 text-[15px] leading-relaxed text-cream/80">
+              A semitone, a whole step or a tritone apart. At any other distance they share a note.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {sameMajor.map(({ iv, pcs: r }) => (
+                <button key={iv} className="chip text-left hover:border-cream/40"
+                        onClick={() => previewAudio(r.map((p) => 55 + ((p - 7 + 12) % 12)), 0.12)}>
+                  <span className="block text-[15px] font-semibold">G + {PC_NAMES[(7 + iv) % 12]}</span>
+                  <span className="block font-mono text-[13px] text-muted">
+                    {iv === 1 ? "semitone" : iv === 2 ? "whole step" : "tritone"}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <h3 className="text-[17px] font-bold">Two augmented triads: only two results</h3>
+            <p className="mt-1 text-[15px] leading-relaxed text-cream/80">
+              A whole step apart they make the whole-tone scale; a semitone apart, the augmented scale.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {([[3, 1], [3, 0]] as const).map(([a, b]) => {
+                const r = augmentedPair(a, b);
+                return (
+                  <button key={`${a}${b}`} className="chip text-left hover:border-cream/40"
+                          onClick={() => previewAudio(r.pcs.map((p) => 55 + ((p - 7 + 12) % 12)), 0.12)}>
+                    <span className="block text-[15px] font-semibold">
+                      G+ + {PC_NAMES[b === 1 ? 9 : 8]}+
+                    </span>
+                    <span className="block font-mono text-[13px] text-muted">{r.result === "whole-tone" ? "whole tone" : "augmented"}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── pairs to practise ──────────────────────────────────────────── */}
+      <section>
+        <p className="eyebrow mb-3">Pairs to practise</p>
+        <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {PAIR_ATLAS.map((e) => {
+            const on = pick.kind === "atlas" && pick.id === e.id;
             return (
-              <div key={label} className={`rounded-xl border p-4 ${
-                pair === 0 ? "border-gold/40 bg-gold/[0.07]" : "border-line bg-surface2"
-              }`}>
-                <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
-                  shape {pair === 0 ? "A" : "B"}
-                </p>
-                <p className={`mt-1 text-2xl font-extrabold ${pair === 0 ? "text-gold" : "text-cream"}`}>
-                  {label}
-                </p>
-                <p className="mt-2 font-mono text-[11px] text-muted">
-                  {steps.map((step) => step.notes.map(notePretty).join(" ")).join(" · ")}
-                </p>
-              </div>
+              <button key={e.id} onClick={() => setPick({ kind: "atlas", id: e.id })} aria-pressed={on}
+                className={`rounded-xl border p-4 text-left transition-colors ${
+                  on ? "border-cream/70 bg-white/[0.05]" : "border-line bg-surface hover:border-cream/30"}`}>
+                <span className="block text-[17px] font-extrabold text-cream">{e.title}</span>
+                <span className="mt-1 block text-[14px] text-cream/75">{e.subtitle}</span>
+                <span className="mt-2 block font-mono text-[13px] text-muted">{e.formula}</span>
+              </button>
             );
           })}
         </div>
-
-        <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          <div className="rounded-lg border border-line bg-surface2 px-3 py-2">
-            <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">shared notes</p>
-            <p className="mt-0.5 font-mono text-sm font-bold text-gold">{proof.disjoint ? "0 · disjoint" : "overlap"}</p>
-          </div>
-          <div className="rounded-lg border border-line bg-surface2 px-3 py-2">
-            <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">coverage</p>
-            <p className="mt-0.5 font-mono text-sm font-bold text-gold">
-              {proof.complete ? `${movement.scale.notes.length}/${movement.scale.notes.length} · exact` : "incomplete"}
-            </p>
-          </div>
-          <a
-            href={entry.sourceUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-lg border border-line bg-surface2 px-3 py-2 transition hover:border-gold/50"
-          >
-            <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">lineage</p>
-            <p className="mt-0.5 text-sm font-semibold text-cream">{entry.sourceLabel} ↗</p>
-          </a>
-        </div>
       </section>
 
+      {movement ? (
+        <MovementLab
+          key={pick.kind === "atlas" ? `${pick.id}` : "custom"}
+          movement={movement}
+          title={pick.kind === "custom" ? `${triName(rootA, qualA)} + ${triName(rootB, qualB)}` : `${entry!.title} · ${pretty(key)}`}
+          description={pick.kind === "custom"
+            ? "Your pair, alternating through every inversion."
+            : entry!.description}
+          controls={pick.kind === "atlas" ? (
+            <div className="field">
+              <label htmlFor="pa-key">Key</label>
+              <select id="pa-key" className="sel" value={key} onChange={(e) => setKey(e.target.value)}>
+                {KEYS.map((k) => <option key={k} value={k}>{pretty(k)}</option>)}
+              </select>
+            </div>
+          ) : undefined}
+        />
+      ) : (
+        <p className="card text-[15px] text-cream/80">
+          These two triads make six notes, but their alternate notes do not form the two triads again,
+          so there is no inversion ladder to play.
+        </p>
+      )}
+
+      {/* ── the seven neighbours ───────────────────────────────────────── */}
       <section className="card">
-        <p className="eyebrow">Piano practice builder</p>
-        <h2 className="mt-2 text-2xl font-extrabold">Turn the theory into a timed exercise.</h2>
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-          {EXERCISES.map((exercise) => (
-            <button
-              key={exercise.id}
-              onClick={() => { runner.cancel(); setExerciseId(exercise.id); }}
-              aria-pressed={exerciseId === exercise.id}
-              className={`rounded-xl border p-3 text-left transition ${
-                exerciseId === exercise.id
-                  ? "border-gold bg-gold/[0.08]"
-                  : "border-line bg-surface2 hover:border-cream/30"
-              }`}
-            >
-              <span className="block text-sm font-bold">{exercise.title}</span>
-              <span className="mt-1 block text-[11px] text-muted">{exercise.note}</span>
-            </button>
-          ))}
-        </div>
-
-        <div className="mt-5 flex flex-wrap items-end gap-4">
-          <div className="field">
-            <label>Range</label>
-            <Seg
-              value={octaves}
-              ariaLabel="Exercise octave range"
-              options={[{ label: "1 octave", value: 1 as const }, { label: "2 octaves", value: 2 as const }]}
-              onChange={setOctaves}
-            />
-          </div>
-          <div className="field">
-            <label>Chords</label>
-            <Seg
-              value={voicing}
-              ariaLabel="Exercise chord articulation"
-              options={[{ label: "block", value: "block" as const }, { label: "arpeggio", value: "arpeggio" as const }]}
-              onChange={setVoicing}
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="atlas-accent">Accent every</label>
-            <select
-              id="atlas-accent"
-              className="sel !w-24"
-              value={accentEvery}
-              onChange={(event) => setAccentEvery(Number(event.target.value))}
-            >
-              {[2, 3, 4, 5].map((count) => <option key={count} value={count}>{count}</option>)}
-            </select>
-          </div>
-          <div className="field">
-            <label htmlFor="atlas-tempo">Tempo · {bpm}</label>
-            <input
-              id="atlas-tempo"
-              type="range"
-              min={45}
-              max={160}
-              value={bpm}
-              onChange={(event) => setBpm(Number(event.target.value))}
-              className="w-40 accent-[#C9A227]"
-            />
-          </div>
-          <button className="btn btn-primary" onClick={() => runner.run(events, bpm, voicing)}>
-            ▶ Start exercise
-          </button>
-          <button className="btn btn-ghost" onClick={runner.cancel}>Stop</button>
-        </div>
-
-        <div className="mt-5 grid max-h-[420px] gap-2 overflow-y-auto pr-1 sm:grid-cols-2 lg:grid-cols-3">
-          {events.map((event, index) => (
-            <button
-              key={event.id}
-              onClick={() => void previewAudio(
-                event.voicing,
-                event.voicing.length === 1 ? 0 : voicing === "block" ? 0.012 : 0.11,
-                event.accent ? 0.95 : 0.62,
-              )}
-              aria-label={`Play ${event.label}`}
-              className={`rounded-lg border px-3 py-2 text-left transition ${
-                runner.active === index
-                  ? "border-gold bg-gold/15"
-                  : event.pair === 0
-                    ? "border-gold/30 bg-gold/[0.05]"
-                    : "border-line bg-surface2 hover:border-cream/30"
-              }`}
-            >
-              <span className="flex items-center gap-2 text-sm font-semibold">
-                <span className={`h-1.5 w-1.5 rounded-full ${event.accent ? "bg-gold" : "bg-line"}`} />
-                {event.label}
-              </span>
-            </button>
-          ))}
-        </div>
-      </section>
-
-      <section className="card">
-        <p className="eyebrow">The exhaustive diatonic theorem</p>
-        <h2 className="mt-2 text-2xl font-extrabold">Seven adjacent pairs. Seven omitted notes.</h2>
-        <p className="quiet mt-2 max-w-3xl">
-          In any major scale, adjacent diatonic triads never share a note. Every pair
-          therefore makes one exact six-note collection, omitting a different scale
-          degree. The app surfaces all seven without pretending all seven are equally common.
+        <p className="eyebrow">Inside the major scale</p>
+        <h2 className="mt-2 text-2xl font-extrabold">Seven neighbours, seven six-note scales</h2>
+        <p className="mt-2 max-w-[68ch] text-[15px] leading-relaxed text-cream/80">
+          Neighbouring triads of {pretty(key)} major never share a note, so every neighbouring pair
+          makes a six-note scale that leaves out one note.
         </p>
         <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-          {DIATONIC_EXACT_COVERS.map((item) => (
-            <div key={item.pair} className="rounded-lg border border-line bg-surface2 p-3">
-              <p className="text-base font-bold">{item.pair}</p>
-              <p className="mt-1 font-mono text-[11px] text-gold">omits {item.omitted}</p>
-              <p className="mt-2 text-[11px] text-muted">{item.lesson}</p>
+          {neighbours.map((n) => (
+            <div key={n.pair} className="well rounded-lg p-3">
+              <p className="text-[15px] font-bold">{pretty(n.chords[0])} + {pretty(n.chords[1])}</p>
+              <p className="mt-1 font-mono text-[13px] text-muted">{n.pair} · no {pretty(n.omitted)}</p>
             </div>
           ))}
         </div>
       </section>
+    </div>
+  );
+}
 
-      <section className="card border-amber/30">
-        <p className="eyebrow text-amber">The genuinely new eight-note sequel</p>
-        <h2 className="mt-2 text-2xl font-extrabold">Barry’s two dominant families were not in the 2025 lesson.</h2>
-        <p className="quiet mt-2 max-w-3xl">
-          Major 6 diminished and minor 6 diminished are marked as previous material.
-          Seventh Diminished and Seventh Flat Five Diminished are the new candidates;
-          the Barry lab already contains all four, every inversion, borrowing, and
-          the related-dominant family.
-        </p>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <span className="chip text-muted">Major 6 diminished · taught</span>
-          <span className="chip text-muted">Minor 6 diminished · taught</span>
-          <span className="chip border-gold/40 text-gold">Seventh diminished · new</span>
-          <span className="chip border-gold/40 text-gold">Seventh ♭5 diminished · new</span>
-        </div>
-        <button className="btn btn-primary mt-4" onClick={onOpenBarry}>
-          Open the four-family Barry lab →
-        </button>
-      </section>
+function TriadPicker({ label, root, qual, setRoot, setQual }: {
+  label: string; root: number; qual: TriadQuality;
+  setRoot: (n: number) => void; setQual: (q: TriadQuality) => void;
+}) {
+  const id = label.replace(/\s/g, "-").toLowerCase();
+  return (
+    <div className="flex items-end gap-2">
+      <div className="field">
+        <label htmlFor={`${id}-root`}>{label}</label>
+        <select id={`${id}-root`} className="sel !w-24" value={root} onChange={(e) => setRoot(Number(e.target.value))}>
+          {PC_NAMES.map((n, i) => <option key={i} value={i}>{n}</option>)}
+        </select>
+      </div>
+      <div className="field">
+        <label htmlFor={`${id}-qual`} className="sr-only">{label} quality</label>
+        <select id={`${id}-qual`} className="sel !w-36" value={qual} onChange={(e) => setQual(e.target.value as TriadQuality)}>
+          {QUALS.map((q) => <option key={q.id} value={q.id}>{q.label}</option>)}
+        </select>
+      </div>
     </div>
   );
 }

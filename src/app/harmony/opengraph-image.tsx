@@ -28,7 +28,7 @@ export default async function Image() {
           </div>
           <div style={{ display: "flex", marginTop: 26, fontSize: 25, color: "#B9B0A6",
                         lineHeight: 1.35, width: 620 }}>
-            Triad pairs, every chord inside the scale, and Barry Harris&apos;s sixth-diminished movement.
+            Every chord inside the scale, two-triad pairs, and a chord under every note.
           </div>
           <div style={{ display: "flex", marginTop: "auto", fontSize: 18, letterSpacing: 4,
                         color: "#8A8178" }}>

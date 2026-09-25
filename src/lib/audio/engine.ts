@@ -1,16 +1,21 @@
 /**
  * Audio engine — real Salamander grand piano samples.
  *
- * Two rules learned the hard way in the prototype:
+ * Three rules learned the hard way:
  *
  * 1. Audio correctness must NOT depend on requestAnimationFrame. rAF is throttled
  *    hard when the tab loses focus, which silently broke looping — the drill ran
  *    hundreds of notes past its loop point and never re-scheduled. A setInterval
  *    LOOKAHEAD SCHEDULER owns the audio; rAF only paints the highlight.
  * 2. Everything is scheduled against AudioContext.currentTime, never setTimeout.
+ * 3. Changing a setting never stops the music. The scheduler reads the CURRENT
+ *    plan from a live timeline (./timeline.ts) every time it schedules ahead;
+ *    `update()` / `updateVamp()` hand it new settings, which land on the next
+ *    beat (tempo, click, swing, mix) or the next bar (everything else).
  */
 
 import { midi, Note } from "../theory/note";
+import { Grid, LiveTimeline, Step } from "./timeline";
 
 const SAMPLES: Record<number, string> = {
   36: "C2", 39: "Ds2", 42: "Fs2", 45: "A2",
@@ -26,10 +31,17 @@ export interface ScheduledNote {
   index: number;
 }
 
-export interface PlaybackOptions {
+/** Everything about a drill that may change while it plays. */
+export interface DrillPlan {
   /** spelled notes; MIDI is derived only at the audio boundary. null = a rest —
    *  the pulse advances, the click still sounds, nothing is struck. */
   notes: (Note | null)[];
+  /** chord stacks (MIDI) per step. When given, these sound instead of `notes`. */
+  chords?: (number[] | null)[];
+  /** seconds between the notes of a stack — 0 for a block chord */
+  spread?: number;
+  /** per-step accents; by default every `grouping`-th step is accented */
+  accents?: boolean[];
   stepDur: number;          // seconds per note
   grouping: number;         // accent every N
   subdivision: number;      // notes per beat (for the click)
@@ -38,13 +50,37 @@ export interface PlaybackOptions {
   swing?: boolean;
   loop: boolean;
   click: boolean;
+}
+
+export interface PlaybackOptions extends DrillPlan {
   countInBeats: number;
   beatDur: number;
   onStop?: () => void;
 }
 
+/** Where a running drill is, read from the audio clock. */
+export interface DrillPosition {
+  /** step within the sounding material */
+  index: number;
+  bar: number;
+  bars: number;
+  beat: number;
+  beats: number;
+  /** a change was accepted and lands on the next beat or bar */
+  pending: boolean;
+  next: "beat" | "bar" | null;
+  /** the plan sounding right now — the very object passed to start or update */
+  plan: DrillPlan;
+  /** one stretch of music with one set of settings (for grading MIDI takes) */
+  segment: { id: number; start: number; firstPos: number; stepDur: number };
+  /** changes whenever the sounding plan object changes */
+  rev: number;
+}
+
 const LOOKAHEAD = 3.0;
 const TICK_MS = 400;
+/** The earliest a live change may land: enough to schedule the seam cleanly. */
+const SEAM_LEAD = 0.06;
 
 export interface VampChord {
   bass: number;
@@ -52,16 +88,98 @@ export interface VampChord {
   bars: number;
 }
 
-export interface VampOptions {
+/** Everything about a vamp that may change while it plays. */
+export interface VampPlan {
   chords: VampChord[];
   beatDur: number;
   beatsPerBar: number;
   feel: "straight" | "swing" | "68";
   click: boolean;
-  countInBeats: number;
   bassOn: boolean;
   compOn: boolean;
 }
+
+export interface VampOptions extends VampPlan {
+  countInBeats: number;
+}
+
+export interface VampPosition {
+  /** index into the sounding plan's chords */
+  chordIndex: number;
+  /** bar within one pass of the progression */
+  bar: number;
+  bars: number;
+  beat: number;
+  beats: number;
+  pending: boolean;
+  next: "beat" | "bar" | null;
+  /** the plan sounding right now — the very object passed to startVamp or updateVamp */
+  plan: VampPlan;
+  /** changes whenever the sounding plan object changes */
+  rev: number;
+}
+
+/* ── how a plan becomes a timeline ─────────────────────────────────────── */
+
+interface CompiledDrill { src: DrillPlan; steps: (number[] | null)[] }
+interface CompiledVamp { src: VampPlan; barChord: number[] }
+
+const sameStack = (a: (number[] | null)[], b: (number[] | null)[]) =>
+  a.length === b.length && a.every((x, i) => {
+    const y = b[i];
+    if (!x || !y) return x === y;
+    return x.length === y.length && x.every((m, j) => m === y[j]);
+  });
+const sameFlags = (a?: boolean[], b?: boolean[]) =>
+  a === b || (!!a && !!b && a.length === b.length && a.every((x, i) => x === b[i]));
+
+export const compileDrill = (src: DrillPlan): CompiledDrill => ({
+  src,
+  steps: src.chords ?? src.notes.map((n) => (n ? [midi(n)] : null)),
+});
+export const drillGrid = ({ src, steps }: CompiledDrill): Grid => ({
+  stepDur: src.stepDur,
+  beatSteps: src.subdivision,
+  barSteps: src.subdivision * (src.beatsPerBar ?? 4),
+  length: steps.length,
+  loop: src.loop,
+});
+/** Same material = same notes, accents and bar shape. Tempo, click and swing are feel. */
+export const sameDrillMaterial = (a: CompiledDrill, b: CompiledDrill) =>
+  sameStack(a.steps, b.steps) &&
+  a.src.grouping === b.src.grouping &&
+  a.src.subdivision === b.src.subdivision &&
+  (a.src.beatsPerBar ?? 4) === (b.src.beatsPerBar ?? 4) &&
+  sameFlags(a.src.accents, b.src.accents);
+const sameDrillPlan = (a: CompiledDrill, b: CompiledDrill) =>
+  sameDrillMaterial(a, b) &&
+  a.src.stepDur === b.src.stepDur && !!a.src.swing === !!b.src.swing &&
+  a.src.loop === b.src.loop && a.src.click === b.src.click &&
+  (a.src.spread ?? 0) === (b.src.spread ?? 0);
+
+export const compileVamp = (src: VampPlan): CompiledVamp => ({
+  src,
+  barChord: src.chords.flatMap((c, i) => Array.from({ length: Math.max(1, c.bars) }, () => i)),
+});
+export const vampGrid = ({ src, barChord }: CompiledVamp): Grid => ({
+  stepDur: src.beatDur,
+  beatSteps: 1,
+  barSteps: src.beatsPerBar,
+  length: barChord.length * src.beatsPerBar,
+  loop: true,
+});
+/** Same material = same chords, bars and feel. Tempo, click and the mix are not. */
+export const sameVampMaterial = (a: CompiledVamp, b: CompiledVamp) =>
+  a.src.beatsPerBar === b.src.beatsPerBar && a.src.feel === b.src.feel &&
+  a.src.chords.length === b.src.chords.length &&
+  a.src.chords.every((c, i) => {
+    const d = b.src.chords[i];
+    return c.bass === d.bass && c.bars === d.bars &&
+      c.voicing.length === d.voicing.length && c.voicing.every((m, j) => m === d.voicing[j]);
+  });
+const sameVampPlan = (a: CompiledVamp, b: CompiledVamp) =>
+  sameVampMaterial(a, b) && a.src.beatDur === b.src.beatDur && a.src.click === b.src.click &&
+  a.src.bassOn === b.src.bassOn && a.src.compOn === b.src.compOn;
 
 /** Comp patterns, in beats from the top of the bar.
  *  Kept deliberately sparse — this is a bed to improvise over, not a performance
@@ -77,6 +195,8 @@ const COMP: Record<string, { chord: number[]; bass: number[] }> = {
   "68":     { chord: [0, 1, 2],     bass: [0, 1.5] },
 };
 
+type Scheduled = Map<AudioScheduledSourceNode, number>;
+
 export class AudioEngine {
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
@@ -87,8 +207,13 @@ export class AudioEngine {
   private sampleBasePath = "/audio/salamander";
   private timer: ReturnType<typeof setInterval> | null = null;
   private opts: PlaybackOptions | null = null;
+  private drill: LiveTimeline<CompiledDrill> | null = null;
+  /** drill sources by start time, so a live change can cancel what lies past the seam */
+  private drillNodes: Scheduled = new Map();
+  /** steps scheduled so far (net of any a live change cancelled) */
   private queued = 0;
-  private seqStart = 0;
+  private upcomingSteps: number[] = [];
+  private lastOrigin = 0;
   private requestId = 0;
   private previewId = 0;
   private live = new Set<AudioScheduledSourceNode>();
@@ -98,12 +223,13 @@ export class AudioEngine {
   playing = false;
   vamping = false;
   private vampOpts: VampOptions | null = null;
+  private vamp: LiveTimeline<CompiledVamp> | null = null;
+  private vampNodes: Scheduled = new Map();
   private vampTimer: ReturnType<typeof setInterval> | null = null;
-  private vampBar = 0;
-  private vampStart = 0;
 
   get context() { return this.ctx; }
-  get startTime() { return this.seqStart; }
+  /** When the first drill note sounds (the count-in ends). */
+  get startTime() { return this.drill?.origin ?? this.lastOrigin; }
   get loadedSamples() { return this.buffers.size; }
   get totalSamples() { return Object.keys(SAMPLES).length; }
   get liveNodeCount() { return this.live.size; }
@@ -222,12 +348,12 @@ export class AudioEngine {
     return Number.isFinite(bd) ? { key: best, distance: bd } : null;
   }
 
-  note(m: number, when: number, dur: number, vel = 0.8) {
+  note(m: number, when: number, dur: number, vel = 0.8, into?: Scheduled) {
     if (!this.ctx || !this.master) return;
     const nearest = this.nearest(m);
     const buf = nearest && nearest.distance <= 12 ? this.buffers.get(nearest.key) : null;
     if (!buf || !nearest) {
-      this.synthNote(m, when, dur, vel);
+      this.synthNote(m, when, dur, vel, into);
       return;
     }
     const src = this.ctx.createBufferSource();
@@ -240,11 +366,11 @@ export class AudioEngine {
     src.connect(g); g.connect(this.master);
     src.start(when);
     src.stop(when + Math.max(dur * 1.6, 0.45));
-    this.track(src);
+    this.track(src, when, into);
   }
 
   /** Network-independent, pitched fallback used only until a nearby piano sample arrives. */
-  private synthNote(m: number, when: number, dur: number, vel: number) {
+  private synthNote(m: number, when: number, dur: number, vel: number, into?: Scheduled) {
     if (!this.ctx || !this.master) return;
     const oscillator = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
@@ -259,12 +385,30 @@ export class AudioEngine {
     oscillator.start(when);
     oscillator.stop(end + 0.02);
     this.fallbackNotes++;
-    this.track(oscillator);
+    this.track(oscillator, when, into);
   }
 
-  private track(source: AudioScheduledSourceNode) {
+  private track(source: AudioScheduledSourceNode, when = 0, into?: Scheduled) {
     this.live.add(source);
-    source.onended = () => this.live.delete(source);
+    into?.set(source, when);
+    source.onended = () => {
+      this.live.delete(source);
+      into?.delete(source);
+    };
+  }
+
+  /** Silence everything in `nodes` that was due to start at or after `at`.
+   *  Sources that already began keep ringing, so the seam is legato, not a cut. */
+  private cancelFrom(nodes: Scheduled, at: number) {
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+    for (const [node, when] of nodes) {
+      if (when < at - 1e-4) continue;
+      try { node.stop(now); } catch {}
+      try { node.disconnect(); } catch {}
+      nodes.delete(node);
+      this.live.delete(node);
+    }
   }
 
   /** One-shot chord/note preview, for tapping a chip or a chord card. */
@@ -300,7 +444,7 @@ export class AudioEngine {
     return true;
   }
 
-  private clickAt(when: number, strong: boolean) {
+  private clickAt(when: number, strong: boolean, into?: Scheduled) {
     if (!this.ctx || !this.clickBus) return;
     const o = this.ctx.createOscillator();
     const g = this.ctx.createGain();
@@ -311,17 +455,18 @@ export class AudioEngine {
     g.gain.exponentialRampToValueAtTime(0.0001, when + 0.035);
     o.connect(g); g.connect(this.clickBus);
     o.start(when); o.stop(when + 0.05);
-    this.track(o);
+    this.track(o, when, into);
   }
+
+  /* ── the drill ──────────────────────────────────────────────────────── */
 
   async start(opts: PlaybackOptions): Promise<boolean> {
     const request = ++this.requestId;
     this.stopPlayback(true);
 
-    await this.init("/audio/salamander",
-      opts.notes.filter((n): n is Note => n !== null).map(midi));
-    if (request !== this.requestId) return false;
-    if (request !== this.requestId || !this.ctx || !opts.notes.length) return false;
+    const first = compileDrill(opts);
+    await this.init("/audio/salamander", first.steps.flatMap((s) => s ?? []));
+    if (request !== this.requestId || !this.ctx || !first.steps.length) return false;
 
     // stopPlayback deliberately faded the previous run. Restore before the
     // count-in; unlike the old timeout, this does not depend on playing=false.
@@ -334,43 +479,100 @@ export class AudioEngine {
     this.opts = opts;
     this.playing = true;
     this.queued = 0;
+    this.upcomingSteps = [];
     const countIn = opts.countInBeats * opts.beatDur;
-    this.seqStart = this.ctx.currentTime + 0.3 + countIn;
+    const t0 = this.ctx.currentTime + 0.3;
+    this.drill = new LiveTimeline(drillGrid, sameDrillMaterial, first, t0 + countIn);
+    this.lastOrigin = this.drill.origin;
     if (opts.click) {
       for (let i = 0; i < opts.countInBeats; i++)
-        this.clickAt(this.ctx.currentTime + 0.3 + i * opts.beatDur, i === 0);
+        this.clickAt(t0 + i * opts.beatDur, i === 0);
     }
     this.pump();
     this.timer = setInterval(() => this.pump(), TICK_MS);
     return true;
   }
 
+  /**
+   * Change a running drill without stopping it. Tempo, click, swing and loop
+   * land on the next beat and carry on in place; new notes, grouping, meter or
+   * subdivision land on the next bar and start from their own bar 1.
+   * Returns false when nothing is playing (the caller simply starts instead).
+   */
+  update(plan: DrillPlan): boolean {
+    if (!this.playing || !this.drill || !this.ctx) return false;
+    const next = compileDrill(plan);
+    if (!next.steps.length) return false;
+    if (sameDrillPlan(this.drill.latest.plan, next)) {
+      this.drill.relabel(next);
+      return true;
+    }
+    const { at } = this.drill.change(next, this.ctx.currentTime, SEAM_LEAD);
+    this.cancelFrom(this.drillNodes, at);
+    const kept = this.upcomingSteps.filter((w) => w < at - 1e-4);
+    this.queued -= this.upcomingSteps.length - kept.length;
+    this.upcomingSteps = kept;
+    this.pump();
+    return true;
+  }
+
+  private playStep(s: Step<CompiledDrill>) {
+    const { src, steps } = s.seg.plan;
+    // Shuffle: the offbeat 8th lands a triplet late. Feel only — the grid,
+    // the click and the engraving stay straight, which is how swing is written.
+    const shift = src.swing && src.subdivision === 2 && s.pos % 2 === 1 ? src.stepDur / 3 : 0;
+    const stack = steps[s.index];
+    const accent = src.accents ? !!src.accents[s.index] : s.pos % src.grouping === 0;
+    if (stack)
+      stack.forEach((m, j) =>
+        this.note(m, s.when + shift + j * (src.spread ?? 0), src.stepDur,
+                  accent ? 0.95 : 0.7, this.drillNodes));
+    if (src.click && s.pos % src.subdivision === 0)
+      this.clickAt(s.when, s.pos % (src.subdivision * (src.beatsPerBar ?? 4)) === 0, this.drillNodes);
+  }
+
   private pump() {
-    const o = this.opts;
-    if (!this.playing || !o || !this.ctx) return;
-    const len = o.notes.length;
-    const horizon = this.ctx.currentTime + LOOKAHEAD;
-    let guard = 0;
-    while (this.seqStart + this.queued * o.stepDur < horizon && guard++ < 20000) {
-      const i = this.queued;
-      if (!o.loop && i >= len) break;
-      // Shuffle: the offbeat 8th lands a triplet late. Feel only — the grid,
-      // the click and the engraving stay straight, which is how swing is written.
-      const shift =
-        o.swing && o.subdivision === 2 && i % 2 === 1 ? o.stepDur / 3 : 0;
-      const when = this.seqStart + i * o.stepDur + shift;
-      const n = o.notes[i % len];
-      if (n) this.note(midi(n), when, o.stepDur, i % o.grouping === 0 ? 0.95 : 0.7);
-      if (o.click && i % o.subdivision === 0)
-        this.clickAt(this.seqStart + i * o.stepDur, i % (o.subdivision * (o.beatsPerBar ?? 4)) === 0);
+    if (!this.playing || !this.drill || !this.ctx) return;
+    const now = this.ctx.currentTime;
+    this.drill.prune(now);
+    this.upcomingSteps = this.upcomingSteps.filter((w) => w >= now);
+    for (const s of this.drill.take(now + LOOKAHEAD)) {
+      this.playStep(s);
       this.queued++;
+      this.upcomingSteps.push(s.when);
     }
-    if (!o.loop && this.ctx.currentTime > this.seqStart + len * o.stepDur + 0.15) {
-      this.stop();
-    }
+    if (now > this.drill.endTime() + 0.15) this.stop();
+  }
+
+  /** Where the drill is right now, from the audio clock. Null before the first note. */
+  position(): DrillPosition | null {
+    if (!this.ctx || !this.drill || !this.playing) return null;
+    const at = this.drill.locate(this.ctx.currentTime);
+    if (!at) return null;
+    const { seg } = at;
+    return {
+      index: at.index, bar: at.bar, bars: at.bars, beat: at.beat, beats: at.beats,
+      pending: at.pending, next: at.next, plan: seg.plan.src,
+      segment: { id: seg.id, start: seg.start, firstPos: seg.firstPos, stepDur: seg.grid.stepDur },
+      rev: at.rev,
+    };
   }
 
   /** Current step index, derived from the clock — safe against dropped frames. */
+  currentIndex(): number {
+    return this.position()?.index ?? -1;
+  }
+
+  /** Beats until the drill starts — drives the count-in display. */
+  countdown(): number {
+    const o = this.opts;
+    if (!this.ctx || !o || !this.playing || !this.drill) return 0;
+    const left = this.drill.origin - this.ctx.currentTime;
+    return left > 0 ? Math.ceil(left / o.beatDur) : 0;
+  }
+
+  /* ── the vamp ───────────────────────────────────────────────────────── */
+
   /** Start a looping vamp. Independent of the drill scheduler so the two can
    *  never corrupt each other's queue state. */
   async startVamp(opts: VampOptions): Promise<boolean> {
@@ -390,109 +592,103 @@ export class AudioEngine {
 
     this.vampOpts = opts;
     this.vamping = true;
-    this.vampBar = 0;
     const countIn = opts.countInBeats * opts.beatDur;
-    this.vampStart = this.ctx.currentTime + 0.3 + countIn;
+    const t0 = this.ctx.currentTime + 0.3;
+    this.vamp = new LiveTimeline(vampGrid, sameVampMaterial, compileVamp(opts), t0 + countIn);
     if (opts.click)
       for (let i = 0; i < opts.countInBeats; i++)
-        this.clickAt(this.ctx.currentTime + 0.3 + i * opts.beatDur, i === 0);
+        this.clickAt(t0 + i * opts.beatDur, i === 0);
 
     this.pumpVamp();
     this.vampTimer = setInterval(() => this.pumpVamp(), TICK_MS);
     return true;
   }
 
-  private pumpVamp() {
-    const o = this.vampOpts;
-    if (!this.vamping || !o || !this.ctx) return;
-    const barDur = o.beatDur * o.beatsPerBar;
-    const horizon = this.ctx.currentTime + LOOKAHEAD;
+  /** Change a running vamp without stopping it — same rules as `update()`:
+   *  tempo, click, bass and chords on/off on the next beat; a new progression,
+   *  key, voicing or feel on the next bar, from its first chord. */
+  updateVamp(plan: VampPlan): boolean {
+    if (!this.vamping || !this.vamp || !this.ctx || !plan.chords.length) return false;
+    const next = compileVamp(plan);
+    if (sameVampPlan(this.vamp.latest.plan, next)) {
+      this.vamp.relabel(next);
+      return true;
+    }
+    const { at } = this.vamp.change(next, this.ctx.currentTime, SEAM_LEAD);
+    this.cancelFrom(this.vampNodes, at);
+    this.pumpVamp();
+    return true;
+  }
+
+  /** One beat of the vamp: the comp and bass hits that fall inside it, and the click. */
+  private playBeat(s: Step<CompiledVamp>) {
+    const { src: o, barChord } = s.seg.plan;
+    const beat = s.index % o.beatsPerBar;
+    const chord = o.chords[barChord[Math.floor(s.index / o.beatsPerBar)] ?? 0];
     const pattern = COMP[o.feel] ?? COMP.straight;
-    const totalBars = o.chords.reduce((a, c) => a + c.bars, 0);
-    let guard = 0;
+    const swing = o.feel === "swing";
+    const at = (b: number) => {
+      // push the offbeats late for a swing feel
+      const frac = b % 1;
+      const shift = swing && Math.abs(frac - 0.5) < 0.01 ? 0.167 : 0;
+      return s.when + (frac + shift) * o.beatDur;
+    };
 
-    while (this.vampStart + this.vampBar * barDur < horizon && guard++ < 2000) {
-      const barAt = this.vampStart + this.vampBar * barDur;
-      // which chord is this bar in?
-      let acc = 0, chord = o.chords[0];
-      const barInCycle = this.vampBar % totalBars;
-      for (const c of o.chords) {
-        if (barInCycle < acc + c.bars) { chord = c; break; }
-        acc += c.bars;
-      }
-      const swing = o.feel === "swing";
-      const at = (beat: number) => {
-        // push the offbeats late for a swing feel
-        const frac = beat % 1;
-        const shift = swing && Math.abs(frac - 0.5) < 0.01 ? 0.167 : 0;
-        return barAt + (Math.floor(beat) + frac + shift) * o.beatDur;
-      };
-
-      if (o.compOn)
-        for (const [i, b] of pattern.chord.entries())
+    if (o.compOn)
+      for (const [i, b] of pattern.chord.entries())
+        if (Math.floor(b) === beat)
           for (const m of chord.voicing)
-            this.note(m, at(b), o.beatDur * 1.6, i === 0 ? 0.34 : 0.22);
+            this.note(m, at(b), o.beatDur * 1.6, i === 0 ? 0.34 : 0.22, this.vampNodes);
 
-      if (o.bassOn)
-        for (const [i, b] of pattern.bass.entries()) {
+    if (o.bassOn)
+      for (const [i, b] of pattern.bass.entries())
+        if (Math.floor(b) === beat) {
           const m = i === 0 ? chord.bass
                             : chord.bass + [0, 7, 12, 7][i % 4]; // root/fifth movement
-          this.note(m, at(b), o.beatDur * 0.9, 0.42);
+          this.note(m, at(b), o.beatDur * 0.9, 0.42, this.vampNodes);
         }
 
-      if (o.click)
-        for (let b = 0; b < o.beatsPerBar; b++)
-          this.clickAt(barAt + b * o.beatDur, b === 0);
+    if (o.click) this.clickAt(s.when, beat === 0, this.vampNodes);
+  }
 
-      this.vampBar++;
-    }
+  private pumpVamp() {
+    if (!this.vamping || !this.vamp || !this.ctx) return;
+    const now = this.ctx.currentTime;
+    this.vamp.prune(now);
+    for (const s of this.vamp.take(now + LOOKAHEAD)) this.playBeat(s);
+  }
+
+  /** Where the vamp is right now. Null during the count-in. */
+  vampPosition(): VampPosition | null {
+    if (!this.ctx || !this.vamp || !this.vamping) return null;
+    const at = this.vamp.locate(this.ctx.currentTime);
+    if (!at) return null;
+    const { src, barChord } = at.seg.plan;
+    return {
+      chordIndex: barChord[at.bar - 1] ?? 0,
+      bar: at.bar, bars: at.bars, beat: at.beat, beats: at.beats,
+      pending: at.pending, next: at.next, plan: src, rev: at.rev,
+    };
   }
 
   /** Which chord index is sounding right now, for lighting the UI. */
   currentChordIndex(): number {
-    const o = this.vampOpts;
-    if (!this.ctx || !o || !this.vamping) return -1;
-    const barDur = o.beatDur * o.beatsPerBar;
-    const elapsed = this.ctx.currentTime - this.vampStart;
-    if (elapsed < 0) return -1;
-    const totalBars = o.chords.reduce((a, c) => a + c.bars, 0);
-    const barInCycle = Math.floor(elapsed / barDur) % totalBars;
-    let acc = 0;
-    for (let i = 0; i < o.chords.length; i++) {
-      if (barInCycle < acc + o.chords[i].bars) return i;
-      acc += o.chords[i].bars;
-    }
-    return 0;
+    return this.vampPosition()?.chordIndex ?? -1;
   }
 
   vampCountdown(): number {
     const o = this.vampOpts;
-    if (!this.ctx || !o || !this.vamping) return 0;
-    const left = this.vampStart - this.ctx.currentTime;
+    if (!this.ctx || !o || !this.vamping || !this.vamp) return 0;
+    const left = this.vamp.origin - this.ctx.currentTime;
     return left > 0 ? Math.ceil(left / o.beatDur) : 0;
   }
 
   stopVamp(silent = false) {
     this.vamping = false;
     this.vampOpts = null;
+    this.vamp = null;
     if (this.vampTimer) { clearInterval(this.vampTimer); this.vampTimer = null; }
     if (!silent) this.stopPlayback(true);
-  }
-
-  currentIndex(): number {
-    const o = this.opts;
-    if (!this.ctx || !o || !this.playing) return -1;
-    const i = Math.floor((this.ctx.currentTime - this.seqStart) / o.stepDur);
-    if (i < 0) return -1;
-    return o.loop ? i % o.notes.length : Math.min(i, o.notes.length - 1);
-  }
-
-  /** Beats until the drill starts — drives the count-in display. */
-  countdown(): number {
-    const o = this.opts;
-    if (!this.ctx || !o || !this.playing) return 0;
-    const left = this.seqStart - this.ctx.currentTime;
-    return left > 0 ? Math.ceil(left / o.beatDur) : 0;
   }
 
   stop(silent = false) {
@@ -505,6 +701,8 @@ export class AudioEngine {
     this.playing = false;
     if (this.timer) { clearInterval(this.timer); this.timer = null; }
     this.opts = null;
+    this.drill = null;
+    this.upcomingSteps = [];
     if (this.ctx) {
       const now = this.ctx.currentTime;
       if (this.master) {
@@ -518,6 +716,8 @@ export class AudioEngine {
       }
       this.live.clear();
     }
+    this.drillNodes.clear();
+    this.vampNodes.clear();
     if (!silent) onStop?.();
   }
 }

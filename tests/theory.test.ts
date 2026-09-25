@@ -200,7 +200,8 @@ describe("scale library matches the Python oracle", () => {
   }
   it("the augmented scale is 6-20 with vector <303630> and no tritones", () => {
     const s = buildScale("C", "aug", 0);
-    expect(s.notes.map(noteName)).toEqual(["C", "D#", "E", "G", "Ab", "B"]);
+    // spelled by degree, 1 b3 3 5 b6 7: no D# beside an Ab
+    expect(s.notes.map(noteName)).toEqual(["C", "Eb", "E", "G", "Ab", "B"]);
     expect(s.intervalVector).toEqual([3, 0, 3, 6, 3, 0]);
     expect(s.tritones).toBe(0);
   });
@@ -331,8 +332,8 @@ describe("patterns", () => {
     expect(p.slice(0, 8)).toEqual(["C", "D", "E", "G", "D", "E", "G", "A"]);
   });
   it("every pattern returns notes and never undefined", () => {
-    for (const id of ["aroha", "avaroha", "both", "thirds", "fourths", "fifths",
-                      "sixths", "cells", "cellsDown", "triads"] as const)
+    for (const id of ["aroha", "avaroha", "both", "thirds", "fourths",
+                      "cells", "cellsDown", "chordLadder", "janta"] as const)
       for (const oct of [1, 2, 3]) {
         const p = buildPattern(id, s.notes, oct, 4, false);
         expect(p.length, id).toBeGreaterThan(0);

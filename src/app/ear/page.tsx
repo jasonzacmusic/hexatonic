@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import EarClient from "./EarClient";
 
 export const metadata: Metadata = {
-  title: "Ear — which note is missing?",
+  title: "Ear training: modes, families, missing notes, accents",
   description:
-    "An ear-training game only Hexatonic can pose: six notes of a major scale with one degree silently removed. Name the hole. Ascending for beginners, scrambled for the brave — score, streak, and a shareable result.",
+    "Five short ear games on six-note scales. Tell major from minor, name the mode or the family, find the missing note, and hear accents in groups of 3, 4, 5 or 7. Every round sets the key first, then plays your pick and the right answer back to back.",
   alternates: { canonical: "https://hexatonic.nathanielschool.com/ear" },
 };
 

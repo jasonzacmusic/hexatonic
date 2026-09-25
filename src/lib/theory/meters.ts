@@ -23,35 +23,34 @@ export interface Meter {
 }
 
 export const METERS: Meter[] = [
-  { id: "4-4", label: "4/4", top: 4, bottom: 4, family: "simple",
-    note: "The default. Everything in the theory documents is calculated against it." },
+  { id: "4-4", label: "4/4", top: 4, bottom: 4, family: "simple" },
   { id: "3-4", label: "3/4", top: 3, bottom: 4, family: "simple" },
   { id: "2-4", label: "2/4", top: 2, bottom: 4, family: "simple" },
   { id: "5-4", label: "5/4", top: 5, bottom: 4, family: "odd",
-    note: "Five quarters. A six-note scale in fives against this locks immediately." },
+    note: "Five beats to the bar. Accents in groups of 5 land on every downbeat." },
   { id: "7-4", label: "7/4", top: 7, bottom: 4, family: "odd" },
   { id: "6-8", label: "6/8", top: 6, bottom: 8, grouping: [3, 3], family: "compound",
-    note: "Two dotted-quarter beats. The 6/8 gospel feel." },
+    note: "Two beats to the bar, each split in three." },
   { id: "9-8", label: "9/8", top: 9, bottom: 8, grouping: [3, 3, 3], family: "compound" },
   { id: "12-8", label: "12/8", top: 12, bottom: 8, grouping: [3, 3, 3, 3], family: "compound" },
   { id: "5-8", label: "5/8", top: 5, bottom: 8, grouping: [3, 2], family: "odd" },
   { id: "7-8", label: "7/8", top: 7, bottom: 8, grouping: [2, 2, 3], family: "odd",
-    note: "Counted 2+2+3. Misra gati's Western cousin, and the same seven a Bulgarian ruchenitsa dances — see the Balkan meters below." },
+    note: "Counted 2+2+3: the same seven a Bulgarian ruchenitsa dances." },
 
   /* ── Balkan asymmetric meters ─────────────────────────────────────────────
      Bulgarian music's fame is its metre, not a scale of its own. These are the
-     dance metres by name, and they are worth having beside the talas: a
-     ruchenitsa and a misra gati are both counting seven, grouped differently.
+     dance metres by name. (Gati means pulses PER BEAT, so a seven-beat bar is
+     not "misra gati"; the wording here keeps the two apart.)
      Kept as separate entries so the plain Western 5/8, 7/8 and 9/8 above keep
      the groupings they already had. */
   { id: "5-8-paidushko", label: "5/8 · Paidushko", top: 5, bottom: 8, grouping: [2, 3], family: "odd",
     note: "The Bulgarian limp: 2+3, short then long. The plain 5/8 above is grouped the other way round, 3+2, and the two feel nothing alike." },
   { id: "7-8-ruchenitsa", label: "7/8 · Ruchenitsa", top: 7, bottom: 8, grouping: [2, 2, 3], family: "odd",
-    note: "2+2+3, the best known Bulgarian dance metre. Identical arithmetic to misra gati — seven pulses to the cycle — approached from the opposite side of the world." },
+    note: "2+2+3, the best-known Bulgarian dance metre." },
   { id: "9-8-daichovo", label: "9/8 · Daichovo", top: 9, bottom: 8, grouping: [2, 2, 2, 3], family: "odd",
     note: "2+2+2+3. Not the compound 9/8 above, which is 3+3+3: same nine pulses, a completely different dance." },
   { id: "11-8-kopanitsa", label: "11/8 · Kopanitsa", top: 11, bottom: 8, grouping: [2, 2, 3, 2, 2], family: "odd",
-    note: "2+2+3+2+2, with the long beat in the middle. Eleven is prime, so a six-note pattern against it takes a long time to come home — the resolution calculator will tell you exactly how long." },
+    note: "2+2+3+2+2, with the long beat in the middle. Eleven is prime; the bar count shows how long a pattern takes to come home." },
 ];
 
 /** Resolves Western meters AND tala meters ("tala-<name>-<jati>").

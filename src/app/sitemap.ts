@@ -2,18 +2,17 @@ import type { MetadataRoute } from "next";
 const SITE = "https://hexatonic.nathanielschool.com";
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
+  const page = (path: string, priority: number, changeFrequency: "monthly" | "yearly" = "monthly") =>
+    ({ url: `${SITE}${path}`, lastModified: now, changeFrequency, priority });
   return [
-    { url: SITE, lastModified: now, changeFrequency: "monthly", priority: 1 },
-    { url: `${SITE}/practice`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
-    { url: `${SITE}/workout`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
-    { url: `${SITE}/class`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
-    { url: `${SITE}/improvise`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
-    { url: `${SITE}/learn`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
-    { url: `${SITE}/ear`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
-    { url: `${SITE}/varisai`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
-    { url: `${SITE}/harmony`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
-    { url: `${SITE}/scales`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
-    { url: `${SITE}/resolution`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
-    { url: `${SITE}/about`, lastModified: now, changeFrequency: "yearly", priority: 0.4 },
+    page("", 1),
+    page("/practice", 0.9),
+    page("/sounds", 0.9),
+    page("/improvise", 0.9),
+    page("/ear", 0.8),
+    page("/harmony", 0.8),
+    page("/learn", 0.8),
+    page("/resolution", 0.6),
+    page("/about", 0.4, "yearly"),
   ];
 }

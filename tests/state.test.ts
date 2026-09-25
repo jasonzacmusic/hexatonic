@@ -6,7 +6,7 @@ describe("share-link state", () => {
     const state: DrillState = {
       key: "F#", family: "diatonic", mode: 4, pattern: "cells", cell: 6,
       octaves: 3, includeTop: true, sub: 6, grouping: 9, resolve: "accent", meter: "7-8",
-      bpm: 137, loop: false, click: false, countIn: false, custom: "", swing: true,
+      bpm: 137, loop: false, click: false, countIn: false, custom: "", swing: true, drone: false,
     };
     expect(decodeState(encodeState(state))).toEqual(state);
   });
@@ -15,7 +15,8 @@ describe("share-link state", () => {
     const decoded = decodeState(
       "k=H&f=missing&m=99&p=bad&c=0&o=12&t=maybe&s=0&g=8&r=nope&b=NaN&l=2&x=-1"
     );
-    expect(decoded).toEqual(DEFAULTS);
+    // no version mark, so this reads as an old link: old defaults for key and mode
+    expect(decoded).toEqual({ ...DEFAULTS, key: "C", mode: 4 });
   });
 
   it("forces non-rotating scale families back to mode zero", () => {

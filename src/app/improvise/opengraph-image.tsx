@@ -22,14 +22,14 @@ export default async function Image() {
           </div>
           <div style={{ display: "flex", flexDirection: "column", marginTop: 30, fontSize: 80,
                         fontWeight: 900, lineHeight: 0.98, letterSpacing: -2 }}>
-            <span>Stop running</span><span>patterns.</span>
+            <span>Pick a bed.</span><span>Play.</span>
           </div>
           <div style={{ display: "flex", marginTop: 26, fontSize: 25, color: "#B9B0A6",
                         lineHeight: 1.35, width: 620 }}>
-            A vamp built only from the scale's own harmony, with guide tones showing what to land on.
+            Six backing beds, from a drone to a 12-bar blues. The notes to land on light up as the chords change.
           </div>
           <div style={{ display: "flex", marginTop: "auto", fontSize: 18, letterSpacing: 4,
-                        color: "#8A8178" }}>
+                        color: "#A79E94" }}>
             NATHANIEL SCHOOL OF MUSIC
           </div>
         </div>
