@@ -1,9 +1,12 @@
-/* Hexatonic offline shell. The live shoot cannot depend on venue wifi. */
-const CACHE_PREFIX = "hexatonic-";
+/* Hexatonic offline shell: the app keeps working when the connection drops. */
+/* v2: /class, /live, /workout, /scales and /guides are gone. The new prefix
+   means every older cache is deleted on activate, so no one keeps them offline. */
+const CACHE_PREFIX = "hexatonic-v2-";
+const OLD_PREFIX = "hexatonic-";
 const BUILD = new URL(self.location.href).searchParams.get("v") || "local";
 const CACHE = `${CACHE_PREFIX}${BUILD}`;
-const CORE = ["/", "/practice", "/improvise", "/harmony", "/varisai", "/learn", "/scales", "/resolution", "/live",
-              "/manifest.webmanifest", "/icon.svg"];
+const CORE = ["/", "/practice", "/sounds", "/improvise", "/ear", "/harmony", "/learn",
+              "/resolution", "/about", "/manifest.webmanifest", "/icon.svg"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(CORE)).then(() => self.skipWaiting()));
@@ -12,7 +15,7 @@ self.addEventListener("activate", (e) => {
   e.waitUntil(
     caches.keys()
       .then((ks) => Promise.all(
-        ks.filter((k) => k.startsWith(CACHE_PREFIX) && k !== CACHE).map((k) => caches.delete(k))
+        ks.filter((k) => k.startsWith(OLD_PREFIX) && k !== CACHE).map((k) => caches.delete(k))
       ))
       .then(() => self.clients.claim())
   );

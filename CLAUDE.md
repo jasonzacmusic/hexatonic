@@ -5,8 +5,8 @@ Read this first, every session.
 ## Showing Jason the work
 - Anything meant for Jason to read (guides, lesson plans, reports) is published
   as a Claude Artifact and the link is given in the reply, never left only as a
-  file in the container. Guides also get a copy in `public/guides/` so they are
-  served from the live site after deploy.
+  file in the container. Teaching material (class plans, guides) is never
+  published on the site; it lives in private Artifacts only.
 - Every reply that changes code says plainly whether it is **live** yet. The
   site deploys only when a change reaches `main` (Vercel Git integration). A
   pushed branch or an open PR is **not** live.

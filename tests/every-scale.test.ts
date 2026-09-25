@@ -8,8 +8,8 @@
  */
 import { describe, test, expect } from "vitest";
 
-import { FAMILIES, KEYS, buildScale, DIATONIC_MODES, buildDiatonic, MAJOR } from "../src/lib/theory/scales";
-import { pc, midi, noteName, LETTERS, letterIndex } from "../src/lib/theory/note";
+import { FAMILIES, KEYS, buildScale, DIATONIC_MODES, buildDiatonic, MAJOR, minLetters } from "../src/lib/theory/scales";
+import { pc, midi, noteName, LETTERS, letterIndex, enharmonicTonic } from "../src/lib/theory/note";
 
 const DEG_SEMI: Record<string, number> = {
   "1": 0, b2: 1, "2": 2, b3: 3, "3": 4, "4": 5, b5: 6, "5": 7, b6: 8, "6": 9, b7: 10, "7": 11,
@@ -71,7 +71,11 @@ describe("every scale in every key", () => {
     for (const { family, modeIndex } of COMBOS) {
       for (const key of KEYS) {
         const scale = buildScale(key, family.id, modeIndex);
-        expect(noteName(scale.notes[0]), `${key} ${family.id}/${modeIndex}`).toBe(key);
+        /* Two rotations in Db and Ab would need double flats, so they read
+           from the enharmonic sharp instead (Db "Phrygian (no 5th)" is
+           C# D E F# A B). That is the only allowed difference. */
+        const want = scale.respelledFrom === key ? enharmonicTonic(key) : key;
+        expect(noteName(scale.notes[0]), `${key} ${family.id}/${modeIndex}`).toBe(want);
       }
     }
   });
@@ -110,7 +114,7 @@ describe("every scale in every key", () => {
         expect(
           new Set(notes.map((n) => n.letter)).size,
           `${where} spreads over too few letters`,
-        ).toBeGreaterThanOrEqual(Math.min(notes.length - 1, 5));
+        ).toBeGreaterThanOrEqual(minLetters(notes.length));
       }
     }
   });

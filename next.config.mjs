@@ -9,9 +9,16 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   env: { NEXT_PUBLIC_BUILD_VERSION: buildVersion },
-  // /varisai was folded into Practice as "Routines".
+  /* Old addresses keep working. Class material is no longer on the site. */
   async redirects() {
-    return [{ source: "/varisai", destination: "/practice#routines", permanent: true }];
+    return [
+      { source: "/scales", destination: "/sounds", permanent: true },
+      { source: "/workout", destination: "/sounds", permanent: true },
+      { source: "/live", destination: "/practice", permanent: true },
+      { source: "/varisai", destination: "/practice#routines", permanent: true },
+      { source: "/class", destination: "/", permanent: true },
+      { source: "/guides/:path*", destination: "/", permanent: true },
+    ];
   },
   async headers() {
     return [

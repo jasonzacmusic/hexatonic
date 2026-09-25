@@ -15,8 +15,8 @@ const spell = (key: string, id: string) =>
   buildScale(key, id, 0).notes.map(noteName).join(" ");
 
 describe("the two hexatonic gaps we filled", () => {
-  it("Petrushka is C major and F# major stacked, with nothing shared", () => {
-    expect(spell("C", "petrushka")).toBe("C Db E F# G Bb");
+  it("Petrushka is C major and F# major stacked, spelled so both read as triads", () => {
+    expect(spell("C", "petrushka")).toBe("C C# E F# G A#");
     const set = buildScale("C", "petrushka", 0)!.notes.map(pc).sort((a, b) => a - b);
     const cMaj = [0, 4, 7], fsMaj = [6, 10, 1];
     expect(cMaj.every((n) => set.includes(n))).toBe(true);
@@ -38,17 +38,8 @@ describe("the two hexatonic gaps we filled", () => {
     expect(legal).toContain(6); // the tritone — Petrushka's case
   });
 
-  it("Messiaen mode 5 is six notes and reports 6-7", () => {
-    expect(spell("C", "messiaen5")).toBe("C Db F Gb G B");
-    expect(buildScale("C", "messiaen5", 0)!.forte.startsWith("6-7")).toBe(true);
-  });
-
-  it("mode 5 really is of limited transposition — fewer than 12 distinct sets", () => {
-    const seen = new Set<string>();
-    for (let t = 0; t < 12; t++) {
-      seen.add([0, 1, 5, 6, 7, 11].map((n) => (n + t) % 12).sort((a, b) => a - b).join(","));
-    }
-    expect(seen.size).toBe(6);
+  it("Messiaen mode 5 is not in the app any more", () => {
+    expect(familyById("messiaen5").id).toBe("diatonic"); // unknown ids fall back
   });
 });
 
@@ -96,7 +87,7 @@ describe("Hijaz — one scale, several traditions", () => {
 });
 
 describe("every added scale survives all twelve keys", () => {
-  const added = ["petrushka", "messiaen5", "hirajoshi", "insen", "iwato", "kumoi", "yo", "hijaz"];
+  const added = ["petrushka", "hirajoshi", "insen", "iwato", "kumoi", "yo", "hijaz"];
   for (const id of added) {
     it(`${id} builds in every key with no triple accidental`, () => {
       for (const k of KEYS) {
