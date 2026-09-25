@@ -118,9 +118,9 @@ export default function HomeHero() {
                   <span className="mt-3 block text-[17px] font-bold leading-tight tracking-[-0.01em] text-cream">
                     {s.name}
                   </span>
-                  <span className="mt-2.5 flex flex-wrap gap-[3px]" aria-hidden="true">
+                  <span className="mt-2.5 grid grid-cols-6 gap-[3px]" aria-hidden="true">
                     {s.scale.notes.map((n, i) => (
-                      <span key={i} className={`note-dot px-[5px] ${idx === i ? "is-lit" : ""}`}>{notePretty(n)}</span>
+                      <span key={i} className={`note-dot px-0 text-center ${idx === i ? "is-lit" : ""}`}>{notePretty(n)}</span>
                     ))}
                   </span>
                 </button>
