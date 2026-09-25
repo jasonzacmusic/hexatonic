@@ -1,7 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { previewAudio } from "@/lib/audio/engine";
+import { useMemo, useState } from "react";
+import { DrillPlan, previewAudio } from "@/lib/audio/engine";
+import { useLiveDrill } from "@/lib/audio/useLive";
+import BeatCounter from "@/components/BeatCounter";
 import { notePretty } from "@/lib/theory/note";
 import { KEYS } from "@/lib/theory/scales";
 import {
@@ -66,36 +68,24 @@ function AtlasCard({ entry, selected, onSelect }: {
   );
 }
 
-function useExerciseRunner() {
-  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
-  const [active, setActive] = useState<number | null>(null);
-
-  const cancel = useCallback(() => {
-    for (const timer of timers.current) clearTimeout(timer);
-    timers.current = [];
-    setActive(null);
-  }, []);
-
-  useEffect(() => cancel, [cancel]);
-
-  const run = useCallback((
-    events: ReturnType<typeof buildPairExercise>,
-    bpm: number,
-    voicing: Voicing,
-  ) => {
-    cancel();
-    const pulseMs = 60_000 / bpm;
-    events.forEach((event, index) => {
-      timers.current.push(setTimeout(() => {
-        setActive(index);
-        const spread = event.voicing.length === 1 ? 0 : voicing === "block" ? 0.012 : 0.11;
-        void previewAudio(event.voicing, spread, event.accent ? 0.95 : 0.62);
-      }, index * pulseMs));
-    });
-    timers.current.push(setTimeout(() => setActive(null), events.length * pulseMs));
-  }, [cancel]);
-
-  return { active, cancel, run };
+/* The playback rule: the exercise runs on the audio clock (the drill
+   scheduler) and never stops for a change. Tempo and block/arpeggio land on
+   the next pulse; a new exercise, range, key or accent grouping lands on the
+   next accent group and starts the new exercise from its first chord. */
+function useExerciseRunner(
+  events: ReturnType<typeof buildPairExercise>, bpm: number, voicing: Voicing, accentEvery: number,
+) {
+  const chords = useMemo(() => events.map((event) => event.voicing), [events]);
+  const plan = useMemo<DrillPlan | null>(() => chords.length ? {
+    notes: [], chords, accents: events.map((event) => event.accent),
+    spread: voicing === "block" ? 0.012 : 0.11,
+    stepDur: 60 / bpm, grouping: accentEvery, subdivision: 1, beatsPerBar: accentEvery,
+    loop: false, click: false,
+  } : null, [chords, events, voicing, bpm, accentEvery]);
+  const live = useLiveDrill(plan, () => ({ countInBeats: 0, beatDur: 60 / bpm }));
+  const p = live.position;
+  const active = p && p.plan.chords === chords ? p.index : null;
+  return { active, position: p, run: live.play, cancel: live.stop };
 }
 
 export default function PairAtlas({ onOpenBarry }: { onOpenBarry: () => void }) {
@@ -108,7 +98,6 @@ export default function PairAtlas({ onOpenBarry }: { onOpenBarry: () => void }) 
   const [bpm, setBpm] = useState(88);
   const [accentEvery, setAccentEvery] = useState(3);
   const [voicing, setVoicing] = useState<Voicing>("block");
-  const runner = useExerciseRunner();
 
   const visibleEntries = view === "new"
     ? PAIR_ATLAS.filter((item) => item.status === "new-lesson")
@@ -119,9 +108,9 @@ export default function PairAtlas({ onOpenBarry }: { onOpenBarry: () => void }) 
     () => buildPairExercise(movement, exerciseId, octaves, accentEvery),
     [movement, exerciseId, octaves, accentEvery],
   );
+  const runner = useExerciseRunner(events, bpm, voicing, accentEvery);
 
   const selectEntry = (next: PairAtlasEntry) => {
-    runner.cancel();
     setEntryId(next.id);
     setKeyName(next.defaultKey);
   };
@@ -244,7 +233,7 @@ export default function PairAtlas({ onOpenBarry }: { onOpenBarry: () => void }) 
           {EXERCISES.map((exercise) => (
             <button
               key={exercise.id}
-              onClick={() => { runner.cancel(); setExerciseId(exercise.id); }}
+              onClick={() => setExerciseId(exercise.id)}
               aria-pressed={exerciseId === exercise.id}
               className={`rounded-xl border p-3 text-left transition ${
                 exerciseId === exercise.id
@@ -300,11 +289,14 @@ export default function PairAtlas({ onOpenBarry }: { onOpenBarry: () => void }) 
               className="w-40 accent-[#C9A227]"
             />
           </div>
-          <button className="btn btn-primary" onClick={() => runner.run(events, bpm, voicing)}>
+          <button className="btn btn-primary" onClick={() => void runner.run()}>
             ▶ Start exercise
           </button>
           <button className="btn btn-ghost" onClick={runner.cancel}>Stop</button>
         </div>
+        <BeatCounter at={runner.position} beats={accentEvery}
+                     bars={Math.ceil(events.length / accentEvery)} barLabel="group"
+                     className="mt-4" />
 
         <div className="mt-5 grid max-h-[420px] gap-2 overflow-y-auto pr-1 sm:grid-cols-2 lg:grid-cols-3">
           {events.map((event, index) => (

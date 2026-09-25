@@ -79,13 +79,16 @@ describe("playback contract", () => {
 
   it("every screen that starts sustained audio also stops it on unmount", () => {
     const screens = files.filter(
-      (f) => f.rel.startsWith("app/") && /startVamp\(|useDrill\(|usePlayback\(/.test(f.code)
+      (f) => f.rel.startsWith("app/") &&
+        /startVamp\(|useDrill\(|usePlayback\(|useLiveDrill\(|useLiveVamp\(/.test(f.code)
     );
     expect(screens.length, "expected to find playback screens").toBeGreaterThan(0);
     for (const f of screens) {
       const managed =
         f.code.includes("usePlayback(") ||   // the hook handles it
-        f.code.includes("useDrill(");        // which itself uses the hook
+        f.code.includes("useDrill(") ||      // which itself uses the hook
+        f.code.includes("useLiveDrill(") ||  // as do the live-playback hooks
+        f.code.includes("useLiveVamp(");
       expect(managed, `${f.rel} starts audio without a managed lifecycle`).toBe(true);
     }
   });
@@ -103,6 +106,23 @@ describe("playback contract", () => {
       offenders,
       "Schedule against AudioContext.currentTime, not a JS timer."
     ).toEqual([]);
+  });
+
+  it("THE PLAYBACK RULE: no screen stops the music because a setting changed", () => {
+    /* The old pattern: build a signature string of every setting and stop()
+       when it changed. That is exactly what made the app go silent every time
+       the key, mode, tempo or pattern was touched. Changes now go to the running
+       scheduler (engine.update / updateVamp via src/lib/audio/useLive.ts). */
+    const offenders = files
+      .filter((f) => /const\s+sig\s*=\s*`/.test(f.code) && /\bstop\s*\(\s*\)/.test(f.code))
+      .map((f) => f.rel);
+    expect(
+      offenders,
+      "Hand the new settings to the running scheduler instead of stopping."
+    ).toEqual([]);
+    const live = files.find((f) => f.rel === "lib/audio/useLive.ts")!.code;
+    expect(live).toContain(".update(");
+    expect(live).toContain(".updateVamp(");
   });
 
   it("the global stop handlers cover every way a page can end", () => {

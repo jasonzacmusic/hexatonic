@@ -61,25 +61,32 @@ export interface GradeReport {
   worstNotes: { note: string; misses: number }[];
 }
 
+/**
+ * `range` limits the grade to steps [from, to) — used when a live change ends a
+ * take part-way, so the steps that were never due are not counted as missed.
+ */
 export function grade(
   expected: Note[], accentEvery: number, events: MidiEvent[],
-  startTime: number, stepDur: number
+  startTime: number, stepDur: number, range?: { from?: number; to?: number }
 ): GradeReport {
-  const steps: StepGrade[] = expected.map((n, i) => ({
+  const from = Math.max(0, Math.floor(range?.from ?? 0));
+  const to = Math.min(expected.length, Math.floor(range?.to ?? expected.length));
+  const all: StepGrade[] = expected.map((n, i) => ({
     index: i,
     expected: pc(n),
     expectedNote: noteName(n),
     verdict: "missed" as NoteVerdict,
     isAccent: i % accentEvery === 0,
   }));
+  const steps = all.slice(from, Math.max(from, to));
 
   const used = new Set<number>();
   for (const [ei, ev] of events.entries()) {
     const raw = (ev.at - startTime) / stepDur;
     const idx = Math.round(raw);
-    if (idx < 0 || idx >= steps.length) continue;
+    if (idx < from || idx >= to) continue;
     if (Math.abs(raw - idx) > 0.5) continue;         // outside this step's window
-    const s = steps[idx];
+    const s = all[idx];
     if (s.verdict !== "missed") continue;            // first note in the window wins
     const hit = ((ev.midi % 12) + 12) % 12 === s.expected;
     s.played = ev.midi;

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Note } from "@/lib/theory/note";
+import type { DrillPosition } from "@/lib/audio/engine";
 import { getMidi, grade, GradeReport, MidiPort, midiNoteName } from "@/lib/midi";
 import { getAudio } from "@/lib/audio/engine";
 
@@ -10,9 +11,32 @@ interface Props {
   grouping: number;
   stepDur: number;
   playing: boolean;
+  /** where the running drill is — its segment says which settings are sounding */
+  position?: DrillPosition | null;
 }
 
-export default function MidiPanel({ expected, grouping, stepDur, playing }: Props) {
+interface Take {
+  expected: Note[];
+  grouping: number;
+  stepDur: number;
+  /** audio time of step 0 of `expected` on this take's grid */
+  origin: number;
+  from: number;
+  /** events before this belong to the previous take */
+  since: number;
+  seg: number;
+}
+
+function takeFrom(p: DrillPosition, since: number): Take {
+  const expected = p.plan.notes.filter((n): n is Note => n !== null);
+  const from = expected.length ? p.segment.firstPos % expected.length : 0;
+  return {
+    expected, grouping: p.plan.grouping, stepDur: p.segment.stepDur,
+    origin: p.segment.start - from * p.segment.stepDur, from, since, seg: p.segment.id,
+  };
+}
+
+export default function MidiPanel({ expected, grouping, stepDur, playing, position = null }: Props) {
   const [ports, setPorts] = useState<MidiPort[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [armed, setArmed] = useState(false);
@@ -39,27 +63,47 @@ export default function MidiPanel({ expected, grouping, stepDur, playing }: Prop
     else if (!p.length) setErr("No MIDI device found. Plug one in and press connect again.");
   }, [midi]);
 
-  const take = useRef<{ expected: typeof expected; grouping: typeof grouping; stepDur: number } | null>(null);
+  /* One take = one stretch of music with one set of settings. A change made
+     while playing no longer stops the drill, so when it lands the take so far
+     is graded against the drill that was PLAYED, and a new take begins at the
+     seam with the new settings. */
+  const take = useRef<Take | null>(null);
+  const segId = position?.segment.id ?? null;
 
-  // capture while the drill runs; grade the moment it stops
   useEffect(() => {
     if (!armed) return;
+    const gradeTake = (t: Take, until: number) => {
+      const events = midi.captured().filter((e) => e.at >= t.since && e.at < until);
+      const to = Number.isFinite(until)
+        ? Math.round((until - t.origin) / t.stepDur) : t.expected.length;
+      if (events.length)
+        setReport(grade(t.expected, t.grouping, events, t.origin, t.stepDur, { from: t.from, to }));
+    };
     if (playing && !wasPlaying.current) {
       midi.startCapture();
       setReport(null);
-      /* Grade against the drill that was PLAYED. Changing tempo or grouping
-         stops the take, and by then these props already hold the new values. */
-      take.current = { expected, grouping, stepDur };
+      take.current = null;
+    }
+    if (playing && position) {
+      const cur = take.current;
+      if (!cur) take.current = takeFrom(position, -Infinity);
+      else if (cur.seg !== position.segment.id) {
+        gradeTake(cur, position.segment.start);
+        take.current = takeFrom(position, position.segment.start);
+      }
     }
     if (!playing && wasPlaying.current) {
-      const a = getAudio();
-      const events = midi.captured();
-      const t = take.current ?? { expected, grouping, stepDur };
-      if (events.length) setReport(grade(t.expected, t.grouping, events, a.startTime, t.stepDur));
+      const t = take.current ?? {
+        expected, grouping, stepDur, origin: getAudio().startTime, from: 0,
+        since: -Infinity, seg: -1,
+      };
+      gradeTake(t, Infinity);
       take.current = null;
     }
     wasPlaying.current = playing;
-  }, [playing, armed, midi, expected, grouping, stepDur]);
+  // `position` is read through segId on purpose: a new take starts only when a
+  // change lands, not on every step.
+  }, [playing, armed, midi, segId]);
 
   useEffect(() => () => { midi.disconnect(); }, [midi]);
 

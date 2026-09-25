@@ -1,5 +1,14 @@
 # Hexatonic — the complete roadmap
 
+> **Standing goal — the playback rule (25 September 2026).**
+> "Changing any setting while playing must never stop the music. Tempo changes
+> land on the next beat; everything else lands on the next bar or cycle. The
+> sounding note and the beat count are always visible."
+>
+> Built on the live timeline in `src/lib/audio/timeline.ts` and the hooks in
+> `src/lib/audio/useLive.ts`; locked by `tests/live-playback.test.ts` and the
+> playback-rule check in `tests/playback-contract.test.ts`.
+
 **Purpose of this file:** Jason described a lot of features in the original
 conversation that are not yet built. This is the durable record so that any
 future session — Codex, Claude Code, another machine, another year — can pick up

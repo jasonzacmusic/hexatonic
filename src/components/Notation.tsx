@@ -179,7 +179,8 @@ export default function Notation({
     const gs = groupsRef.current;
     for (const g of gs) { g.style.fill = ""; g.style.stroke = ""; }
     const g = gs[activeIndex];
-    if (g) { g.style.fill = "#F3D765"; g.style.stroke = "#F3D765"; }
+    // Gold #C9A227 means "sounding now", and nothing else.
+    if (g) { g.style.fill = "#C9A227"; g.style.stroke = "#C9A227"; }
   }, [activeIndex]);
 
   const totalBars = Math.ceil(notes.length / Math.max(1, subdivision * meterById(meterId).top));

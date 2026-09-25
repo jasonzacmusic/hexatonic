@@ -8,11 +8,12 @@
  * the blues is one scale held against moving dominant harmony.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { twelveBar, bluesScales } from "@/lib/theory/blues";
 import { buildScale, KEYS } from "@/lib/theory/scales";
-import { getAudio, previewAudio } from "@/lib/audio/engine";
-import { usePlayback } from "@/lib/audio/usePlayback";
+import { previewAudio, VampPlan } from "@/lib/audio/engine";
+import { useLiveVamp } from "@/lib/audio/useLive";
+import BeatCounter from "./BeatCounter";
 import { Seg, Toggle } from "./Panels";
 import Keyboard from "./Keyboard";
 import Fretboard from "./Fretboard";
@@ -31,56 +32,26 @@ export default function BluesLane({
   const [comp, setComp] = useState(true);
   const [click, setClick] = useState(false);
   const [countIn, setCountIn] = useState(true);
-  const [barIdx, setBarIdx] = useState(-1);
-  const [countdown, setCountdown] = useState(0);
-  const [err, setErr] = useState<string | null>(null);
-  const raf = useRef<number | null>(null);
 
   const bars = useMemo(() => twelveBar(key, quickChange), [key, quickChange]);
   const scale = useMemo(() => buildScale(key, scaleChoice), [key, scaleChoice]);
   const advice = useMemo(() => bluesScales(key), [key]);
+  /* The playback rule: the band never stops for a change. Tempo, click, bass
+     and chords on/off land on the next beat; a new key or the quick change
+     lands on the next bar and starts from bar 1 of the form. */
+  const chords = useMemo(
+    () => bars.map((b) => ({ bass: b.bass, voicing: b.voicing, bars: 1 })),
+    [bars]
+  );
+  const plan = useMemo<VampPlan>(() => ({
+    chords, beatDur: 60 / bpm, beatsPerBar: 4, feel: "swing",
+    click, bassOn: bass, compOn: comp,
+  }), [chords, bpm, click, bass, comp]);
+  const live = useLiveVamp(plan, () => ({ countInBeats: countIn ? 4 : 0 }));
+  const { playing, stop, play, countdown, position } = live;
+  const err = live.error;
+  const barIdx = position && position.plan.chords === chords ? position.chordIndex : -1;
   const current = barIdx >= 0 ? bars[barIdx] : undefined;
-
-  const clearVisuals = useCallback(() => {
-    setBarIdx(-1);
-    setCountdown(0);
-    if (raf.current) cancelAnimationFrame(raf.current);
-    raf.current = null;
-  }, []);
-  const pb = usePlayback("vamp", clearVisuals);
-  const playing = pb.playing;
-  const stop = useCallback(() => { pb.end(); }, [pb]);
-
-  const play = useCallback(async () => {
-    setErr(null);
-    await pb.begin(async (guard) => {
-      const a = getAudio();
-      const ok = await a.startVamp({
-        chords: bars.map((b) => ({ bass: b.bass, voicing: b.voicing, bars: 1 })),
-        beatDur: 60 / bpm,
-        beatsPerBar: 4,
-        feel: "swing",
-        click, countInBeats: countIn ? 4 : 0, bassOn: bass, compOn: comp,
-      });
-      if (!ok) { setErr("audio could not start"); return false; }
-      if (!guard()) return false;
-      const tick = () => {
-        if (!guard()) return;
-        setBarIdx(a.currentChordIndex());
-        setCountdown(a.vampCountdown());
-        raf.current = requestAnimationFrame(tick);
-      };
-      raf.current = requestAnimationFrame(tick);
-      return true;
-    });
-  }, [bars, bpm, click, countIn, bass, comp, pb]);
-
-  // restart cleanly when the form changes underneath the band
-  const sig = `${key}|${quickChange}|${bpm}|${bass}|${comp}|${click}|${countIn}`;
-  const last = useRef(sig);
-  useEffect(() => {
-    if (last.current !== sig) { last.current = sig; if (playing) stop(); }
-  }, [sig, playing, stop]);
 
   return (
     <div className="space-y-5">
@@ -109,6 +80,8 @@ export default function BluesLane({
             );
           })}
         </div>
+        <BeatCounter at={position} beats={4} bars={bars.length} countdown={countdown}
+                     className="mt-4" />
         <p className="quiet mt-4 max-w-3xl">
           Every chord is a dominant 7th, and two of the three are <em>not</em> in your
           scale — that friction is the blues. Land the ♭3 against the I7&rsquo;s major

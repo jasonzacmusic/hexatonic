@@ -8,15 +8,15 @@
  * WhatsApp and YouTube descriptions.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Note } from "./theory/note";
 import { buildScale, familyById, FAMILIES, KEYS } from "./theory/scales";
 import { buildPattern, patternById, PATTERNS, PatternId } from "./theory/patterns";
 import { solveResolution, ResolveMode, gatiFor } from "./theory/resolution";
 import { meterById, METERS, allTalaMeters } from "./theory/meters";
 import { decodeCustom } from "./theory/custom";
-import { getAudio } from "./audio/engine";
-import { usePlayback } from "./audio/usePlayback";
+import { DrillPlan, getAudio } from "./audio/engine";
+import { useLiveDrill } from "./audio/useLive";
 
 export interface DrillState {
   key: string;
@@ -109,13 +109,7 @@ export function decodeState(qs: string): DrillState {
 
 export function useDrill(initial?: Partial<DrillState>) {
   const [state, setState] = useState<DrillState>({ ...DEFAULTS, ...initial });
-  const [index, setIndex] = useState(-1);
-  const [countdown, setCountdown] = useState(0);
-  const [audioError, setAudioError] = useState<string | null>(null);
-  const [loadingAudio, setLoadingAudio] = useState(false);
-  const [audioReady, setAudioReady] = useState(() => getAudio().ready);
-  const raf = useRef<number | null>(null);
-  const operation = useRef(0);
+  const [audioReady] = useState(() => getAudio().ready);
 
   // hydrate from the URL once
   useEffect(() => {
@@ -165,79 +159,30 @@ export function useDrill(initial?: Partial<DrillState>) {
   const stepDur = 60 / state.bpm / state.sub;
   const seconds = resolution.totalNotes * stepDur;
 
-  /* Playback lifecycle. usePlayback owns the stopping: unmount, route change,
-     tab hide, page unload and any other surface claiming audio all end this run
-     without the screen having to remember. See src/lib/audio/session.ts. */
-  const clearVisuals = useCallback(() => {
-    setIndex(-1);
-    setCountdown(0);
-    if (raf.current) cancelAnimationFrame(raf.current);
-    raf.current = null;
-  }, []);
+  /* Playback. useLiveDrill owns the lifecycle (through usePlayback: unmount,
+     route change, tab hide, page unload and any other surface claiming audio
+     all end this run) AND the playback rule: a setting changed mid-play is
+     handed to the running scheduler, never a stop. See src/lib/audio/useLive.ts. */
+  const plan = useMemo<DrillPlan | null>(() => notes.length ? {
+    notes, stepDur, grouping: state.grouping, subdivision: state.sub,
+    beatsPerBar: meter.top,
+    swing: state.swing && state.sub === 2,
+    loop: state.loop, click: state.click,
+  } : null, [notes, stepDur, state.grouping, state.sub, meter.top, state.swing,
+             state.loop, state.click]);
 
-  const pb = usePlayback("drill", clearVisuals);
-  const playing = pb.playing;
+  const live = useLiveDrill(plan, () => ({
+    countInBeats: state.countIn ? meter.top : 0, beatDur: 60 / state.bpm,
+  }));
+  const { playing, toggle, play, stop, countdown } = live;
+  const position = live.position;
+  /* The sounding note always comes from the plan that is SOUNDING. For up to a
+     bar after a change that is still the previous drill, so the score (which
+     already shows the new one) waits for the downbeat before it lights. */
+  const activeNote = position ? position.plan.notes[position.index] ?? null : null;
+  const index = position && position.plan.notes === notes ? position.index : -1;
 
-  const stop = useCallback(() => { pb.end(); }, [pb]);
-
-  const play = useCallback(async () => {
-    if (!notes.length) return;
-    setAudioError(null);
-    await pb.begin(async (guard) => {
-      const a = getAudio();
-      if (!a.ready) setLoadingAudio(true);
-      try {
-        await a.init();
-      } catch (e: any) {
-        setAudioError(e?.message ?? "audio failed to load");
-        return false;
-      } finally {
-        setLoadingAudio(false);
-      }
-      if (!guard()) return false;           // stopped while the samples loaded
-      const ok = await a.start({
-        notes,
-        stepDur, grouping: state.grouping, subdivision: state.sub,
-        beatsPerBar: meter.top,
-        swing: state.swing && state.sub === 2,
-        loop: state.loop, click: state.click,
-        countInBeats: state.countIn ? meter.top : 0, beatDur: 60 / state.bpm,
-        onStop: () => { if (guard()) pb.end(); },
-      });
-      if (!ok || !guard()) return false;
-      const tick = () => {
-        if (!guard()) return;               // a stale frame must not repaint
-        setIndex(a.currentIndex());
-        setCountdown(a.countdown());
-        raf.current = requestAnimationFrame(tick);
-      };
-      raf.current = requestAnimationFrame(tick);
-      return true;
-    });
-  }, [notes, stepDur, state.grouping, state.sub, state.swing, state.loop, state.click,
-      state.countIn, state.bpm, meter.top, pb]);
-
-
-  const toggle = useCallback(
-    () => { playing || loadingAudio ? stop() : void play(); },
-    [playing, loadingAudio, stop, play]
-  );
-
-  // stop when the configuration changes underneath us
-  const sig = `${state.key}|${state.family}|${state.mode}|${state.pattern}|${state.cell}|${state.octaves}|${state.includeTop}|${state.sub}|${state.grouping}|${state.resolve}|${state.meter}|${state.custom}|${state.bpm}|${state.loop}|${state.click}|${state.swing}`;
-  const lastSig = useRef(sig);
-  useEffect(() => {
-    if (lastSig.current !== sig) {
-      lastSig.current = sig;
-      if (playing || loadingAudio) stop();
-    }
-  }, [sig, playing, loadingAudio, stop]);
-
-  useEffect(() => () => {
-    operation.current++;
-    getAudio().stop(true);
-    if (raf.current) cancelAnimationFrame(raf.current);
-  }, []);
+  useEffect(() => () => { getAudio().stop(true); }, []);
 
   // the AudioContext suspend trap
   useEffect(() => {
@@ -255,7 +200,8 @@ export function useDrill(initial?: Partial<DrillState>) {
   return {
     state, set, setState, scale, pattern, notes, resolution, gati, meter,
     stepDur, seconds, playing, index, countdown, toggle, play, stop,
-    audioError, loadingAudio, audioReady, shareUrl,
+    activeNote, position,
+    audioError: live.error, loadingAudio: live.loading, audioReady, shareUrl,
     family: familyById(state.family),
     patternDef: patternById(state.pattern),
   };

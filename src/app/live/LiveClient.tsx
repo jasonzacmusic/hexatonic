@@ -14,6 +14,7 @@ import { useDrill, DrillState } from "@/lib/useDrill";
 import { ResolutionBanner } from "@/components/Panels";
 import Keyboard from "@/components/Keyboard";
 import Notation from "@/components/Notation";
+import BeatCounter from "@/components/BeatCounter";
 import { KEYS, DIATONIC_MODES } from "@/lib/theory/scales";
 import { midi, notePretty, pc } from "@/lib/theory/note";
 import { YATIS } from "@/lib/theory/resolution";
@@ -60,10 +61,13 @@ export default function LiveClient() {
     return () => window.removeEventListener("keydown", onKey);
   }, [set, state.bpm, state.click, state.key, state.loop, state.mode, toggle]);
 
-  const activeNote = index >= 0 && notes[index] ? notes[index] : null;
-  const bar = index >= 0 ? Math.floor(index / resolution.notesPerBar) + 1 : 0;
-  const beat = index >= 0 ? Math.floor((index % resolution.notesPerBar) / state.sub) + 1 : 0;
-  const landing = index >= 0 && index >= notes.length - state.sub;
+  /* Bar, beat and the sounding note come from the drill that is SOUNDING, which
+     for up to a bar after a change is still the previous one. */
+  const pos = d.position;
+  const activeNote = d.activeNote;
+  const bar = pos?.bar ?? 0;
+  const beat = pos?.beat ?? 0;
+  const landing = !!pos && pos.index >= pos.plan.notes.length - pos.plan.subdivision;
 
   const yati = YATIS.find((y) => y.id === "srotovaha")!;
 
@@ -133,7 +137,7 @@ export default function LiveClient() {
                 {bar}<span className="text-muted">.</span>{beat}
               </p>
               <p className={`mt-1 font-mono text-sm uppercase tracking-[0.12em] ${landing ? "text-gold" : "text-muted"}`}>
-                {landing ? "landing on the one" : `of ${resolution.bars} bars`}
+                {landing ? "landing on the one" : `of ${pos?.bars ?? resolution.bars} bars`}
               </p>
             </>
           ) : (
@@ -181,6 +185,9 @@ export default function LiveClient() {
           {DIATONIC_MODES.map((m) => <option key={m.index} value={m.index}>{m.name}</option>)}
         </select>
       </div>
+
+      <BeatCounter at={pos} beats={d.meter.top} bars={resolution.bars}
+                   countdown={d.countdown} size="lg" className="card py-4" />
 
       {showNotation && !scale.error && notes.length > 0 && (
         <Notation notes={notes} subdivision={state.sub} grouping={state.grouping}

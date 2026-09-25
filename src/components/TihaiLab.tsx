@@ -8,23 +8,22 @@
  * would clap: phrase, silence, phrase, silence, phrase — sam.
  */
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { solveTihai, tihaiTable, tihaiGrid } from "@/lib/theory/tihai";
 import { METERS, saptaTalaMeters, meterById } from "@/lib/theory/meters";
 import { SUBDIVISIONS, GATIS } from "@/lib/theory/resolution";
 import { buildScale } from "@/lib/theory/scales";
 import { Note, note } from "@/lib/theory/note";
-import { getAudio } from "@/lib/audio/engine";
-import { usePlayback } from "@/lib/audio/usePlayback";
+import { DrillPlan } from "@/lib/audio/engine";
+import { useLiveDrill } from "@/lib/audio/useLive";
 import { Seg } from "./Panels";
+import BeatCounter from "./BeatCounter";
 
 export default function TihaiLab() {
   const [meterId, setMeterId] = useState("tala-triputa-4");   // Adi
   const [sub, setSub] = useState(4);
   const [phrase, setPhrase] = useState(5);
   const [bpm, setBpm] = useState(84);
-  const [index, setIndex] = useState(-1);
-  const raf = useRef<number | null>(null);
 
   const meter = useMemo(() => meterById(meterId), [meterId]);
   const pulsesPerCycle = meter.top * sub;
@@ -49,42 +48,23 @@ export default function TihaiLab() {
     return out;
   }, [tihai, grid]);
 
-  const clearVisuals = useCallback(() => {
-    setIndex(-1);
-    if (raf.current) cancelAnimationFrame(raf.current);
-    raf.current = null;
-  }, []);
-  const pb = usePlayback("drill", clearVisuals);
-  const playing = pb.playing;
-
-  const play = useCallback(async () => {
-    if (!line.length) return;
-    await pb.begin(async (guard) => {
-      const a = getAudio();
-      try { await a.init(); } catch { return false; }
-      if (!guard()) return false;
-      const ok = await a.start({
-        notes: line,
-        stepDur: 60 / bpm / sub,
-        grouping: tihai ? tihai.phrase + tihai.gap : 4,
-        subdivision: sub,
-        beatsPerBar: meter.top,
-        loop: false,
-        click: true,
-        countInBeats: meter.top,
-        beatDur: 60 / bpm,
-        onStop: () => { if (guard()) pb.end(); },
-      });
-      if (!ok || !guard()) return false;
-      const tick = () => {
-        if (!guard()) return;
-        setIndex(a.currentIndex());
-        raf.current = requestAnimationFrame(tick);
-      };
-      raf.current = requestAnimationFrame(tick);
-      return true;
-    });
-  }, [line, bpm, sub, meter.top, tihai, pb]);
+  /* The playback rule: a change never stops the tihai. A new tempo lands on
+     the next beat; a new tala, pulse or phrase lands on the next cycle and the
+     new tihai starts there from its first stroke. */
+  const plan = useMemo<DrillPlan | null>(() => line.length ? {
+    notes: line,
+    stepDur: 60 / bpm / sub,
+    grouping: tihai ? tihai.phrase + tihai.gap : 4,
+    subdivision: sub,
+    beatsPerBar: meter.top,
+    loop: false,
+    click: true,
+  } : null, [line, bpm, sub, tihai, meter.top]);
+  const live = useLiveDrill(plan, () => ({ countInBeats: meter.top, beatDur: 60 / bpm }));
+  const { playing, position } = live;
+  const play = live.play;
+  // Light the grid only when the tihai on screen is the one sounding.
+  const index = position && position.plan.notes === line ? position.index : -1;
 
   const REP_TONE = ["", "text-gold", "text-cream", "text-red-hi"];
 
@@ -128,7 +108,7 @@ export default function TihaiLab() {
                  onChange={(e) => setBpm(Number(e.target.value))} className="w-36" />
         </div>
         <button className={`btn ${playing ? "btn-stop" : "btn-primary"} px-7`}
-                onClick={() => (playing ? pb.end() : void play())}
+                onClick={() => (playing ? live.stop() : void play())}
                 disabled={!tihai}>
           {playing ? "STOP" : "▶ Hear it land"}
         </button>
@@ -146,6 +126,9 @@ export default function TihaiLab() {
               </p>
             )}
           </div>
+
+          <BeatCounter at={position} beats={meter.top} bars={Math.ceil(grid.length / pulsesPerCycle)}
+                       countdown={live.countdown} barLabel="cycle" className="mt-4" />
 
           {/* the pulse grid, one row per cycle. The LAST stroke is sam — the
               arithmetic guarantees it opens the final row at column one. */}
