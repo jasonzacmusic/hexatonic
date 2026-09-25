@@ -31,6 +31,9 @@ const VOICINGS: { label: string; value: VoicingStyle; hint: string }[] = [
 
 export default function ImproviseClient() {
   const [lane, setLane] = useState<"vamp" | "blues">("vamp");
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("lane") === "blues") setLane("blues");
+  }, []);
   const [instrument, setInstrument] = useState<"keys" | "guitar">("keys");
   const [key, setKey] = useState("C");
   const [family, setFamily] = useState("diatonic");
@@ -105,7 +108,10 @@ export default function ImproviseClient() {
   }, [steps, bpm, vamp.feel, click, bass, comp, countIn, pb]);
 
   // restart cleanly whenever the musical content changes underneath
-  const sig = `${key}|${family}|${mode}|${vampId}|${voicing}|${bpm}|${bass}|${comp}|${click}|${countIn}`;
+  /* The lane is part of the signature: the blues lane hides this vamp's Stop
+     button, so leaving the lane must not leave the vamp playing with no way to
+     stop it on screen. */
+  const sig = `${lane}|${key}|${family}|${mode}|${vampId}|${voicing}|${bpm}|${bass}|${comp}|${click}|${countIn}`;
   const last = useRef(sig);
   useEffect(() => {
     if (last.current !== sig) { last.current = sig; if (playing) { stop(); } }

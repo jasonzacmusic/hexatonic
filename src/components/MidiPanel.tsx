@@ -34,17 +34,24 @@ export default function MidiPanel({ expected, grouping, stepDur, playing }: Prop
     else if (!p.length) setErr("No MIDI device found. Plug one in and press connect again.");
   }, [midi]);
 
+  const take = useRef<{ expected: typeof expected; grouping: typeof grouping; stepDur: number } | null>(null);
+
   // capture while the drill runs; grade the moment it stops
   useEffect(() => {
     if (!armed) return;
     if (playing && !wasPlaying.current) {
       midi.startCapture();
       setReport(null);
+      /* Grade against the drill that was PLAYED. Changing tempo or grouping
+         stops the take, and by then these props already hold the new values. */
+      take.current = { expected, grouping, stepDur };
     }
     if (!playing && wasPlaying.current) {
       const a = getAudio();
       const events = midi.captured();
-      if (events.length) setReport(grade(expected, grouping, events, a.startTime, stepDur));
+      const t = take.current ?? { expected, grouping, stepDur };
+      if (events.length) setReport(grade(t.expected, t.grouping, events, a.startTime, t.stepDur));
+      take.current = null;
     }
     wasPlaying.current = playing;
   }, [playing, armed, midi, expected, grouping, stepDur]);
