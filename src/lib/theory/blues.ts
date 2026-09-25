@@ -69,13 +69,19 @@ export function twelveBar(key: string, quickChange: boolean): BluesBar[] {
   });
 }
 
-/** What to play over it — the teaching text, computed per key so the names are real. */
+/** What to play over it — computed per key so the names are real. */
 export function bluesScales(key: string): { name: string; notes: string }[] {
   const t = parseNoteName(key);
   const rel = spell(stepLetter(t.letter, 5), (pc(t) + 9) % 12, t.octave); // the relative minor
   return [
-    { name: `${key} minor blues`, notes: "works over the whole form — the classic sound" },
-    { name: `${key} major blues`, notes: `same six notes as ${rel ? noteName(rel) : "?"} minor blues — sweeter, use on the I7` },
-    { name: "mix them", notes: "major blues on the I, minor blues on the IV and V — the real vocabulary" },
+    { name: `${key} minor blues`, notes: "works over the whole form" },
+    { name: `${key} major blues`, notes: `the same six notes as ${rel ? noteName(rel) : "?"} minor blues, and sweeter` },
   ];
+}
+
+/** The distinct chords of the form whose four notes all sit inside the scale.
+ *  For both blues scales, in every key, this is empty — which is the point. */
+export function chordsInsideScale(scalePcs: number[], bars: BluesBar[]): string[] {
+  const have = new Set(scalePcs);
+  return [...new Set(bars.filter((b) => b.chordPcs.every((p) => have.has(p))).map((b) => b.symbol))];
 }

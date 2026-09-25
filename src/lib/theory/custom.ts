@@ -153,11 +153,12 @@ export const CUSTOM_PRESETS: { name: string; semis: number[]; note: string }[] =
 /** Describe what the user just built, in plain language. */
 export function describeSet(semis: number[]): string {
   const n = semis.length;
+  /* Plain English first, the tradition's name second. */
   const size =
-    n === 5 ? "Audava — five notes" :
-    n === 6 ? "Shadava — six notes" :
-    n === 7 ? "Sampurna — seven notes" :
-    n === 8 ? "eight notes" : `${n} notes`;
+    n === 5 ? "Five notes · Audava" :
+    n === 6 ? "Six notes · Shadava" :
+    n === 7 ? "Seven notes · Sampurna" :
+    `${n} notes`;
   const steps = semis.map((s, i) => ((semis[(i + 1) % n] ?? 12) - s + 12) % 12 || 12);
   const symmetric = new Set(
     Array.from({ length: 12 }, (_, t) =>

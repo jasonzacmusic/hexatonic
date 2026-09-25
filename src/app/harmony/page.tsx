@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import HarmonyClient from "./HarmonyClient";
 
 export const metadata: Metadata = {
-  title: "Pair Atlas — exact chord covers, inversions and Barry Harris",
+  title: "Harmony — the chords inside six-note scales",
   description:
-    "Find popular six- and eight-note collections exactly covered by two chords, practise every inversion, and explore all four Barry Harris sixth-diminished families.",
+    "The triads and seventh chords inside any six-note scale, in any key and mode. Two-triad pairs through every inversion, and sixth–diminished harmony under every note.",
   alternates: { canonical: "https://hexatonic.nathanielschool.com/harmony" },
 };
 
