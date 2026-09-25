@@ -331,8 +331,8 @@ describe("patterns", () => {
     expect(p.slice(0, 8)).toEqual(["C", "D", "E", "G", "D", "E", "G", "A"]);
   });
   it("every pattern returns notes and never undefined", () => {
-    for (const id of ["aroha", "avaroha", "both", "thirds", "fourths", "fifths",
-                      "sixths", "cells", "cellsDown", "triads"] as const)
+    for (const id of ["aroha", "avaroha", "both", "thirds", "fourths",
+                      "cells", "cellsDown", "chordLadder", "janta"] as const)
       for (const oct of [1, 2, 3]) {
         const p = buildPattern(id, s.notes, oct, 4, false);
         expect(p.length, id).toBeGreaterThan(0);

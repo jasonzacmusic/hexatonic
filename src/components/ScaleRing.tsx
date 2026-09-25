@@ -74,13 +74,13 @@ export default function ScaleRing({
             those labels down to ~2:1 contrast. It now fades out inside the
             polygon and leaves the label ring on clean background. */}
         <radialGradient id={`glow${uid}`}>
-          <stop offset="0%" stopColor="#C9A227" stopOpacity="0.20" />
-          <stop offset="55%" stopColor="#C9A227" stopOpacity="0.04" />
-          <stop offset="100%" stopColor="#C9A227" stopOpacity="0" />
+          <stop offset="0%" stopColor="#F4EFE4" stopOpacity="0.08" />
+          <stop offset="55%" stopColor="#F4EFE4" stopOpacity="0.02" />
+          <stop offset="100%" stopColor="#F4EFE4" stopOpacity="0" />
         </radialGradient>
         <linearGradient id={`edge${uid}`} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#C9A227" stopOpacity="0.55" />
-          <stop offset="100%" stopColor="#C9A227" stopOpacity="0.18" />
+          <stop offset="0%" stopColor="#F4EFE4" stopOpacity="0.45" />
+          <stop offset="100%" stopColor="#F4EFE4" stopOpacity="0.14" />
         </linearGradient>
         <filter id={`soft${uid}`} x="-60%" y="-60%" width="220%" height="220%">
           <feGaussianBlur stdDeviation={size * 0.018} />
@@ -94,7 +94,7 @@ export default function ScaleRing({
       {spin && (
         <circle
           cx={cx} cy={cy} r={R * 1.22} fill="none"
-          stroke="#C9A227" strokeOpacity={0.16} strokeWidth={1}
+          stroke="#F4EFE4" strokeOpacity={0.12} strokeWidth={1}
           strokeDasharray={`${R * 0.5} ${R * 2.4}`} strokeLinecap="round"
           className="hx-spin" style={{ transformOrigin: `${cx}px ${cy}px` }}
         />
@@ -104,7 +104,7 @@ export default function ScaleRing({
         {poly && (
           <polygon
             points={poly}
-            fill="#C9A227" fillOpacity={0.07}
+            fill="#F4EFE4" fillOpacity={0.04}
             stroke={`url(#edge${uid})`} strokeWidth={1.5}
             strokeLinejoin="round"
           />
@@ -172,15 +172,15 @@ export default function ScaleRing({
                 <circle cx={x} cy={y} r={size * 0.075} fill="#C9A227" opacity={0.4}
                         filter={`url(#soft${uid})`} />
               )}
-              <circle cx={x} cy={y} r={r} fill={on ? "#F3D765" : "#C9A227"}
-                      style={{ transition: "r 90ms linear, fill 90ms linear" }} />
+              <circle cx={x} cy={y} r={r} fill={on ? "#F3D765" : "#CFC6BA"}
+                      style={{ transition: on ? "none" : "r 60ms ease-out, fill 60ms ease-out" }} />
               {showLabels && (() => {
                 const L = labelFor(p, size * 0.088);
                 return (
                   <text x={L.x} y={L.y} textAnchor="middle" className="font-mono"
                         fill={on ? "#F3D765" : "#CFC6BA"}
                         style={{ fontSize: size * 0.05, fontWeight: on ? 700 : 500,
-                                 transition: "fill 90ms linear" }}>
+                                 transition: on ? "none" : "fill 60ms ease-out" }}>
                     {notePretty(n)}
                   </text>
                 );

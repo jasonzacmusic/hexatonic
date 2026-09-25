@@ -12,9 +12,19 @@
  *  6. Highlight without re-render: g.vf-stavenote groups appear in document
  *     order matching tickable creation order. BarNote emits no such group, so
  *     the mapping stays aligned.
+ *
+ * Following the music (the most important thing on the page while it plays):
+ *   · a gold band sits behind the sounding note and a faint tint on its bar
+ *   · notes already played in this pass dim, idle notes are #CFC7B8
+ *   · exactly one note is gold at a time: it lights instantly, no fade
+ *   · the frame scrolls to keep the sounding system in view
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+
+// The highlight must land in the same frame as the rest of the page, never one
+// frame late; layout effects run before paint. (SSR-safe fallback.)
+const useSyncEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 import {
   Note, vexKey, ALT_NAME, keySignatureAlterations, notePretty,
 } from "@/lib/theory/note";
@@ -30,17 +40,35 @@ export interface NotationProps {
   keySignature?: string | null;
   activeIndex?: number;
   compact?: boolean;
+  /** cap the frame's height (px) and scroll inside it to follow the music */
+  maxHeight?: number | string;
 }
+
+const INK = "#CFC7B8";
+const GOLD = "#C9A227";
+
+interface NoteBox { x: number; w: number; sys: number; bar: number }
+interface SysBox { top: number; bottom: number }
+interface BarBox { sys: number; x0: number; x1: number }
 
 export default function Notation({
   notes, subdivision, grouping, beatsPerBar = 4, meterId = "4-4",
-  maxBars = 35, keySignature = null, activeIndex = -1, compact = false,
+  maxBars = 35, keySignature = null, activeIndex = -1, compact = false, maxHeight,
 }: NotationProps) {
   const hostRef = useRef<HTMLDivElement>(null);
+  const frameRef = useRef<HTMLDivElement>(null);
   const groupsRef = useRef<SVGGElement[]>([]);
+  const boxesRef = useRef<{ notes: NoteBox[]; systems: SysBox[]; bars: BarBox[] }>({
+    notes: [], systems: [], bars: [],
+  });
+  const bandRef = useRef<SVGRectElement | null>(null);
+  const tintRef = useRef<SVGRectElement | null>(null);
+  const litRef = useRef(-1);
+  const sysRef = useRef(-1);
   const [truncated, setTruncated] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [naturalWidth, setNaturalWidth] = useState(0);
+  const [drawn, setDrawn] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -63,6 +91,10 @@ export default function Notation({
       const el = hostRef.current;
       el.innerHTML = "";
       groupsRef.current = [];
+      bandRef.current = null;
+      tintRef.current = null;
+      litRef.current = -1;
+      sysRef.current = -1;
 
       try {
         const meter = meterById(meterId);
@@ -90,14 +122,16 @@ export default function Notation({
         const renderer = new VF.Renderer(el, VF.Renderer.Backends.SVG);
         renderer.resize(width, height);
         const ctx = renderer.getContext();
-        ctx.setFillStyle("#E8E0D2");
-        ctx.setStrokeStyle("#E8E0D2");
+        ctx.setFillStyle(INK);
+        ctx.setStrokeStyle(INK);
         ctx.setFont("Academico", 10);
         setNaturalWidth(width);
         const signatureAlts = keySignature
           ? keySignatureAlterations(keySignature)
           : { C: 0, D: 0, E: 0, F: 0, G: 0, A: 0, B: 0 };
 
+        const sysBoxes: SysBox[] = [];
+        const noteMeta: { sys: number; bar: number }[] = [];
         let idx = 0;
         for (let sy = 0; sy < systems; sy++) {
           const barsHere = Math.min(barsPerSystem, showBars - sy * barsPerSystem);
@@ -107,6 +141,7 @@ export default function Notation({
           if (keySignature) stave.addKeySignature(keySignature);
           if (sy === 0) stave.addTimeSignature(`${meter.top}/${meter.bottom}`);
           stave.setContext(ctx).draw();
+          sysBoxes.push({ top: stave.getYForLine(0), bottom: stave.getYForLine(4) });
 
           const tickables: any[] = [];
           const beams: any[] = [];
@@ -114,6 +149,7 @@ export default function Notation({
 
           for (let b = 0; b < barsHere; b++) {
             const barNotes: any[] = [];
+            const globalBar = sy * barsPerSystem + b;
             // Accidentals reset at each bar and otherwise carry within the bar.
             const accidentalState = new Map<string, number>();
             for (let k = 0; k < perBar; k++) {
@@ -133,6 +169,7 @@ export default function Notation({
                   new VF.Articulation("a>").setPosition(VF.Modifier.Position.ABOVE), 0
                 );
               barNotes.push(sn);
+              noteMeta.push({ sys: sy, bar: globalBar });
               idx++;
             }
             if (!barNotes.length) break;
@@ -162,10 +199,53 @@ export default function Notation({
           tuplets.forEach((t) => t.setContext(ctx).draw());
         }
 
-        groupsRef.current = Array.from(
-          el.querySelectorAll<SVGGElement>("svg g.vf-stavenote")
-        );
+        const groups = Array.from(el.querySelectorAll<SVGGElement>("svg g.vf-stavenote"));
+        groupsRef.current = groups;
+
+        /* Measure every note once, in SVG units, so the band and the tint can
+           move without re-engraving. getBBox is in the SVG's own coordinates,
+           which scale with the frame, so nothing drifts at any width. */
+        const noteBoxes: NoteBox[] = groups.map((g, i) => {
+          let x = 0, w = 0;
+          try {
+            const head = g.querySelector<SVGGraphicsElement>(".vf-notehead") ?? g;
+            const bb = head.getBBox();
+            x = bb.x; w = bb.width;
+          } catch { /* jsdom has no layout; the band just stays hidden */ }
+          const meta = noteMeta[i] ?? { sys: 0, bar: 0 };
+          return { x, w, sys: meta.sys, bar: meta.bar };
+        });
+        const barBoxes: BarBox[] = [];
+        noteBoxes.forEach((nb) => {
+          const b = barBoxes[nb.bar];
+          if (!b) barBoxes[nb.bar] = { sys: nb.sys, x0: nb.x, x1: nb.x + nb.w };
+          else { b.x0 = Math.min(b.x0, nb.x); b.x1 = Math.max(b.x1, nb.x + nb.w); }
+        });
+        boxesRef.current = { notes: noteBoxes, systems: sysBoxes, bars: barBoxes };
+
+        // The band and tint sit BEHIND the engraving: first children of the svg.
+        const svg = el.querySelector("svg");
+        if (svg) {
+          const NS = "http://www.w3.org/2000/svg";
+          const layer = document.createElementNS(NS, "g");
+          layer.setAttribute("class", "hx-follow");
+          const tint = document.createElementNS(NS, "rect");
+          tint.setAttribute("fill", "#F4EFE4");
+          tint.setAttribute("fill-opacity", "0.045");
+          tint.setAttribute("rx", "8");
+          tint.style.display = "none";
+          const band = document.createElementNS(NS, "rect");
+          band.setAttribute("fill", GOLD);
+          band.setAttribute("fill-opacity", "0.26");
+          band.setAttribute("rx", "6");
+          band.style.display = "none";
+          layer.append(tint, band);
+          svg.insertBefore(layer, svg.firstChild);
+          tintRef.current = tint;
+          bandRef.current = band;
+        }
         setError(null);
+        setDrawn((v) => v + 1);
       } catch (e: any) {
         setError(e?.message ?? "notation failed");
       }
@@ -174,14 +254,71 @@ export default function Notation({
     return () => { cancelled = true; };
   }, [notes, subdivision, grouping, beatsPerBar, meterId, maxBars, keySignature, compact]);
 
-  // Highlight without re-rendering the score.
-  useEffect(() => {
+  // Follow the music without re-rendering the score.
+  useSyncEffect(() => {
     const gs = groupsRef.current;
-    for (const g of gs) { g.style.fill = ""; g.style.stroke = ""; }
-    const g = gs[activeIndex];
-    // Gold #C9A227 means "sounding now", and nothing else.
-    if (g) { g.style.fill = "#C9A227"; g.style.stroke = "#C9A227"; }
-  }, [activeIndex]);
+    const { notes: nb, systems, bars } = boxesRef.current;
+    const band = bandRef.current, tint = tintRef.current;
+    const i = activeIndex;
+    const prev = litRef.current;
+
+    // One gold note, lit instantly. The previous one returns to ink at once.
+    if (prev >= 0 && gs[prev]) { gs[prev].style.fill = ""; gs[prev].style.stroke = ""; }
+    // Played notes in this pass dim; a new pass (or a stop) restores them all.
+    if (i < 0 || i < prev) gs.forEach((g) => { g.style.opacity = ""; });
+    for (let k = Math.max(0, prev < 0 || i < prev ? 0 : prev); k < i && k < gs.length; k++)
+      gs[k].style.opacity = "0.42";
+
+    const g = gs[i];
+    if (!g || !nb[i]) {
+      litRef.current = -1;
+      sysRef.current = -1;
+      if (band) band.style.display = "none";
+      if (tint) tint.style.display = "none";
+      return;
+    }
+    g.style.opacity = "";
+    g.style.fill = GOLD;
+    g.style.stroke = GOLD;
+    litRef.current = i;
+
+    const box = nb[i];
+    const sys = systems[box.sys];
+    if (band && sys && box.w > 0) {
+      const padX = 5;
+      band.setAttribute("x", String(box.x - padX));
+      band.setAttribute("width", String(box.w + padX * 2));
+      band.setAttribute("y", String(sys.top - 26));
+      band.setAttribute("height", String(sys.bottom - sys.top + 52));
+      band.style.display = "";
+    }
+    const bar = bars[box.bar];
+    if (tint && sys && bar) {
+      tint.setAttribute("x", String(bar.x0 - 14));
+      tint.setAttribute("width", String(bar.x1 - bar.x0 + 28));
+      tint.setAttribute("y", String(sys.top - 30));
+      tint.setAttribute("height", String(sys.bottom - sys.top + 60));
+      tint.style.display = "";
+    }
+
+    // Keep the sounding note in view inside the frame (never the page).
+    const frame = frameRef.current;
+    const svg = hostRef.current?.querySelector("svg");
+    if (frame && svg && naturalWidth && sys) {
+      const scale = svg.getBoundingClientRect().width / naturalWidth;
+      const smooth = !window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+      if (box.sys !== sysRef.current && frame.scrollHeight > frame.clientHeight + 2) {
+        frame.scrollTo({ top: Math.max(0, (sys.top - 44) * scale), behavior: smooth ? "smooth" : "auto" });
+      }
+      sysRef.current = box.sys;
+      if (frame.scrollWidth > frame.clientWidth + 2) {
+        const x = box.x * scale;
+        const { scrollLeft, clientWidth } = frame;
+        if (x < scrollLeft + 24 || x > scrollLeft + clientWidth - 48)
+          frame.scrollTo({ left: Math.max(0, x - clientWidth / 3), behavior: smooth ? "smooth" : "auto" });
+      }
+    }
+  }, [activeIndex, drawn, naturalWidth]);
 
   const totalBars = Math.ceil(notes.length / Math.max(1, subdivision * meterById(meterId).top));
   const opening = notes.slice(0, 16).map(notePretty).join(", ");
@@ -194,18 +331,22 @@ export default function Notation({
       }, with accents every ${grouping} notes. Opening notes: ${opening}.`}
     >
       <div
-        className="vf-host overflow-x-auto rounded-xl border border-line bg-[#171512] p-3"
-        style={{ maxWidth: naturalWidth ? naturalWidth * 1.15 : undefined }}
+        ref={frameRef}
+        className="vf-host overflow-auto overscroll-contain rounded-xl border border-line bg-[#171512] p-3"
+        style={{
+          maxWidth: naturalWidth ? naturalWidth * 1.15 : undefined,
+          maxHeight: maxHeight ?? undefined,
+        }}
         aria-hidden="true"
       >
         <div ref={hostRef} />
       </div>
       {truncated > 0 && (
-        <p className="mt-2 font-mono text-[12px] text-amber">
-          Showing the first {Math.min(truncated, maxBars)} of {truncated} bars — playback runs all of it.
+        <p className="mt-2 font-mono text-[13px] text-amber">
+          Showing the first {Math.min(truncated, maxBars)} of {truncated} bars. Playback runs all of it.
         </p>
       )}
-      {error && <p className="mt-2 font-mono text-[12px] text-amber">Notation: {error}</p>}
+      {error && <p className="mt-2 font-mono text-[13px] text-amber">Notation: {error}</p>}
     </div>
   );
 }
