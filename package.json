@@ -13,7 +13,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "next": "^15.5.21",
+    "next": "^15.5.26",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "vexflow": "4.2.2"
@@ -31,6 +31,6 @@
   },
   "overrides": {
     "postcss": "8.5.23",
-    "sharp": "0.35.3"
+    "sharp": "0.35.4"
   }
 }
