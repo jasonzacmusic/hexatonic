@@ -245,6 +245,43 @@ Almost everything from the original brief is built. What is left:
 
 ---
 
+## 4c. Built 25 September 2026 — the Workout and the class run-sheet
+
+- **`/workout`** — every road to six notes. Knock one note out of **major, natural
+  minor, harmonic minor and melodic minor** (28 hexatonics per key) with tritone
+  count and triad census; the named families (blues, gospel/major blues, Sunday
+  Scale, whole tone, augmented, Prometheus, Petrushka, Messiaen 5); **same notes,
+  other names**; **one note away** (every catalogued hexatonic sharing five notes,
+  smallest move first); **harmonisation** (the tertian chords under each note, voiced
+  with it on top); the **Barry Harris lens** (which sixth-diminished scales contain
+  the hexatonic, chord tones vs diminished tones, and the scale harmonised his way);
+  a creativity dice; and a 4½-hour practice plan with ticks.
+  Engine: `src/lib/theory/workout.ts`, locked by `tests/workout.test.ts`.
+- **Facts it surfaced, all computed:** harmonic and melodic minor have **no**
+  tritone-free hexatonic (two disjoint tritones each). In the no-4 hexatonic, the
+  two notes with no triad of their own are **exactly** Barry's diminished tones
+  (D and B in C, over C6/B°7) — true in all twelve keys, but NOT a general rule
+  (the no-7 scale's orphans are E and G while its diminished tones are D and F),
+  so the page computes it per scale.
+- **`/class`** — the 90-minute run-sheet: nine segments weaving theory, ear and piano,
+  one clock that survives a reload, a script / drill / twist per segment, five
+  takeaways and a seven-day homework list. Data in `src/lib/classPlan.ts`; the
+  arithmetic and every claim it makes out loud are in `tests/classPlan.test.ts`.
+- `/harmony?tab=barry|triads|pairs|movement|atlas` and `/improvise?lane=blues`
+  deep-link.
+
+### Suggested next (ranked)
+1. **Barry Harris, step 2 — drop-2 movement** of the 6th/dim scale, then the
+   hexatonic melody harmonised in drop-2. The lens on /workout is step 1.
+2. **Neighbour chains** — a drill that walks hexatonic → one-note neighbour →
+   neighbour, round the cycle, with the changing note highlighted on the staff.
+   Ear version: "which note moved?"
+3. **Ear game v2** — identify the family by sound (blues / gospel / whole tone /
+   augmented / minor hexatonic), and "tritone or not?" for knock-one-out rows.
+4. **Class mode on /live** — a student-facing big screen synced to the /class clock.
+5. **Assignment sheets** (roadmap 2.4) — pick six /workout rows, print one page.
+6. **Duet mode** (3.8) — 5s against 7s resolving together; spectacular live.
+
 ## 5. Known issues and technical debt
 
 Honest list, for whoever audits next.

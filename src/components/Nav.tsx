@@ -6,6 +6,7 @@ import { useState } from "react";
 
 const NAV = [
   { href: "/practice", label: "Practice" },
+  { href: "/workout", label: "Workout" },
   { href: "/improvise", label: "Improvise" },
   { href: "/ear", label: "Ear" },
   { href: "/learn", label: "Learn" },
@@ -14,6 +15,7 @@ const NAV = [
   { href: "/scales", label: "Scales" },
   { href: "/resolution", label: "Resolution" },
   { href: "/live", label: "Presenter" },
+  { href: "/class", label: "Class" },
 ];
 
 /** The mark: six dots, one hollow. The idea of the app at 20 pixels. */
