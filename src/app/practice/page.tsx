@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://hexatonic.nathanielschool.com/practice" },
   title: "Practice",
   description:
-    "Drill six-note scales in any key: aroha, avaroha, in thirds, in fourths, cells of N, in groupings of 3 to 9 — with live notation, sampled piano and the bar-count it resolves on.",
+    "Practise six-note scales in any key over a tonic drone: runs, fourths, thirds, sequences, broken chords and doubled notes, in accent groups of 3 to 9, with live notation, a sampled piano and a bar count to the one.",
 };
 
 export default function Page() {

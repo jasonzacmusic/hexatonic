@@ -35,22 +35,23 @@ export default function BeatCounter({
   const n = Math.max(1, at?.beats ?? beats);
   const total = Math.max(1, at?.bars ?? bars);
   const dot = size === "lg" ? "h-4 w-4" : "h-3 w-3";
+  const dotOne = size === "lg" ? "h-6 w-6" : "h-[18px] w-[18px]";
   const num = size === "lg" ? "text-2xl" : "text-[17px]";
   const counting = !at && countdown > 0;
 
   return (
     <div
-      className={`flex flex-wrap items-center gap-x-5 gap-y-2 font-mono text-[12px] uppercase tracking-[0.08em] text-muted ${className}`}
+      className={`flex flex-wrap items-center gap-x-5 gap-y-2 font-mono text-[13px] uppercase tracking-[0.06em] text-muted ${className}`}
       aria-label={at ? `${barLabel} ${at.bar} of ${total}, beat ${at.beat} of ${n}` : undefined}
     >
-      <span className="flex flex-wrap items-center gap-1.5" aria-hidden="true">
+      <span className="flex flex-wrap items-center gap-2" aria-hidden="true">
         {Array.from({ length: n }, (_, i) => {
           const on = !!at && at.beat === i + 1;
           const one = i === 0;
           return (
             <i key={i}
-               className={`inline-block rounded-full transition-colors duration-75 ${dot} ${
-                 on ? "bg-gold" : at ? "bg-cream/20" : "bg-line"} ${
+               className={`inline-block rounded-full ${one ? dotOne : dot} ${
+                 on ? "bg-gold" : at ? "bg-cream/25" : "bg-line"} ${
                  one ? "ring-1 ring-cream/60 ring-offset-2 ring-offset-surface" : ""}`} />
           );
         })}

@@ -32,7 +32,7 @@ const INLAYS = [3, 5, 7, 9, 12];
 const PC_NAMES = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"];
 
 export default function Fretboard({
-  scale, removed, activePc = null, chordTonePcs, frets = 12, onNote, height = 190,
+  scale, removed, activePc = null, chordTonePcs, frets = 12, onNote, height = 200,
 }: Props) {
   const uid = useId().replace(/:/g, "");
   const inScale = new Map<number, Note>();
@@ -43,7 +43,7 @@ export default function Fretboard({
   const nutW = 34;
   const fretW = 58;
   const width = nutW + frets * fretW;
-  const top = 16, bottom = 26;
+  const top = 18, bottom = 32;
   const boardH = height - top - bottom;
   const stringY = (s: number) => top + ((5 - s) / 5) * boardH;   // s=0 low E → bottom
   const fretX = (f: number) => nutW + f * fretW;
@@ -95,7 +95,7 @@ export default function Fretboard({
         {/* fret numbers */}
         {INLAYS.filter((f) => f <= frets).map((f) => (
           <text key={f} x={dotX(f)} y={height - 7} textAnchor="middle"
-                className="font-mono" fontSize={10} fill="#6A6158">{f}</text>
+                className="font-mono" fontSize={13} fill="#A79E94">{f}</text>
         ))}
 
         {/* the notes */}
@@ -110,7 +110,7 @@ export default function Fretboard({
             const on = activePc !== null && p === activePc;
             const isChord = chordSet?.has(p) ?? false;
             const x = dotX(f), y = stringY(s);
-            const r = on ? 11.5 : 9.5;
+            const r = on ? 13.5 : 12.5;
             return (
               <g key={`${s}-${f}`} onClick={() => onNote?.(m)}
                  style={{ cursor: onNote ? "pointer" : "default" }}>
@@ -121,12 +121,12 @@ export default function Fretboard({
                   <circle cx={x} cy={y} r={r}
                           fill={on ? `url(#dot${uid})` : isChord ? "#F0E4B8" : "#E4DCCB"}
                           stroke="#0B0A09" strokeWidth={1}
-                          style={{ transition: "r 90ms linear, fill 90ms linear" }} />
+                          style={{ transition: on ? "none" : "fill 60ms ease-out" }} />
                 )}
                 {!isRemoved && (
-                  <text x={x} y={y + 3.5} textAnchor="middle" className="font-mono"
-                        fontSize={9.5} fontWeight={700}
-                        fill={on ? "#4A3B08" : "#17130a"}>
+                  <text x={x} y={y + 4.5} textAnchor="middle" className="font-mono"
+                        fontSize={13} fontWeight={700}
+                        fill={on ? "#2A2208" : "#17130a"}>
                     {src ? notePretty(src) : PC_NAMES[p]}
                   </text>
                 )}

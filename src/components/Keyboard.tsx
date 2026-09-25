@@ -28,6 +28,8 @@ interface Props {
   onNote?: (m: number) => void;
   height?: number;
   showLabels?: boolean;
+  /** width of one white key, px */
+  keyWidth?: number;
 }
 
 const WHITE_SEMIS = [0, 2, 4, 5, 7, 9, 11];
@@ -43,14 +45,14 @@ const BLACK: { semi: number; after: number; offset: number }[] = [
 
 export default function Keyboard({
   scale, removed, activeMidi = null, chordTonePcs, startMidi = 60,
-  octaves = 2, onNote, height = 132, showLabels = false,
+  octaves = 2, onNote, height = 132, showLabels = false, keyWidth = 40,
 }: Props) {
   const uid = useId().replace(/:/g, "");
   const inScale = new Set(scale.map(pc));
   const chordSet = chordTonePcs ? new Set(chordTonePcs) : null;
   const removedPc = removed ? pc(removed) : -1;
 
-  const W = 40;
+  const W = keyWidth;
   const BW = W * 0.62;
   const BH = height * 0.63;
   const whiteCount = octaves * 7;
@@ -70,6 +72,13 @@ export default function Keyboard({
         m: startMidi + o * 12 + b.semi,
         x: (o * 7 + b.after) * W + b.offset * W,
       });
+
+  /** The scale's own spelling for a key, so a G major scale labels F♯, not G♭. */
+  const labelFor = (m: number): string | null => {
+    const p = ((m % 12) + 12) % 12;
+    const n = scale.find((s) => pc(s) === p);
+    return n ? notePretty(n) : null;
+  };
 
   const state = (m: number) => {
     const p = ((m % 12) + 12) % 12;
@@ -106,6 +115,9 @@ export default function Keyboard({
           <linearGradient id={`c${uid}`} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#8E7A2E" /><stop offset="100%" stopColor="#6A5A20" />
           </linearGradient>
+          <linearGradient id={`s${uid}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#D9D1C2" /><stop offset="100%" stopColor="#A89F90" />
+          </linearGradient>
           <linearGradient id={`felt${uid}`} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#7B1A20" /><stop offset="100%" stopColor="#4A0F14" />
           </linearGradient>
@@ -141,11 +153,11 @@ export default function Keyboard({
                         stroke="#C4353C" strokeWidth={3} strokeLinecap="round" />
                 </>
               )}
-              {showLabels && st !== "off" && st !== "removed" && (
+              {showLabels && (st === "active" || st === "scale") && labelFor(m) && (
                 <text x={x + W / 2} y={felt + height - 14} textAnchor="middle"
-                      className="font-mono" fontSize={11}
-                      fill={st === "active" ? "#4A3B08" : "#A79E94"}>
-                  {notePretty(scale.find((s) => pc(s) === ((m % 12) + 12) % 12) ?? { letter: "C", alt: 0, octave: 4 } as Note)}
+                      className="font-mono" fontSize={13} fontWeight={600}
+                      fill={st === "active" ? "#2A2208" : "#3A332C"}>
+                  {labelFor(m)}
                 </text>
               )}
             </g>
@@ -154,10 +166,12 @@ export default function Keyboard({
 
         {blacks.map(({ m, x }) => {
           const st = state(m);
+          /* A black key in the scale is cream-toned, not gold: gold means only
+             "sounding now", so nothing at rest may wear it. */
           const fill =
             st === "active" ? `url(#g${uid})` :
             st === "chord"  ? `url(#c${uid})` :
-            st === "scale"  ? "#8A7420" :
+            st === "scale"  ? `url(#s${uid})` :
             `url(#b${uid})`;
           return (
             <g key={`b${m}`} onClick={() => onNote?.(m)}
@@ -172,6 +186,13 @@ export default function Keyboard({
                 <line x1={x + BW * 0.22} y1={felt + BH * 0.55}
                       x2={x + BW * 0.78} y2={felt + BH * 0.85}
                       stroke="#C4353C" strokeWidth={2.5} strokeLinecap="round" />
+              )}
+              {showLabels && (st === "active" || st === "scale") && labelFor(m) && (
+                <text x={x + BW / 2} y={felt + BH - 10} textAnchor="middle"
+                      className="font-mono" fontSize={12} fontWeight={700}
+                      fill={st === "active" ? "#2A2208" : "#2A2520"}>
+                  {labelFor(m)}
+                </text>
               )}
             </g>
           );
