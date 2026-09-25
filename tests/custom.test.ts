@@ -99,6 +99,7 @@ describe("the default drill", () => {
     expect(DEFAULTS.mode).toBe(4);
     const s = buildScale(DEFAULTS.key, DEFAULTS.family, DEFAULTS.mode);
     expect(s.notes.map(noteName)).toEqual(["C", "D", "Eb", "F", "G", "Bb"]);
-    expect(s.label).toContain("Dorian/Aeolian");
+    expect(s.label).toBe("Minor (no 6)");
+    expect(s.aka).toContain("Dorian/Aeolian hexatonic");
   });
 });

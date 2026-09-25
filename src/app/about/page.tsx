@@ -1,67 +1,52 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { DIATONIC_MODES } from "@/lib/theory/scales";
 
 export const metadata: Metadata = {
   alternates: { canonical: "https://hexatonic.nathanielschool.com/about" },
   title: "About",
-  description: "How Hexatonic was built, what it claims, and what it deliberately does not claim.",
+  description: "Who made Hexatonic, how its theory is checked, and a note on two scale names.",
 };
+
+const NO7 = DIATONIC_MODES[3];
 
 export default function Page() {
   return (
-    <article className="max-w-2xl space-y-6 pb-10">
-      <h1 className="text-3xl font-extrabold">About</h1>
-      <p className="lede">
-        Hexatonic is a practice tool for six-note scales, built at Nathaniel School of
-        Music by Jason Zac.
-      </p>
-      <p className="text-muted">
-        <em>Ṣāḍava</em> (षाडव) is the Carnatic term for a six-note raga. Its siblings are
-        already named by the tradition — <em>audava</em> (five) and <em>sampūrṇa</em>{" "}
-        (seven) — which is why the name carries the roadmap.
+    <article className="max-w-2xl pb-10 pt-2">
+      <p className="eyebrow">About</p>
+      <h1 className="display mt-3 text-5xl sm:text-6xl">Six notes, played properly.</h1>
+      <p className="lede mt-6">
+        Hexatonic is a free practice app for six-note scales, made by Jason Zac at
+        Nathaniel School of Music.
       </p>
 
-      <h2 className="pt-4 text-xl font-extrabold">The theory is computed, not asserted</h2>
-      <p className="text-muted">
-        Everything this app states about a scale — its spelling in any key, the chords
-        available inside it, the interval content of a drill, the bar on which a pattern
-        resolves — comes from an engine that is unit-tested against a reference
-        implementation. Nothing is typed in by hand and hoped for.
+      <h2 className="mt-12 text-2xl font-extrabold">The theory is computed, not typed in</h2>
+      <p className="quiet mt-3">
+        Everything the app says about a scale — its spelling in any key, the chords inside
+        it, the intervals in a drill, the bar on which a pattern lands — comes from one
+        engine, and that engine is checked by automated tests. Nothing is typed in by
+        hand and hoped for.
       </p>
 
-      <h2 className="pt-4 text-xl font-extrabold">What it claims</h2>
-      <p className="text-muted">
-        That it is the only free, browser-based app built entirely around hexatonic
-        practice. And that no other tool generates melodic patterns in Carnatic
-        rhythmic groupings and reports which bar they resolve on.
+      <h2 className="mt-12 text-2xl font-extrabold">Two scale names</h2>
+      <p className="quiet mt-3">
+        The <strong className="font-semibold text-cream">gospel scale</strong> (1 2 ♭3 3
+        5 6) is here as the major blues. It is not the major scale without its 4th.
+      </p>
+      <p className="quiet mt-3">
+        The <strong className="font-semibold text-cream">Sunday Scale</strong> is Peter
+        Martin&rsquo;s name, from Open Studio, for one rotation only:{" "}
+        {NO7.name}, {NO7.degrees}. The other rotations carry plain names first and their
+        modal names second, which list the two modes that share all six notes.
       </p>
 
-      <h2 className="pt-4 text-xl font-extrabold">What it does not claim</h2>
-      <p className="text-muted">
-        It is not the &ldquo;world&rsquo;s first hexatonic app&rdquo;. An iOS app named{" "}
-        <em>Hexatonics</em> has existed since January 2025, and mDecks&rsquo; Tessitura Pro
-        has shipped bi-triadic hexatonic practice — with pattern generation, notation
-        and odd meters — since 2017.
-      </p>
-      <p className="text-muted">
-        Two naming points, because both are commonly got wrong. The{" "}
-        <strong className="text-cream">&ldquo;gospel scale&rdquo;</strong> is not the scale
-        here — that name means 1 2 ♭3 3 5 6, the major blues scale. And the{" "}
-        <strong className="text-cream">&ldquo;Sunday scale&rdquo;</strong> is Peter
-        Martin/Open Studio&rsquo;s name for one exact rotation included here: the major
-        scale without 7, 1 2 3 4 5 6. The other rotations retain modal-intersection
-        names, which follow Cecil Sharp&rsquo;s folk-song classification and describe the
-        ambiguity the removed note creates.
+      <h2 className="mt-12 text-2xl font-extrabold">Credits</h2>
+      <p className="quiet mt-3">
+        Piano: the Salamander Grand. Engraving: VexFlow. Where a source for a name or a
+        claim could not be confirmed, the app leaves it out.
       </p>
 
-      <h2 className="pt-4 text-xl font-extrabold">Credits</h2>
-      <p className="text-muted">
-        Piano is the Salamander Grand. Engraving is VexFlow. The Carnatic terminology was
-        checked against the literature and carries an explicit list of things that could
-        not be verified — where a source could not be confirmed, the app stays quiet
-        rather than guessing.
-      </p>
-      <p className="pt-4">
+      <p className="mt-10">
         <Link href="/practice" className="btn btn-primary">Start practising</Link>
       </p>
     </article>

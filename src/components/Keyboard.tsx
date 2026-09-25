@@ -144,7 +144,7 @@ export default function Keyboard({
               {showLabels && st !== "off" && st !== "removed" && (
                 <text x={x + W / 2} y={felt + height - 14} textAnchor="middle"
                       className="font-mono" fontSize={11}
-                      fill={st === "active" ? "#4A3B08" : "#A79E94"}>
+                      fill={st === "active" ? "#2A2208" : "#3A332C"}>
                   {notePretty(scale.find((s) => pc(s) === ((m % 12) + 12) % 12) ?? { letter: "C", alt: 0, octave: 4 } as Note)}
                 </text>
               )}
@@ -157,7 +157,7 @@ export default function Keyboard({
           const fill =
             st === "active" ? `url(#g${uid})` :
             st === "chord"  ? `url(#c${uid})` :
-            st === "scale"  ? "#8A7420" :
+            st === "scale"  ? "#BDB4A6" :
             `url(#b${uid})`;
           return (
             <g key={`b${m}`} onClick={() => onNote?.(m)}
