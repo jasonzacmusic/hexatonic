@@ -8,7 +8,7 @@
  * the blues is one scale held against moving dominant harmony.
  */
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { twelveBar, bluesScales } from "@/lib/theory/blues";
 import { buildScale, KEYS } from "@/lib/theory/scales";
 import { getAudio, previewAudio } from "@/lib/audio/engine";
@@ -78,7 +78,9 @@ export default function BluesLane({
   // restart cleanly when the form changes underneath the band
   const sig = `${key}|${quickChange}|${bpm}|${bass}|${comp}|${click}|${countIn}`;
   const last = useRef(sig);
-  if (last.current !== sig) { last.current = sig; if (playing) stop(); }
+  useEffect(() => {
+    if (last.current !== sig) { last.current = sig; if (playing) stop(); }
+  }, [sig, playing, stop]);
 
   return (
     <div className="space-y-5">

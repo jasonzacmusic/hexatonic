@@ -18,6 +18,12 @@ type Tab = "atlas" | "movement" | "triads" | "pairs" | "barry";
 
 export default function HarmonyClient() {
   const [tab, setTab] = useState<Tab>("atlas");
+  /* ?tab=barry deep-links a tab — the class run-sheet and the Workout page
+     send students straight to the Barry Harris or triad view. */
+  useEffect(() => {
+    const t = new URLSearchParams(window.location.search).get("tab");
+    if (t === "atlas" || t === "movement" || t === "triads" || t === "pairs" || t === "barry") setTab(t);
+  }, []);
   return (
     <div className="space-y-6 pb-10">
       <header className="max-w-2xl pt-2">

@@ -9,6 +9,8 @@ Immediate alias (skips DNS): **https://hexatonic.vercel.app**
 | | |
 |---|---|
 | [/practice](https://hexatonic.nathanielschool.com/practice) | the drill machine |
+| [/workout](https://hexatonic.nathanielschool.com/workout) | knock-one-out from 4 parents, blues/gospel/whole-tone, neighbours, harmonisation, the Barry Harris lens, dice, a 4½-hour plan |
+| [/class](https://hexatonic.nathanielschool.com/class) | the 90-minute public-class run-sheet with one clock |
 | [/improvise](https://hexatonic.nathanielschool.com/improvise) | vamps built from the scale's own harmony |
 | [/harmony](https://hexatonic.nathanielschool.com/harmony) | triads, triad pairs, Barry Harris |
 | [/varisai](https://hexatonic.nathanielschool.com/varisai) | the practice ladder + raga mode |

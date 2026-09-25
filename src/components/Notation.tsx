@@ -172,7 +172,7 @@ export default function Notation({
     })();
 
     return () => { cancelled = true; };
-  }, [notes, subdivision, grouping, beatsPerBar, maxBars, keySignature, compact]);
+  }, [notes, subdivision, grouping, beatsPerBar, meterId, maxBars, keySignature, compact]);
 
   // Highlight without re-rendering the score.
   useEffect(() => {

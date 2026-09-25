@@ -282,6 +282,24 @@ export class AudioEngine {
     return true;
   }
 
+  /** A short chord progression, one chord per `gap` seconds, scheduled on the
+   *  audio clock rather than with timers so a busy main thread cannot smear it.
+   *  Tracked like every other source, so Stop and route changes still cut it. */
+  async previewChords(chords: number[][], gap = 0.9, velocity = 0.62): Promise<boolean> {
+    const request = ++this.previewId;
+    await this.init("/audio/salamander", chords.flat());
+    if (request !== this.previewId || !this.ctx) return false;
+    if (this.master) {
+      const now = this.ctx.currentTime;
+      this.master.gain.cancelScheduledValues(now);
+      this.master.gain.setTargetAtTime(0.85, now, 0.008);
+    }
+    const t0 = this.ctx.currentTime + 0.03;
+    chords.forEach((c, i) =>
+      c.forEach((m, j) => this.note(m, t0 + i * gap + j * 0.012, gap * 0.95, velocity)));
+    return true;
+  }
+
   private clickAt(when: number, strong: boolean) {
     if (!this.ctx || !this.clickBus) return;
     const o = this.ctx.createOscillator();
@@ -513,6 +531,15 @@ export async function previewAudio(
 ): Promise<boolean> {
   try {
     return await getAudio().preview(midis, spread, velocity);
+  } catch {
+    return false;
+  }
+}
+
+/** Fire-and-forget chord-sequence preview. */
+export async function previewChords(chords: number[][], gap = 0.9): Promise<boolean> {
+  try {
+    return await getAudio().previewChords(chords, gap);
   } catch {
     return false;
   }
