@@ -3,6 +3,7 @@ import { Archivo, Cormorant, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import Nav from "@/components/Nav";
 import Link from "next/link";
+import SupportPanel from "@/components/SupportPanel";
 
 const SITE = "https://hexatonic.nathanielschool.com";
 const BUILD_VERSION = process.env.NEXT_PUBLIC_BUILD_VERSION || "local";
@@ -164,6 +165,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 of Music. The theory here is computed rather than asserted — every claim
                 the app makes is reproducible from its own engine.
               </p>
+              <div className="mt-5"><SupportPanel /></div>
             </div>
             <div className="flex gap-14">
               <nav className="flex flex-col gap-2 font-mono text-[12px] uppercase tracking-[0.08em] text-muted">
