@@ -8,7 +8,10 @@ export default {
         line: "#2A2523", "line-control": "#786963",
         red: "#E8666C", "red-hi": "#FF8A8F", "red-deep": "#8B1E24",
         gold: "#C9A227", "gold-hi": "#F3D765",
-        cream: "#F4EFE4", muted: "#8A8178", amber: "#D08A2C",
+        /* Keep `muted` in step with --muted in globals.css. The utility class
+           resolves from HERE, not from the custom property, so changing only the
+           :root value silently leaves every `text-muted` on the old colour. */
+        cream: "#F4EFE4", muted: "#A79E94", amber: "#D08A2C",
       },
       fontFamily: {
         sans: ["var(--font-archivo)", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "system-ui", "sans-serif"],

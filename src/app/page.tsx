@@ -21,8 +21,10 @@ export default function Home() {
       {/* ── hero ──────────────────────────────────────────────────────── */}
       <section className="grid items-center gap-12 pb-24 pt-6 lg:grid-cols-[1.15fr_1fr] lg:pt-14">
         <div>
-          <p className="eyebrow hx-rise">The six-note practice engine</p>
-          <h1 className="display hx-rise hx-d1 mt-5 text-[13vw] leading-[0.92] sm:text-[64px] lg:text-[76px]">
+          {/* The "THE SIX-NOTE PRACTICE ENGINE" eyebrow is gone. It made the
+              headline share its entrance with a label nobody reads, and the
+              pull-quote directly below already says what the app is. */}
+          <h1 className="display hx-rise text-[13vw] leading-[0.92] sm:text-[64px] lg:text-[76px]">
             Remove<br />one note.
           </h1>
           <p className="pull hx-rise hx-d2 mt-6 max-w-lg">
@@ -43,7 +45,7 @@ export default function Home() {
               Hear the proof
             </Link>
           </div>
-          <p className="mt-5 font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
+          <p className="mt-5 font-mono text-[12px] tracking-[0.02em] text-muted">
             Free · no account · works offline
           </p>
         </div>
@@ -53,8 +55,8 @@ export default function Home() {
             <ScaleRing notes={scale.notes} removed={scale.removed} size={420} spin
                        className="max-w-full" />
             <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-              <span className="num text-6xl text-gold glow-gold">6</span>
-              <span className="mt-1 font-mono text-[9px] uppercase tracking-[0.24em] text-muted">
+              <span className="num text-6xl text-gold">6</span>
+              <span className="mt-1 font-mono text-[12px] uppercase tracking-[0.1em] text-muted">
                 of twelve
               </span>
             </div>
@@ -63,7 +65,7 @@ export default function Home() {
       </section>
 
       {/* ── theorem 1 ─────────────────────────────────────────────────── */}
-      <Section eyebrow="Theorem one" title={<>It isn&rsquo;t taste.<br />It&rsquo;s the only way.</>}>
+      <Section title={<>It isn&rsquo;t taste.<br />It&rsquo;s the only way.</>}>
         <p className="lede max-w-xl">
           Remove each degree of C major in turn and count the tritones left behind.
           Two removals — and only two — leave none.
@@ -71,7 +73,7 @@ export default function Home() {
         <div className="mt-8 overflow-hidden rounded-2xl border border-line">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-white/[0.02] text-left font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
+              <tr className="bg-white/[0.02] text-left font-mono text-[12px] tracking-[0.02em] text-muted">
                 <th className="px-5 py-3">removed</th>
                 <th className="px-5 py-3">what&rsquo;s left</th>
                 <th className="px-5 py-3 text-right">tritones</th>
@@ -109,7 +111,7 @@ export default function Home() {
       </Section>
 
       {/* ── the fourths cycle ─────────────────────────────────────────── */}
-      <Section eyebrow="Theorem five" title={<>Six perfect fourths<br />in a row.</>}>
+      <Section title={<>Six perfect fourths<br />in a row.</>}>
         <p className="lede max-w-xl">
           Step three degrees at a time and every interval comes out a perfect fourth or
           fifth. Six for six. The seven-note scale cannot do it — and the note that breaks
@@ -126,7 +128,7 @@ export default function Home() {
                 </span>
               ))}
             </p>
-            <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.14em] text-gold">
+            <p className="mt-4 font-mono text-[12px] uppercase tracking-[0.08em] text-gold">
               all perfect
             </p>
           </div>
@@ -142,7 +144,7 @@ export default function Home() {
                 </span>
               ))}
             </p>
-            <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.14em] text-amber">
+            <p className="mt-4 font-mono text-[12px] tracking-[0.02em] text-amber">
               F–B breaks the chain
             </p>
           </div>
@@ -150,7 +152,7 @@ export default function Home() {
       </Section>
 
       {/* ── the rhythm argument ───────────────────────────────────────── */}
-      <Section eyebrow="The consequence" title={<>Six beats seven.<br />Here is the arithmetic.</>}>
+      <Section title={<>Six beats seven.<br />Here is the arithmetic.</>}>
         <p className="lede max-w-xl">
           Play a scale in groups of five against 4/4 and the accent phases against the
           barline. The phrase resolves only when the tonic and the accent land on a
@@ -160,7 +162,7 @@ export default function Home() {
         <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[3, 4, 5, 6].map((g) => (
             <div key={g} className="card card-tight">
-              <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
+              <p className="font-mono text-[12px] uppercase tracking-[0.08em] text-muted">
                 groups of {g}
               </p>
               <div className="mt-3 flex items-baseline gap-2">
@@ -185,7 +187,7 @@ export default function Home() {
       </Section>
 
       {/* ── what's inside ─────────────────────────────────────────────── */}
-      <Section eyebrow="Inside" title="What you get">
+      <Section title="What you get">
         <div className="mt-2 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[
             ["Every key, spelled properly", "A note is a letter, an alteration and an octave — never a number. F♯ gives F♯ G♯ A♯ C♯ D♯ E♯, with no letter used twice."],
@@ -194,10 +196,12 @@ export default function Home() {
             ["The resolution solver", "A live bar-count for any combination of scale size, subdivision, grouping and range. Nothing else does this."],
             ["The Carnatic layer", "Tisra, chatusra, khanda, misra and sankeerna — with the konnakol that belongs to each."],
             ["Available harmony", "Four triads and three seventh-chord sets, two of which carry a second, equally correct name. Tap to flip the reading."],
-          ].map(([h, p], i) => (
+          ].map(([h, p]) => (
+            /* The 01–06 index labels are gone. Six cards in a grid are already
+               visibly a set; numbering them was the page narrating its own
+               structure. */
             <div key={h} className="card">
-              <span className="num text-xs text-gold/60">{String(i + 1).padStart(2, "0")}</span>
-              <h3 className="mt-2 font-semibold">{h}</h3>
+              <h3 className="font-semibold">{h}</h3>
               <p className="quiet mt-2">{p}</p>
             </div>
           ))}
@@ -208,7 +212,7 @@ export default function Home() {
       <section className="mt-24">
         <div className="card mx-auto max-w-3xl">
           <p className="eyebrow">What this is not</p>
-          <p className="mt-4 text-[15px] leading-relaxed text-cream/80">
+          <p className="mt-4 max-w-[68ch] text-[15px] leading-relaxed text-cream/85">
             It is not the first app to mention hexatonic scales. An iOS app called{" "}
             <em className="font-serif">Hexatonics</em> has existed since 2025, and mDecks&rsquo;
             Tessitura Pro has taught bi-triadic hexatonics since 2017. What appears to be
@@ -232,13 +236,15 @@ export default function Home() {
   );
 }
 
+/* The tracked uppercase kicker that used to sit above each heading is gone.
+   It was editorial scaffolding — the page numbering its own chapters — and the
+   headings carry their own weight without it. */
 function Section({
-  eyebrow, title, children,
-}: { eyebrow: string; title: React.ReactNode; children: React.ReactNode }) {
+  title, children,
+}: { title: React.ReactNode; children: React.ReactNode }) {
   return (
     <section className="mt-24 border-t border-line pt-14">
-      <p className="eyebrow">{eyebrow}</p>
-      <h2 className="display mt-4 text-3xl sm:text-[42px]">{title}</h2>
+      <h2 className="display text-3xl sm:text-[42px]">{title}</h2>
       <div className="mt-6">{children}</div>
     </section>
   );

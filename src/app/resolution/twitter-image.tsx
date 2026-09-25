@@ -29,7 +29,7 @@ export default async function Image() {
             Least common multiple of the bar, the pattern and the accent. Works on any scale.
           </div>
           <div style={{ display: "flex", marginTop: "auto", fontSize: 18, letterSpacing: 4,
-                        color: "#8A8178" }}>
+                        color: "#A79E94" }}>
             NATHANIEL SCHOOL OF MUSIC
           </div>
         </div>

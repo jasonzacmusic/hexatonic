@@ -48,7 +48,7 @@ export default function CustomBuilder({
               } ${tonic ? "cursor-default ring-1 ring-cream/30" : ""}`}
             >
               <span className="block text-base font-bold">{DEG[s]}</span>
-              <span className={`block font-mono text-[9px] ${active ? "text-[#5a4a12]" : "text-muted/70"}`}>
+              <span className={`block font-mono text-[12px] ${active ? "text-[#5a4a12]" : "text-muted/70"}`}>
                 {active ? "in" : "—"}
               </span>
             </button>
@@ -60,7 +60,7 @@ export default function CustomBuilder({
         <p className="font-mono text-sm text-gold">
           {scale.error ? "—" : scale.notes.map(notePretty).join("  ")}
         </p>
-        <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+        <p className="font-mono text-[12px] uppercase tracking-[0.12em] text-muted">
           {describeSet(semis)}
         </p>
         {!scale.error && (
@@ -72,12 +72,12 @@ export default function CustomBuilder({
       </div>
 
       <div>
-        <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">Start from</p>
+        <p className="font-mono text-[12px] uppercase tracking-[0.08em] text-muted">Start from</p>
         <div className="mt-2 flex flex-wrap gap-2">
           {CUSTOM_PRESETS.map((p) => (
             <button key={p.name} title={p.note}
               onClick={() => onChange(encodeCustom(p.semis))}
-              className="rounded-lg border border-line bg-surface2 px-3 py-1.5 text-xs text-muted transition hover:border-gold/60 hover:text-cream">
+              className="well rounded-lg px-3 py-1.5 text-xs text-muted transition hover:border-gold/60 hover:text-cream">
               {p.name}
             </button>
           ))}

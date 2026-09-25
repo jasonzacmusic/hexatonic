@@ -63,7 +63,7 @@ function Stat({
       >
         {v}
       </span>
-      <span className="mt-2 font-mono text-[10px] uppercase tracking-[0.16em] text-muted">{l}</span>
+      <span className="mt-2 font-mono text-[12px] uppercase tracking-[0.08em] text-muted">{l}</span>
     </div>
   );
 }
@@ -104,7 +104,7 @@ export function ScaleChips({
                   as a deletion mark instead of a hyperlink style */}
               <span aria-hidden className="pointer-events-none absolute inset-x-2.5 top-1/2 h-[2px]
                                            -translate-y-[3px] -rotate-12 rounded bg-red-hi/80" />
-              <span className="mt-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-red-hi/70">
+              <span className="mt-0.5 font-mono text-[12px] uppercase tracking-[0.1em] text-red-hi/70">
                 removed
               </span>
             </div>
@@ -120,7 +120,7 @@ export function ScaleChips({
             <span className={`block font-semibold ${lg ? "text-3xl" : "text-lg"}`}>
               {notePretty(item.note)}
             </span>
-            <span className={`block font-mono text-[9px] ${lit ? "text-[#5a4a12]" : "text-muted"}`}>
+            <span className={`block font-mono text-[12px] ${lit ? "text-[#5a4a12]" : "text-muted"}`}>
               {item.degree}
             </span>
           </button>
@@ -147,7 +147,7 @@ export function ChordGrid({ scale }: { scale: ScaleInstance }) {
       {groups.map(([label, list]) =>
         list.length ? (
           <div key={label}>
-            <h3 className="mb-3 font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
+            <h3 className="mb-3 font-mono text-[12px] uppercase tracking-[0.08em] text-muted">
               {label} <span className="text-gold">{list.length}</span>
             </h3>
             <div className="flex flex-wrap gap-2">
@@ -174,7 +174,7 @@ function ChordCard({ chord }: { chord: ChordSet }) {
       title={multi ? "tap to hear it, and again to flip the reading" : "tap to hear it"}
     >
       <span className="block text-[15px] font-semibold">{name.symbol}</span>
-      <span className="block font-mono text-[10px] text-muted">
+      <span className="block font-mono text-[12px] text-muted">
         {name.notes.join(" ")}
         {multi && <span className="ml-1 text-gold/70 opacity-0 transition group-hover:opacity-100">⇄</span>}
       </span>

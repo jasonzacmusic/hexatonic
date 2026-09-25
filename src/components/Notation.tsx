@@ -200,11 +200,11 @@ export default function Notation({
         <div ref={hostRef} />
       </div>
       {truncated > 0 && (
-        <p className="mt-2 font-mono text-[11px] text-amber">
+        <p className="mt-2 font-mono text-[12px] text-amber">
           Showing the first {Math.min(truncated, maxBars)} of {truncated} bars — playback runs all of it.
         </p>
       )}
-      {error && <p className="mt-2 font-mono text-[11px] text-amber">Notation: {error}</p>}
+      {error && <p className="mt-2 font-mono text-[12px] text-amber">Notation: {error}</p>}
     </div>
   );
 }

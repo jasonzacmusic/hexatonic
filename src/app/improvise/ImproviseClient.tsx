@@ -134,7 +134,6 @@ export default function ImproviseClient() {
   return (
     <div className="space-y-5 pb-10">
       <header className="max-w-2xl pt-2">
-        <p className="eyebrow">Improvise</p>
         <h1 className="display mt-3 text-4xl">Stop running patterns.</h1>
         <p className="lede mt-4">
           {lane === "vamp" ? (
@@ -179,11 +178,11 @@ export default function ImproviseClient() {
                   key={i}
                   onClick={() => previewAudio([s.chord.bass, ...s.chord.voicing], 0.04)}
                   className={`rounded-xl border px-5 py-3 text-left transition ${
-                    on ? "border-gold bg-gold text-[#17130a] shadow-[0_6px_24px_-8px_rgba(201,162,39,0.8)]"
+                    on ? "border-gold bg-gold text-[#17130a] shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_2px_rgba(0,0,0,0.45)]"
                        : "border-line bg-surface2 hover:border-gold/60"}`}
                 >
                   <span className="block text-2xl font-bold">{s.chord.label}</span>
-                  <span className={`block font-mono text-[10px] ${on ? "text-[#5a4a12]" : "text-muted"}`}>
+                  <span className={`block font-mono text-[12px] ${on ? "text-[#5a4a12]" : "text-muted"}`}>
                     {s.chord.altLabel ? `= ${s.chord.altLabel} · ` : ""}{s.bars} bar{s.bars > 1 ? "s" : ""}
                   </span>
                 </button>
@@ -195,7 +194,7 @@ export default function ImproviseClient() {
           {guides && tones && (
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-xl border border-gold/35 bg-gold/[0.06] px-4 py-3">
-                <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-gold">
+                <p className="font-mono text-[12px] uppercase tracking-[0.08em] text-gold">
                   land on these
                 </p>
                 <p className="mt-1 font-mono text-xl text-gold">
@@ -203,7 +202,7 @@ export default function ImproviseClient() {
                 </p>
               </div>
               <div className="rounded-xl border border-line bg-surface2 px-4 py-3">
-                <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
+                <p className="font-mono text-[12px] uppercase tracking-[0.08em] text-muted">
                   pass through these
                 </p>
                 <p className="mt-1 font-mono text-xl text-cream/70">
@@ -227,21 +226,21 @@ export default function ImproviseClient() {
               {countdown > 0 ? (
                 <>
                   <span className="num text-5xl text-gold">{countdown}</span>
-                  <span className="mt-1 font-mono text-[9px] uppercase tracking-[0.2em] text-muted">
+                  <span className="mt-1 font-mono text-[12px] uppercase tracking-[0.1em] text-muted">
                     count in
                   </span>
                 </>
               ) : current ? (
                 <>
-                  <span className="num text-3xl text-gold glow-gold">{current.chord.label}</span>
-                  <span className="mt-1 font-mono text-[9px] uppercase tracking-[0.2em] text-muted">
+                  <span className="num text-3xl text-gold">{current.chord.label}</span>
+                  <span className="mt-1 font-mono text-[12px] uppercase tracking-[0.1em] text-muted">
                     sounding
                   </span>
                 </>
               ) : (
                 <>
                   <span className="num text-4xl text-gold">{scale.notes.length}</span>
-                  <span className="mt-1 font-mono text-[9px] uppercase tracking-[0.2em] text-muted">
+                  <span className="mt-1 font-mono text-[12px] uppercase tracking-[0.1em] text-muted">
                     notes
                   </span>
                 </>
@@ -321,7 +320,7 @@ export default function ImproviseClient() {
           <Toggle on={click} onClick={() => setClick((v) => !v)}>Click</Toggle>
           <Toggle on={countIn} onClick={() => setCountIn((v) => !v)}>Count-off</Toggle>
           <Toggle on={guides} onClick={() => setGuides((v) => !v)}>Guide tones</Toggle>
-          <span className="ml-auto font-mono text-[10px] uppercase tracking-[0.16em] text-muted">
+          <span className="ml-auto font-mono text-[12px] uppercase tracking-[0.08em] text-muted">
             space play/stop
           </span>
         </div>
@@ -345,7 +344,7 @@ export default function ImproviseClient() {
                      chordTonePcs={chordPcs}
                      onNote={(m) => previewAudio([m])} />
         )}
-        <div className="mt-4 flex flex-wrap gap-x-7 gap-y-2 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
+        <div className="mt-4 flex flex-wrap gap-x-7 gap-y-2 font-mono text-[12px] uppercase tracking-[0.08em] text-muted">
           <span><i className="mr-2 inline-block h-2.5 w-2.5 rounded-sm bg-[#F0E4B8] align-middle" />chord tone right now</span>
           <span><i className="mr-2 inline-block h-2.5 w-2.5 rounded-sm bg-cream align-middle" />in the scale</span>
           <span><i className="mr-2 inline-block h-2.5 w-2.5 rounded-sm bg-red align-middle" />removed</span>

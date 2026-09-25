@@ -29,7 +29,7 @@ export default async function Image() {
             A vamp built only from the scale's own harmony, with guide tones showing what to land on.
           </div>
           <div style={{ display: "flex", marginTop: "auto", fontSize: 18, letterSpacing: 4,
-                        color: "#8A8178" }}>
+                        color: "#A79E94" }}>
             NATHANIEL SCHOOL OF MUSIC
           </div>
         </div>
