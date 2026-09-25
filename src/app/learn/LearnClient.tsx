@@ -132,7 +132,12 @@ export default function LearnClient() {
           note that wasn&rsquo;t is the one we removed.
         </p>
         <div className="flex flex-wrap gap-2">
-          <PlayLine notes={[0, 2, 4, 6, 1, 5].map((i) => cMajNo4.notes[i])} label="C E G B D A — Cmaj13" gap={0.12} />
+          {/* C D E G A B are indices 0–5: stacked in thirds that is C E G B, then
+              D and A an octave up — a real 13th chord, not a line folding back down. */}
+          <PlayLine notes={[0, 2, 3, 5, 1, 4].map((i, k) => {
+            const n = cMajNo4.notes[i];
+            return k >= 4 ? { ...n, octave: n.octave + 1 } : n;
+          })} label="C E G B D A — Cmaj13" gap={0.12} />
           <PlayLine notes={cMajNo4.notes} label="the scale" gap={0.18} />
         </div>
         <p className="text-sm text-muted">

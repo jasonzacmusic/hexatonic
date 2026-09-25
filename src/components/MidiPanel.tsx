@@ -22,6 +22,11 @@ export default function MidiPanel({ expected, grouping, stepDur, playing }: Prop
   const wasPlaying = useRef(false);
 
   const midi = getMidi();
+  /* Web MIDI support is a browser fact the server cannot know. Render the
+     server's answer first and learn the truth after mount, or React sees two
+     different trees and reports a hydration error on every /practice load. */
+  const [supported, setSupported] = useState(false);
+  useEffect(() => { setSupported(midi.supported); }, [midi]);
 
   const connect = useCallback(async () => {
     setErr(null);
@@ -58,7 +63,7 @@ export default function MidiPanel({ expected, grouping, stepDur, playing }: Prop
 
   useEffect(() => () => { midi.disconnect(); }, [midi]);
 
-  if (!midi.supported) {
+  if (!supported) {
     return (
       <section className="card">
         <p className="eyebrow">Play along</p>
