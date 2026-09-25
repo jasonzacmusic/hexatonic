@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import SupportPanel from "@/components/SupportPanel";
 
 const NAV = [
   { href: "/practice", label: "Practice" },
@@ -66,10 +67,7 @@ export default function Nav() {
         </nav>
 
         <div className="ml-auto flex items-center gap-3">
-          <Link href="/practice"
-                className="hidden whitespace-nowrap rounded-xl bg-white/[0.06] px-4 py-2 font-mono text-[13px] uppercase tracking-[0.06em] text-cream transition hover:bg-white/[0.1] lg:inline-block">
-            Open the app
-          </Link>
+          <SupportPanel variant="nav" />
           <button className="md:hidden" aria-label="Menu" aria-expanded={open}
                   aria-controls="mobile-navigation"
                   onClick={() => setOpen((v) => !v)}>

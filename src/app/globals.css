@@ -269,3 +269,20 @@ body {
   .print-only { display: block !important; }
 }
 .print-only { display: none; }
+
+/* ── support: a warm metallic pill with a slow light sweep ─────────────── */
+.hx-sheen {
+  position: relative; overflow: hidden; isolation: isolate;
+  background: linear-gradient(135deg, #F3D765 0%, #C9A227 45%, #E9C75A 70%, #B8901C 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.55), inset 0 -1px 0 rgba(0,0,0,0.18),
+              0 1px 2px rgba(0,0,0,0.5), 0 8px 18px -10px rgba(0,0,0,0.8);
+  transition: transform .2s ease, filter .2s ease;
+}
+.hx-sheen::after {
+  content: ""; position: absolute; inset: -40% auto -40% -60%; width: 40%; z-index: -1;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,0.65), transparent);
+  transform: skewX(-18deg); animation: hx-sweep 5.5s ease-in-out infinite;
+}
+.hx-sheen:hover { transform: translateY(-1px); filter: brightness(1.06); }
+@keyframes hx-sweep { 0%, 70% { left: -60%; } 100% { left: 130%; } }
+@media (prefers-reduced-motion: reduce) { .hx-sheen::after { animation: none; display: none; } }

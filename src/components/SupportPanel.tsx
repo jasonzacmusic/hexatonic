@@ -38,7 +38,7 @@ function Hex({ size = 18 }: { size?: number }) {
   );
 }
 
-export default function SupportPanel({ variant = "footer" }: { variant?: "footer" | "inline" }) {
+export default function SupportPanel({ variant = "footer" }: { variant?: "footer" | "inline" | "nav" }) {
   const ref = useRef<HTMLDialogElement>(null);
   const [copied, setCopied] = useState<string | null>(null);
 
@@ -54,11 +54,17 @@ export default function SupportPanel({ variant = "footer" }: { variant?: "footer
 
   return (
     <>
-      {variant === "footer" ? (
+      {variant === "nav" ? (
         <button type="button" onClick={() => ref.current?.showModal()}
-                className="group inline-flex items-center gap-2.5 rounded-full border border-line px-4 py-2 text-[14px] text-cream/85 transition hover:border-line-control hover:text-cream">
-          <span className="text-gold/80 transition group-hover:text-gold"><Hex size={16} /></span>
-          <span className="font-serif text-[17px] italic">Keep Hexatonic free</span>
+                className="hx-sheen inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[13px] font-semibold text-[#17130a]">
+          <Hex size={13} /> Support
+        </button>
+      ) : variant === "footer" ? (
+        <button type="button" onClick={() => ref.current?.showModal()}
+                className="hx-sheen group inline-flex items-center gap-3 rounded-full px-5 py-2.5 text-[#17130a]">
+          <Hex size={16} />
+          <span className="font-serif text-[19px] font-semibold italic">Keep Hexatonic free</span>
+          <span className="font-mono text-[12px] opacity-70">→</span>
         </button>
       ) : (
         <button type="button" onClick={() => ref.current?.showModal()} className="btn btn-ghost">
