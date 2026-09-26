@@ -22,8 +22,8 @@
  */
 
 import {
-  Letter, Note, note, pc, midi, noteName, notePretty, spell, stepLetter, letterIndex,
-  parseNoteName, LETTERS,
+  Letter, Note, note, pc, midi, noteName, notePretty, spell, stepLetter,
+  parseNoteName, LETTERS, LETTER_PC,
 } from "./note";
 
 export type SixthFamily = "major6" | "minor6" | "dominant7" | "dominant7b5";
@@ -76,59 +76,52 @@ export const sixthDimById = (id: SixthFamily) =>
   SIXTH_DIMINISHED.find((s) => s.id === id) ?? SIXTH_DIMINISHED[0];
 
 const mod12 = (n: number) => ((n % 12) + 12) % 12;
-const accidentals = (ns: Note[]) => ns.reduce((a, n) => a + Math.abs(n.alt), 0);
+
+/** Cb, Fb, E# and B#: correct in a key signature that has them, but a player
+ *  reading a chromatic added note expects B, E, F and C. */
+const isWhiteAccidental = (n: Note) =>
+  (n.alt === -1 && (n.letter === "C" || n.letter === "F")) ||
+  (n.alt === 1 && (n.letter === "E" || n.letter === "B"));
+
+/** The note at an exact MIDI pitch, on a given letter (null past a double). */
+function onLetter(L: Letter, target: number): Note | null {
+  let alt = ((target - LETTER_PC[L]) % 12 + 12) % 12;
+  if (alt > 6) alt -= 12;
+  if (Math.abs(alt) > 2) return null;
+  const octave = (target - LETTER_PC[L] - alt) / 12 - 1;
+  return note(L, alt as Note["alt"], octave);
+}
 
 /** Build the eight-note scale, correctly spelled.
  *  Eight notes into seven letters means exactly one letter repeats. The
- *  declared template is the convention (C6: A♭ and A share a letter). When a
- *  key would push that template into a double flat — D♭6 would print B𝄫 — the
- *  repeated letter moves instead: D♭ E♭ F G♭ A♭ A B♭ C. */
+ *  declared template is the convention (C6: A♭ and A share a letter). Three
+ *  rules then respell, one note at a time:
+ *   · a double accidental always moves to its neighbouring letter
+ *     (D♭6 would print B𝄫: it reads A instead);
+ *   · the added chromatic note, when it would be C♭, F♭, E♯ or B♯, moves to
+ *     the natural beside it (A♭6 reads A♭ B♭ C D♭ E♭ E F G, not F♭);
+ *   · chord tones and the leading note keep their letters, so the chord still
+ *     reads as a chord and the diminished still leads up to the root. */
 export function buildSixthDim(tonic: string, family: SixthFamily, octave = 4): Note[] {
   const def = sixthDimById(family);
   const t = parseNoteName(tonic, octave);
-  const place = (letters: number[]): Note[] | null => {
-    const out: Note[] = [];
-    for (let i = 0; i < def.scale.length; i++) {
-      const L = stepLetter(t.letter, letters[i]);
-      const oct = octave + Math.floor((letterIndex(t.letter) + letters[i]) / 7);
-      const s = spell(L, (pc(t) + def.scale[i]) % 12, oct);
-      if (!s) return null;
-      out.push(s);
-    }
-    return out;
-  };
-  const template = place(def.letters);
-  if (template && !template.some((n) => Math.abs(n.alt) === 2)) return template;
-
-  /* Search every letter layout (each step keeps, or moves one or two letters).
-     Order of importance: no double accidentals; don't mix sharps and flats;
-     keep the parent chord's own letters (so the chord reads as a chord);
-     fewest accidentals; fewest repeated letters; closest to the template. */
-  const chordIdx = def.chord.map((s) => def.scale.indexOf(s));
-  let best: Note[] | null = null;
-  let bestCost = Infinity;
-  const walk = (letters: number[]) => {
-    if (letters.length === 8) {
-      if (letters[7] > 6) return;
-      const cand = place(letters);
-      if (!cand) return;
-      const doubles = cand.filter((n) => Math.abs(n.alt) === 2).length;
-      const mixed = cand.some((n) => n.alt > 0) && cand.some((n) => n.alt < 0) ? 1 : 0;
-      const chordMoved = chordIdx.filter((i) => letters[i] !== def.letters[i]).length;
-      const repeats = 8 - new Set(letters).size;
-      const moved = letters.filter((l, i) => l !== def.letters[i]).length;
-      const cost = doubles * 1e6 + mixed * 2500 + chordMoved * 1500 +
-        accidentals(cand) * 1000 + Math.max(0, repeats - 1) * 300 + moved;
-      if (cost < bestCost) { bestCost = cost; best = cand; }
-      return;
-    }
-    const prev = letters[letters.length - 1];
-    for (let step = 0; step <= 2; step++) walk([...letters, prev + step]);
-  };
-  walk([0]);
-  const result = best as Note[] | null;
-  if (!result) throw new Error(`${tonic} ${family} cannot be spelled`);
-  return result;
+  const base = midi(t);
+  const out: Note[] = [];
+  for (let i = 0; i < def.scale.length; i++) {
+    const target = base + def.scale[i];
+    const own = onLetter(stepLetter(t.letter, def.letters[i]), target);
+    const keep = i === 0 || i === 7 || def.chord.includes(def.scale[i]);
+    const fine = own && Math.abs(own.alt) < 2 && (keep || !isWhiteAccidental(own));
+    if (own && fine) { out.push(own); continue; }
+    const others = [-1, 1]
+      .map((d) => onLetter(stepLetter(t.letter, def.letters[i] + d), target))
+      .filter((n): n is Note => !!n && Math.abs(n.alt) < 2 && !isWhiteAccidental(n))
+      .sort((a, b) => Math.abs(a.alt) - Math.abs(b.alt));
+    const pick = others[0] ?? own;
+    if (!pick) throw new Error(`${tonic} ${family} cannot be spelled`);
+    out.push(pick);
+  }
+  return out;
 }
 
 export interface HarmonisedStep {
