@@ -35,7 +35,7 @@ export function ResolutionBanner({
     : "A long cycle.";
 
   return (
-    <div className={`card relative overflow-hidden ${big ? "py-7" : "py-5"} ${playing ? "hx-pulse" : ""}`}>
+    <div className={`card relative overflow-hidden ${big ? "py-7" : "py-4"} ${playing ? "hx-pulse" : ""}`}>
       <div className="relative flex flex-wrap items-center gap-x-10 gap-y-5">
         <Stat v={bars} l={bars === 1 ? "bar to land on the one" : "bars to land on the one"} big={big} lead />
         <Stat v={resolution.totalNotes} l="notes" big={big} />
@@ -77,9 +77,13 @@ function Stat({
 
 export function ScaleChips({
   scale, activePc = null, transpose = 1, size = "md",
-}: { scale: ScaleInstance; activePc?: number | null; transpose?: number; size?: "md" | "lg" }) {
+}: { scale: ScaleInstance; activePc?: number | null; transpose?: number; size?: "sm" | "md" | "lg" }) {
   if (scale.error) return <p className="text-sm text-red-hi">{scale.error}</p>;
   const lg = size === "lg";
+  /* sm: a phone row of seven that fits 342px. The removed chip drops its
+     "removed" caption (the strike and the red dashes say it, and the screen
+     reader still hears it). */
+  const sm = size === "sm";
 
   /* The removed note is shown IN ITS OWN PLACE in the row, not appended at the
      end. Seeing "C D E ⌀ G A B" reads instantly as a gap in the scale; seeing
@@ -93,7 +97,7 @@ export function ScaleChips({
   ].sort((a, b) => rel(a.note) - rel(b.note));
 
   return (
-    <div className="flex flex-wrap items-stretch gap-2.5">
+    <div className={`flex flex-wrap items-stretch ${sm ? "gap-1" : "gap-2.5"}`}>
       {row.map((item, i) => {
         if (item.removed) {
           return (
@@ -101,17 +105,19 @@ export function ScaleChips({
                  title={`${notePretty(item.note)} — removed from this scale`}
                  className={`relative flex flex-col items-center justify-center rounded-xl
                              border-2 border-dashed border-red/70 bg-red/[0.07]
-                             ${lg ? "min-w-[74px] px-5 py-3" : "min-w-[58px] px-3.5 py-2"}`}>
+                             ${lg ? "min-w-[74px] px-5 py-3" : sm ? "min-w-[40px] px-1.5 py-1.5" : "min-w-[58px] px-3.5 py-2"}`}>
               <span className={`font-semibold text-red-hi/85 ${lg ? "text-3xl" : "text-lg"}`}>
                 {notePretty(item.note)}
               </span>
               {/* a clean strike, drawn rather than a text-decoration so it reads
                   as a deletion mark instead of a hyperlink style */}
-              <span aria-hidden className="pointer-events-none absolute inset-x-2.5 top-1/2 h-[2px]
-                                           -translate-y-[3px] -rotate-12 rounded bg-red-hi/80" />
-              <span className="mt-0.5 font-mono text-[13px] uppercase tracking-[0.08em] text-red-hi/80">
-                removed
-              </span>
+              <span aria-hidden className={`pointer-events-none absolute top-1/2 h-[2px] -rotate-12 rounded bg-red-hi/80
+                                            ${sm ? "inset-x-1.5 -translate-y-[1px]" : "inset-x-2.5 -translate-y-[3px]"}`} />
+              {sm ? <span className="sr-only">removed</span> : (
+                <span className="mt-0.5 font-mono text-[13px] uppercase tracking-[0.08em] text-red-hi/80">
+                  removed
+                </span>
+              )}
             </div>
           );
         }
@@ -120,7 +126,7 @@ export function ScaleChips({
           <button
             key={i}
             onClick={() => void previewAudio([midi(item.note) + 12 * transpose])}
-            className={`chip ${lit ? "chip-lit" : ""} ${lg ? "min-w-[64px] px-4 py-2.5 sm:min-w-[74px] sm:px-5 sm:py-3" : "min-w-[58px]"}`}
+            className={`chip ${lit ? "chip-lit" : ""} ${lg ? "min-w-[64px] px-4 py-2.5 sm:min-w-[74px] sm:px-5 sm:py-3" : sm ? "min-w-[40px] !px-1.5 !py-1" : "min-w-[58px]"}`}
             /* Exactly one lit note: the lit state arrives instantly and leaves
                in 60ms, so two chips are never half-lit at once. */
             style={{ transition: lit ? "none"
@@ -194,13 +200,17 @@ function ChordCard({ chord }: { chord: ChordSet }) {
 /* ── small controls ──────────────────────────────────────────────────────── */
 
 export function Seg<T extends string | number>({
-  value, options, onChange, ariaLabel,
-}: { value: T; options: { label: string; value: T }[]; onChange: (v: T) => void; ariaLabel?: string }) {
+  value, options, onChange, ariaLabel, small = false,
+}: {
+  value: T; options: { label: string; value: T }[]; onChange: (v: T) => void; ariaLabel?: string;
+  /** a slimmer bar (34px) for secondary switches such as Triads / Sevenths */
+  small?: boolean;
+}) {
   return (
-    <div className="seg" role="group" aria-label={ariaLabel}>
+    <div className={`seg ${small ? "!p-0.5" : ""}`} role="group" aria-label={ariaLabel}>
       {options.map((o) => (
         <button key={String(o.value)} type="button" data-on={o.value === value}
-                className="data-[on=true]:![background:#F4EFE4] data-[on=true]:!text-[#0A0908]"
+                className={`data-[on=true]:![background:#F4EFE4] data-[on=true]:!text-[#0A0908] ${small ? "!px-2.5 !py-1" : ""}`}
                 aria-pressed={o.value === value}
                 onClick={() => onChange(o.value)}>
           {o.label}
@@ -211,11 +221,14 @@ export function Seg<T extends string | number>({
 }
 
 export function Toggle({
-  on, onClick, children, title, disabled,
-}: { on: boolean; onClick: () => void; children: React.ReactNode; title?: string; disabled?: boolean }) {
+  on, onClick, children, title, disabled, className = "",
+}: {
+  on: boolean; onClick: () => void; children: React.ReactNode; title?: string; disabled?: boolean;
+  className?: string;
+}) {
   return (
     <button type="button" data-on={on} onClick={onClick}
-            className="btn btn-ghost data-[on=true]:!border-cream/70 data-[on=true]:!bg-cream/[0.08] data-[on=true]:!text-cream"
+            className={`btn btn-ghost data-[on=true]:!border-cream/70 data-[on=true]:!bg-cream/[0.08] data-[on=true]:!text-cream ${className}`}
             aria-pressed={on} title={title} disabled={disabled}>
       {children}
     </button>
