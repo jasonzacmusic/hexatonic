@@ -15,7 +15,13 @@ export default function ChipRow({ row, lit }: { row: Row; lit: number[] | null }
   return (
     <div>
       <p className="font-mono text-[13px] uppercase tracking-[0.08em] text-cream/70">{row.title}</p>
-      <div className={`mt-2.5 flex flex-wrap ${rhythm ? "gap-x-3 gap-y-1.5" : "gap-2"}`}>
+      {/* Note rows: one line on a phone too, as equal columns; rhythm rows wrap
+          between groups. */}
+      <div className={rhythm ? "mt-2.5 flex flex-wrap gap-x-3 gap-y-1.5" : "mt-2.5 grid gap-1.5 sm:flex sm:gap-2"}
+           style={rhythm ? undefined : {
+             gridTemplateColumns: `repeat(${row.chips.length}, minmax(0, 1fr))`,
+             maxWidth: `${row.chips.length * 64}px`,
+           }}>
         {groups(row).map((idx, gi) => (
           <span key={gi} className={rhythm ? "flex gap-1.5" : "contents"}>
         {idx.map((i) => {
@@ -26,7 +32,7 @@ export default function ChipRow({ row, lit }: { row: Row; lit: number[] | null }
           const base = rhythm
             ? `flex h-11 min-w-[36px] flex-col items-center justify-center rounded-lg border px-2 font-mono ${
                 c.accent ? "text-[17px] font-bold" : "text-[14px]"}`
-            : "flex min-w-[58px] flex-col items-center rounded-xl border px-3 pb-1.5 pt-2";
+            : "flex min-w-0 flex-col items-center rounded-xl border px-1 pb-1.5 pt-2 sm:min-w-[58px] sm:px-3";
           const look =
             removed && sounding ? "border-red bg-red/25 text-red-hi"
             : removed ? "border-2 border-dashed border-red/80 bg-red/[0.06] text-red-hi"
@@ -43,7 +49,7 @@ export default function ChipRow({ row, lit }: { row: Row; lit: number[] | null }
                 </>
               ) : (
                 <>
-                  <span className="text-[20px] font-semibold leading-tight">{c.label}</span>
+                  <span className="text-[18px] font-semibold leading-tight sm:text-[20px]">{c.label}</span>
                   <span className={`font-mono text-[13px] leading-tight ${sounding && !removed ? "text-[#2A2208]" : removed ? "" : "text-muted"}`}>
                     {absent ? "out" : c.sub}
                   </span>

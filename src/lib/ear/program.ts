@@ -55,13 +55,15 @@ export class ProgramBuilder {
     this.t += s;
     return this;
   }
-  /** a quiet low tonic held under everything from `from` to `to` */
+  /** A quiet low tonic held under everything from `from` to `to`, in two
+   *  octaves. The first strike sets the key; the re-strikes that keep it alive
+   *  are softer, so the drone stays a floor under the tune, never a beat. */
   drone(tonic: number, from: number, to: number) {
-    const every = 2.4;
-    for (let at = from; at < to - 0.2; at += every)
+    const every = 3;
+    for (let at = from, k = 0; at < to - 0.2; at += every, k++)
       this.events.push({
-        at, dur: Math.min(every + 0.3, to - at + 0.4),
-        midis: [tonic - 24, tonic - 12], vel: 0.3, spread: 0,
+        at, dur: Math.min(every + 0.4, to - at + 0.5),
+        midis: [tonic - 24, tonic - 12], vel: k === 0 ? 0.3 : 0.22, spread: 0,
       });
     return this;
   }
@@ -80,7 +82,9 @@ export function cadenceChords(tonic: number, minor: boolean): number[][] {
   const third = minor ? 3 : 4;
   const sixth = minor ? 8 : 9;
   const seventh = minor ? -2 : -1;
-  const up = tonic + 12;
+  /* Close voicing around the tonic, where the scale will be sung: bass an
+     octave below, the chord in the tune's own register. */
+  const up = tonic;
   return [
     [tonic - 12, up, up + third, up + 7],
     [tonic - 7, up, up + 5, up + sixth],
