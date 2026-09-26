@@ -11,7 +11,7 @@ export default async function Image() {
     const a = (i / 12) * Math.PI * 2 - Math.PI / 2;
     return { x: cx + R * Math.cos(a), y: cy + R * Math.sin(a), i };
   });
-  const scale = [0, 2, 4, 7, 9, 11];
+  const scale = [0, 2, 4, 5, 7, 9];
   return new ImageResponse(
     (
       <div style={{ width: "100%", height: "100%", display: "flex", background: "#0A0908",
@@ -26,7 +26,7 @@ export default async function Image() {
           </div>
           <div style={{ display: "flex", marginTop: 26, fontSize: 25, color: "#B9B0A6",
                         lineHeight: 1.35, width: 620 }}>
-            Five things you can hear, each with a button that proves it by ear.
+            Leave one note out and a scale turns into two chords. Jason Zac’s lesson, step by step.
           </div>
           <div style={{ display: "flex", marginTop: "auto", fontSize: 18, letterSpacing: 4,
                         color: "#A79E94" }}>
@@ -34,7 +34,7 @@ export default async function Image() {
           </div>
         </div>
         {dots.map((d) => {
-          const on = scale.includes(d.i), rm = d.i === 5;
+          const on = scale.includes(d.i), rm = d.i === 11;
           const r = on || rm ? 13 : 4;
           return <div key={d.i} style={{ position: "absolute", left: d.x - r, top: d.y - r,
             width: r * 2, height: r * 2, borderRadius: r, display: "flex",
