@@ -145,14 +145,16 @@ class Drone {
   private voice: { oscs: OscillatorNode[]; gain: GainNode } | null = null;
   private current = -1;
 
-  constructor(ctx: AudioContext) {
+  /** `startAt` is the drill's first downbeat, so the drone stays silent
+   *  through the count-in and swells in on beat 1. */
+  constructor(ctx: AudioContext, startAt?: number) {
     this.ctx = ctx;
     this.out = ctx.createGain();
     this.out.gain.value = 0;
     this.out.connect(ctx.destination);
-    const now = ctx.currentTime;
-    this.out.gain.setValueAtTime(0, now);
-    this.out.gain.linearRampToValueAtTime(DRONE_GAIN, now + 0.6);
+    const at = Math.max(ctx.currentTime, startAt ?? 0);
+    this.out.gain.setValueAtTime(0, at);
+    this.out.gain.linearRampToValueAtTime(DRONE_GAIN, at + 0.4);
   }
 
   /** Move to a new tonic with a short crossfade (no glide, so no smear). */
@@ -298,7 +300,7 @@ export function useDrill(initial?: Partial<DrillState>) {
       droneRef.current = null;
       return;
     }
-    droneRef.current ??= new Drone(ctx);
+    droneRef.current ??= new Drone(ctx, getAudio().startTime);
     droneRef.current.tune(soundingTonic);
   }, [sounding, state.drone, soundingTonic]);
   useEffect(() => () => { droneRef.current?.stop(); droneRef.current = null; }, []);
