@@ -34,6 +34,26 @@ describe("one owner at a time", () => {
     expect(stopB).not.toHaveBeenCalled();
   });
 
+  it("starting a second player silences the first one's SOUND, not just its screen", () => {
+    // 26 Sep 2026 audit: claim() only reset the first owner's UI, so a vamp
+    // kept scheduling under a player that does not go through engine.start.
+    s.register("a", "vamp", () => {});
+    s.register("b", "drill", () => {});
+    s.claim("a");
+    __calls.length = 0;
+    s.claim("b");
+    expect(__calls).toContain("stopVamp(true)");
+    expect(__calls).toContain("stop(true)");
+  });
+
+  it("re-claiming by the same player does not stop the engine a second time", () => {
+    s.register("a", "drill", () => {});
+    s.claim("a");
+    __calls.length = 0;
+    s.claim("a");
+    expect(__calls).toEqual([]);
+  });
+
   it("unmounting the active owner stops it", () => {
     const stop = vi.fn();
     const unregister = s.register("a", "drill", stop);

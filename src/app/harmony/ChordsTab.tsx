@@ -14,6 +14,7 @@ import {
 import { midi, note, Note, notePretty, pc } from "@/lib/theory/note";
 import { prettyChordSymbol } from "@/lib/theory/movement";
 import { previewAudio } from "@/lib/audio/engine";
+import { playableStack } from "@/lib/audio/voicing";
 import { optionById, PROSE, ScalePicker } from "./scaleOptions";
 
 /** Chord symbols for display: ♭ ♯ °, and the fourth stacks named in words. */
@@ -111,7 +112,7 @@ export default function ChordsTab() {
         </div>
         <p className={`mt-3 ${PROSE}`}>{stackLine(stack, notes, scale.removed)}</p>
         <button className="btn btn-primary mt-4"
-                onClick={() => previewAudio(stack.notes.map((n) => midi(n) - (n.octave >= 6 ? 12 : 0)), 0.09)}>
+                onClick={() => previewAudio(playableStack(stack.notes.map(midi)), 0.09)}>
           ▶ Hear it as one chord
         </button>
       </section>

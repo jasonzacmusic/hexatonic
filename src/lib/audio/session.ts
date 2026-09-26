@@ -63,6 +63,12 @@ class AudioSession {
   claim(id: string): number {
     if (this.activeId && this.activeId !== id) {
       this.owners.get(this.activeId)?.stop();
+      // The owner's stop only resets its screen. Silence its sound as well:
+      // a player that schedules notes itself (the ear games) never calls
+      // engine.start, so nothing else would end a vamp or drill under it.
+      const a = getAudio();
+      a.stopVamp(true);
+      a.stop(true);
     }
     this.activeId = id;
     return ++this.epochCounter;

@@ -28,6 +28,10 @@ export interface PlaybackHandle {
   isActive: () => boolean;
 }
 
+/** A run that ended early leaves `playing` alone when the same player has
+ *  already started a newer run (its epoch is higher). -1 means stopped. */
+export const supersededBySelf = (current: number, mine: number) => current > mine;
+
 export function usePlayback(kind: PlaybackKind, onStop: () => void): PlaybackHandle {
   const id = useId();
   const [playing, setPlaying] = useState(false);
@@ -65,7 +69,9 @@ export function usePlayback(kind: PlaybackKind, onStop: () => void): PlaybackHan
       if (!ok || !guard()) {
         // either it failed, or something else claimed playback while we awaited
         if (s.valid(mine)) s.stopAll("start failed");
-        setPlaying(false);
+        // A newer run of THIS player (a replay tapped while the piano was
+        // still loading) owns the flag now; this stale run must not clear it.
+        if (!supersededBySelf(epoch.current, mine)) setPlaying(false);
       }
     },
     [id]
