@@ -6,7 +6,7 @@ import Keyboard from "@/components/Keyboard";
 import ScaleRing from "@/components/ScaleRing";
 import { ResolutionBanner, ScaleChips, Seg, Toggle, groupingLabel } from "@/components/Panels";
 import { useDrill, DrillState } from "@/lib/useDrill";
-import { KEYS, FAMILIES, DIATONIC_MODES, buildScale } from "@/lib/theory/scales";
+import { FAMILIES, DIATONIC_MODES, KEYS, buildScale } from "@/lib/theory/scales";
 import {
   PATTERNS, PATTERN_FAMILIES, patternFamilyOf, describeSkip, PatternId,
 } from "@/lib/theory/patterns";
@@ -19,6 +19,7 @@ import { previewAudio } from "@/lib/audio/engine";
 import CustomBuilder from "@/components/CustomBuilder";
 import MidiPanel from "@/components/MidiPanel";
 import Fretboard from "@/components/Fretboard";
+import KeyChips, { prettyKey, stepKey } from "./KeyChips";
 import { ROUTINES, SPEEDS, stepState } from "./routines";
 import {
   groupFamilies, isSixNoteSound, prettyDegree, ragasForScale, topNoteCost, tripletHint,
@@ -55,29 +56,53 @@ function useNavHeight() {
   return h;
 }
 
+/** A callback ref plus the element's size, kept current by a ResizeObserver.
+ *  A callback ref (not useRef) so it follows the element across the switch
+ *  between the page and Big view. */
+function useBox() {
+  const [el, setEl] = useState<HTMLElement | null>(null);
+  const [box, setBox] = useState({ w: 0, h: 0 });
+  useEffect(() => {
+    if (!el) return;
+    const ro = new ResizeObserver(([e]) =>
+      setBox({ w: Math.round(e.contentRect.width), h: Math.round(e.contentRect.height) }));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [el]);
+  return [setEl as (el: HTMLElement | null) => void, box, el] as const;
+}
+
+const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+
 export default function PracticeClient() {
   const d = useDrill();
   const { state, set, setState, scale, notes, resolution, gati, seconds, playing, index, toggle } = d;
   const [copied, setCopied] = useState(false);
-  const [tab, setTab] = useState<"scale" | "pattern" | "rhythm" | "sound">("scale");
   const [instrument, setInstrument] = useState<"keys" | "guitar">("keys");
   const [bigView, setBigView] = useState(false);
   const narrow = useMedia("(max-width: 639px)");
+  const wide = useMedia("(min-width: 1024px)");
+  const xl = useMedia("(min-width: 1280px)");
+  const xxl = useMedia("(min-width: 1400px)");
   const navH = useNavHeight();
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement;
       if (["INPUT", "SELECT", "TEXTAREA"].includes(t.tagName)) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
       if (e.code === "Space") { e.preventDefault(); toggle(); }
       if (e.key === "l") set("loop", !state.loop);
       if (e.key === "c") set("click", !state.click);
       if (e.key === "d") set("drone", !state.drone);
       if (e.key === "b") setBigView((v) => !v);
+      /* [ and ] step round the circle of fifths: ] up a fifth, [ down one. */
+      if (e.key === "]") setState((s) => ({ ...s, key: stepKey(s.key, 1) }));
+      if (e.key === "[") setState((s) => ({ ...s, key: stepKey(s.key, -1) }));
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [set, state.loop, state.click, state.drone, toggle]);
+  }, [set, setState, state.loop, state.click, state.drone, toggle]);
 
   const activeNote = d.activeNote;
   const activePc = activeNote ? pc(activeNote) : null;
@@ -117,7 +142,6 @@ export default function PracticeClient() {
   }, [notes]);
 
   const tripHint = tripletHint(d.pattern.length, state.sub, d.meter.top, state.grouping, state.resolve);
-  const staffMax = narrow ? undefined : "max(220px, calc(100vh - 560px))";
 
   /* Big view: the whole screen for what moves. Esc leaves it. */
   useEffect(() => {
@@ -129,127 +153,156 @@ export default function PracticeClient() {
     return () => { window.removeEventListener("keydown", onEsc); document.body.style.overflow = prev; };
   }, [bigView]);
 
+  /* ── layout: the staff takes whatever height is left ─────────────────────
+     On a laptop or an iPad the transport, the choices, the staff, the chords
+     and the keyboard all fit on one screen. The chords and keyboard have a
+     fixed size, so the staff gets the rest and scrolls inside its own frame
+     (it keeps the sounding note in view by itself). */
+  const [lowerRef, lowerBox] = useBox();
+  const [staffRef, , staffEl] = useBox();
+  const [choicesRef, choicesBox] = useBox();
+  const [instRef, instBox] = useBox();
+  const [bigStaffRef, bigStaffBox] = useBox();
+  const [staffMax, setStaffMax] = useState<number | undefined>(undefined);
+  useEffect(() => {
+    if (bigView || !staffEl) return;
+    const measure = () => {
+      if (window.innerWidth < 640) { setStaffMax(undefined); return; }
+      const top = staffEl.getBoundingClientRect().top + window.scrollY;
+      // below the staff: a 12px gap, the chords and keyboard, the card's
+      // bottom padding, and a little air before the fold
+      const below = 12 + lowerBox.h + 16 + 14;
+      setStaffMax(Math.max(170, Math.floor(window.innerHeight - top - below)));
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [bigView, staffEl, lowerBox.h, choicesBox.h, navH]);
+
+  /* Chords beside the keyboard wherever there is room for both (1024px up,
+     keys, up to two octaves); stacked otherwise. */
+  const sideBySide = wide && instrument === "keys" && range.octaves <= 2;
+  const whiteKeys = range.octaves * 7;
+  const keyWidth = (big: boolean) => {
+    if (sideBySide) return big ? (xxl ? 60 : xl ? 54 : 46) : (xxl ? 48 : xl ? 44 : 40);
+    // stacked: fill the width, within reason
+    const w = instBox.w || 600;
+    return clamp(Math.floor(w / whiteKeys), 32, big ? 72 : 56);
+  };
+
   const instrumentView = (big: boolean) => instrument === "keys" ? (
-    <Keyboard scale={scale.notes} removed={scale.removed}
-              activeMidi={d.activeMidi} startMidi={range.start} octaves={range.octaves}
-              height={big ? 170 : 116} showLabels keyWidth={big ? 60 : narrow ? 40 : 48}
-              onNote={(m) => { void previewAudio([m]); }} />
+    <div className="mx-auto w-fit max-w-full">
+      <Keyboard scale={scale.notes} removed={scale.removed}
+                activeMidi={d.activeMidi} startMidi={range.start} octaves={range.octaves}
+                height={big ? (narrow ? 130 : 150) : sideBySide ? 104 : narrow ? 104 : 120} showLabels keyWidth={keyWidth(big)}
+                onNote={(m) => { void previewAudio([m]); }} />
+    </div>
   ) : (
-    <Fretboard scale={scale.notes} removed={scale.removed} activePc={activePc}
-               onNote={(m) => { void previewAudio([m]); }} />
+    <div className="overflow-x-auto">
+      <Fretboard scale={scale.notes} removed={scale.removed} activePc={activePc}
+                 onNote={(m) => { void previewAudio([m]); }} />
+    </div>
   );
+
+  /** The chords and the instrument: beside each other when there is room. */
+  const lower = (big: boolean) => (
+    <div ref={big ? undefined : lowerRef}
+         className={sideBySide ? "grid grid-cols-[minmax(0,1fr)_auto] items-stretch gap-3" : "space-y-3"}>
+      <ChordStrip scale={scale} activePc={activePc} big={big && (xl || !sideBySide)} />
+      <div ref={instRef} className="min-w-0">
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5">
+          <Legend />
+          <Seg value={instrument} ariaLabel="Instrument" small
+               options={[{ label: "Keys", value: "keys" as const },
+                         { label: "Guitar", value: "guitar" as const }]}
+               onChange={setInstrument} />
+        </div>
+        {instrumentView(big)}
+      </div>
+    </div>
+  );
+
+  const phoneExtras = (
+    <div className={`grid gap-1.5 sm:hidden ${bigView ? "grid-cols-2" : "grid-cols-[1fr_1fr_1.35fr]"}`}>
+      <Toggle on={state.drone} onClick={() => set("drone", !state.drone)} className="!px-2"
+              title="A soft tonic drone under the melody">
+        Drone {state.drone ? "on" : "off"}
+      </Toggle>
+      <Toggle on={bigView} onClick={() => setBigView(!bigView)} className="!px-2">
+        {bigView ? "Exit big view" : "Big view"}
+      </Toggle>
+      {!bigView && (
+        <button className="btn btn-ghost whitespace-nowrap !px-2" onClick={surprise}
+                title="A random key, sound, pattern and grouping">
+          <span aria-hidden>⚄</span> Surprise me
+        </button>
+      )}
+    </div>
+  );
+
+  const staff = (big: boolean, maxHeight: number | string | undefined) =>
+    !scale.error && notes.length > 0 ? (
+      <Notation notes={notes} subdivision={state.sub} grouping={state.grouping}
+                meterId={state.meter} beatsPerBar={d.meter.top}
+                keySignature={scale.keySignature} activeIndex={index}
+                compact={narrow} fill maxHeight={maxHeight} />
+    ) : big ? null : <p className="text-[15px] text-muted">{scale.error}</p>;
 
   if (bigView) {
     return (
-      <div className="fixed inset-0 z-[70] overflow-y-auto bg-bg px-3 pb-8 sm:px-6"
+      <div className="fixed inset-0 z-[70] flex flex-col gap-2.5 overflow-y-auto bg-bg px-3 pb-3 sm:px-5"
            role="dialog" aria-label="Big view">
-        <div className="mx-auto max-w-[1600px] space-y-4 pt-3">
-          <Transport d={d} navH={0} bigView setBigView={setBigView} />
-          <QuickBar d={d} />
-          {!scale.error && notes.length > 0 && (
-            <Notation notes={notes} subdivision={state.sub} grouping={state.grouping}
-                      meterId={state.meter} beatsPerBar={d.meter.top}
-                      keySignature={scale.keySignature} activeIndex={index}
-                      compact={narrow} fill maxHeight="calc(100dvh - 470px)" />
-          )}
-          <ChordStrip scale={scale} activePc={activePc} big />
-          <div className="flex justify-center overflow-x-auto">{instrumentView(true)}</div>
+        <Transport d={d} navH={0} bigView setBigView={setBigView} />
+        {phoneExtras}
+        <QuickBar d={d} narrow={narrow} big />
+        <div ref={bigStaffRef}
+             className={narrow ? "" : "flex min-h-[170px] flex-1 flex-col justify-center overflow-hidden"}>
+          {staff(true, narrow ? "50dvh" : bigStaffBox.h || undefined)}
         </div>
+        {lower(true)}
       </div>
     );
   }
 
   return (
-    <div className="space-y-4 sm:space-y-5">
+    <div className="space-y-3">
       <Transport d={d} navH={navH} bigView={bigView} setBigView={setBigView} />
 
-      {/* ── the scale, and the four choices that matter most ──────────── */}
-      <section className="card space-y-4 !p-4 sm:!p-5">
-        <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
+      {/* ── the scale, and the choices that matter most ─────────────────── */}
+      <section ref={choicesRef} className="card space-y-3 !p-3 sm:!p-4" aria-label="The notes and the pattern">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2.5">
           <div className="min-w-0">
-            <h1 className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-              <span className="display text-4xl sm:text-5xl">{state.key.replace("b", "♭").replace("#", "♯")}</span>
-              <span className="text-xl font-semibold text-cream sm:text-2xl">{scale.label}</span>
+            <h1 className="flex flex-wrap items-baseline gap-x-2.5">
+              <span className="display text-3xl sm:text-4xl">{prettyKey(state.key)}</span>
+              <span className="text-lg font-semibold text-cream sm:text-xl">{scale.label}</span>
             </h1>
-            <p className="mt-1 text-[15px] text-cream/75">
+            <p className="text-[15px] text-cream/75">
               {state.drone ? `Over a ${notePretty(scale.notes[0] ?? { letter: "G", alt: 0, octave: 4 })} drone. ` : ""}
               {scale.removed ? <>The missing note is <span className="font-semibold text-red-hi">{notePretty(scale.removed)}</span>.</> : null}
             </p>
           </div>
-          <ScaleChips scale={scale} activePc={activePc} size={narrow ? "md" : "lg"} />
-          <button className="btn btn-ghost ml-auto" onClick={surprise}
+          <ScaleChips scale={scale} activePc={activePc} size={wide ? "md" : "sm"} />
+          <button className="btn btn-ghost ml-auto hidden lg:inline-flex" onClick={surprise}
                   title="A random key, sound, pattern and grouping">
             <span aria-hidden>⚄</span> Surprise me
           </button>
         </div>
-        <QuickBar d={d} />
+        {phoneExtras}
+        <QuickBar d={d} narrow={narrow} onSurprise={surprise} />
       </section>
 
       {/* ── what moves: the staff, the chords, the instrument ─────────── */}
-      <section className="card space-y-3 !p-3 sm:!p-4">
-        {!scale.error && notes.length > 0 && (
-          <Notation notes={notes} subdivision={state.sub} grouping={state.grouping}
-                    meterId={state.meter} beatsPerBar={d.meter.top}
-                    keySignature={scale.keySignature} activeIndex={index}
-                    compact={narrow} maxHeight={staffMax} />
-        )}
-        <ChordStrip scale={scale} activePc={activePc} />
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <Legend />
-          <Seg value={instrument} ariaLabel="Instrument"
-               options={[{ label: "Keys", value: "keys" as const },
-                         { label: "Guitar", value: "guitar" as const }]}
-               onChange={setInstrument} />
+      <section className="card space-y-3 !p-3 sm:!p-4" aria-label="The drill">
+        <div ref={staffRef}>
+          {staff(false, narrow ? "min(340px, 46dvh)" : staffMax)}
         </div>
-        {instrumentView(false)}
+        {lower(false)}
       </section>
 
       <HowItWorks />
 
       {/* ── the rest of the settings ─────────────────────────────────── */}
-      <section className="card" aria-label="More settings">
-        <div className="mb-5 grid grid-cols-4 gap-1 rounded-xl border border-line bg-surface2 p-1 lg:hidden"
-             role="tablist" aria-label="Settings">
-          {(["scale", "pattern", "rhythm", "sound"] as const).map((t) => (
-            <button key={t} role="tab" aria-selected={tab === t}
-                    onClick={() => setTab(t)}
-                    className={`rounded-lg px-1 py-2.5 text-[15px] font-bold capitalize transition ${
-                      tab === t ? "bg-cream text-bg" : "text-muted"}`}>
-              {t}
-            </button>
-          ))}
-        </div>
-        <div className="grid gap-6 lg:grid-cols-[1fr_1.35fr_1.15fr] lg:gap-0 lg:divide-x lg:divide-line">
-          <div className={`${tab === "scale" ? "" : "hidden"} space-y-4 lg:block lg:pr-6`}>
-            <ScaleControls d={d} />
-          </div>
-          <div className={`${tab === "pattern" ? "" : "hidden"} space-y-4 lg:block lg:px-6`}>
-            <PatternControls d={d} />
-          </div>
-          <div className={`${tab === "rhythm" || tab === "sound" ? "" : "hidden"} space-y-5 lg:block lg:pl-6`}>
-            <div className={`${tab === "rhythm" ? "" : "hidden"} space-y-4 lg:block`}>
-              <RhythmControls d={d} />
-            </div>
-            <div className={`${tab === "sound" ? "" : "hidden"} space-y-4 lg:block`}>
-              <SoundControls d={d} />
-            </div>
-          </div>
-        </div>
-        <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-line pt-4">
-          <button className="btn btn-ghost" onClick={copyLink}>
-            {copied ? "✓ Link copied" : "Copy drill link"}
-          </button>
-          <button className="btn btn-ghost" onClick={() => window.print()}>Print</button>
-          <span className="ml-auto hidden font-mono text-[13px] text-muted lg:inline">
-            Space play · L loop · C click · D drone · B big view
-          </span>
-        </div>
-        <p className="mt-3 min-h-5 text-[15px] text-cream/75" role="status" aria-live="polite">
-          {d.loadingAudio ? "Starting the audio…"
-            : d.audioReady ? "" : "Playback starts at once while the piano samples load."}
-        </p>
-        {d.audioError && <p className="mt-1 text-[15px] text-amber" role="alert">Audio: {d.audioError}</p>}
-      </section>
+      <Settings d={d} copied={copied} copyLink={copyLink} />
 
       <ResolutionBanner resolution={resolution} gati={gati} seconds={seconds}
                         bpm={state.bpm} playing={playing} hint={tripHint} />
@@ -264,72 +317,118 @@ export default function PracticeClient() {
   );
 }
 
-/* ── the four main choices, always at hand (also in big view) ─────────── */
+/* ── the main choices, always at hand (also in big view) ──────────────── */
 
-function QuickBar({ d }: { d: Drill }) {
+function QuickBar({ d, narrow, big = false, onSurprise }: {
+  d: Drill; narrow: boolean; big?: boolean; onSurprise?: () => void;
+}) {
   const { state, set, setState, scale } = d;
   const groups = useMemo(() => groupFamilies(FAMILIES), []);
+  /* An old link can open on a family the menu no longer lists; show it
+     anyway, so the menu never claims a different scale from the one playing. */
+  const listed = groups.some((g) => g.families.some((f) => f.id === state.family));
   const isRotation = scale.family.kind === "rotation";
   const fam = patternFamilyOf(state.pattern);
   const pickFamily = (id: string) => {
     const f = PATTERN_FAMILIES.find((x) => x.id === id)!;
     if (!f.patterns.includes(state.pattern)) set("pattern", f.patterns[0]);
   };
+  /* Labels sit above on a phone or an iPad in portrait, and beside the
+     control from 1024px, where width is plenty and height is what runs out. */
+  const lbl = "font-mono text-[13px] uppercase tracking-[0.08em] text-cream/75 lg:w-[70px] lg:shrink-0";
+  const row = "flex flex-col gap-1.5 lg:flex-row lg:items-center lg:gap-0";
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] lg:gap-6">
-      <div className={`grid gap-3 ${isRotation ? "grid-cols-2 sm:grid-cols-[0.7fr_1fr_1.4fr]" : "grid-cols-2"}`}>
-        <div className="field">
-          <label htmlFor="key">Key</label>
-          <select id="key" className="sel" value={state.key}
-                  onChange={(e) => set("key", e.target.value)}>
-            {KEYS.map((k) => <option key={k} value={k}>{k.replace("b", "♭").replace("#", "♯")}</option>)}
-          </select>
+    <div className={`flex flex-col ${big ? "gap-2" : "gap-2.5"}`}>
+      <div className="flex flex-wrap items-end gap-x-4 gap-y-2.5 lg:gap-x-3 xl:gap-x-4">
+        <div className={row}>
+          <span className={lbl} id={big ? "key-label-big" : "key-label"}
+                title="[ and ] step round the circle of fifths">Key</span>
+          <KeyChips value={state.key} onChange={(k) => set("key", k)} size={big && !narrow ? "sm" : "md"} />
         </div>
-        <div className="field">
-          <label htmlFor="fam">Scale</label>
-          <select id="fam" className="sel" value={state.family}
-                  onChange={(e) => setState((s) => ({ ...s, family: e.target.value, mode: 0 }))}>
-            {groups.map((g) => (
-              <optgroup key={g.group} label={g.group}>
-                {g.families.map((f) => <option key={f.id} value={f.id}>{f.short}</option>)}
-              </optgroup>
-            ))}
-          </select>
-        </div>
-        {isRotation && (
-          <div className="field col-span-2 sm:col-span-1">
-            <label htmlFor="mode">Mode</label>
-            <select id="mode" className="sel" value={state.mode}
-                    onChange={(e) => set("mode", Number(e.target.value))}>
-              {DIATONIC_MODES.map((m) => (
-                <option key={m.index} value={m.index}>{m.name} · {prettyDegree(m.degrees)}</option>))}
+        <div className="grid w-full grid-cols-1 gap-2 sm:flex sm:w-auto sm:gap-3">
+          <InsideLabel id={big ? "fam-big" : "fam"} label="Scale">
+            <select id={big ? "fam-big" : "fam"} className="sel sm:w-[240px] lg:w-[210px] xl:w-[240px]" style={{ paddingLeft: 70 }}
+                    value={state.family}
+                    onChange={(e) => setState((s) => ({ ...s, family: e.target.value, mode: 0 }))}>
+              {groups.map((g) => (
+                <optgroup key={g.group} label={g.group}>
+                  {g.families.map((f) => <option key={f.id} value={f.id}>{f.short}</option>)}
+                </optgroup>
+              ))}
+              {!listed && (
+                <optgroup label="Other">
+                  <option value={state.family}>{scale.family.short}</option>
+                </optgroup>
+              )}
             </select>
-          </div>
+          </InsideLabel>
+          {isRotation && (
+            /* the degrees are already under the note chips, so the mode menu
+               only needs the name */
+            <InsideLabel id={big ? "mode-big" : "mode"} label="Mode">
+              <select id={big ? "mode-big" : "mode"} className="sel sm:w-[250px] lg:w-[240px] xl:w-[250px]" style={{ paddingLeft: 64 }}
+                      value={state.mode}
+                      onChange={(e) => set("mode", Number(e.target.value))}>
+                {DIATONIC_MODES.map((m) => (
+                  <option key={m.index} value={m.index}>{m.name}</option>))}
+              </select>
+            </InsideLabel>
+          )}
+        </div>
+        {/* an iPad in portrait: Surprise me sits here, beside the menus */}
+        {onSurprise && (
+          <button className="btn btn-ghost hidden sm:inline-flex lg:hidden" onClick={onSurprise}
+                  title="A random key, sound, pattern and grouping">
+            <span aria-hidden>⚄</span> Surprise me
+          </button>
         )}
       </div>
-      <div className="field">
-        <label>Pattern</label>
-        <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Pattern">
-          {PATTERN_FAMILIES.map((f) => {
-            const on = f.id === fam.id;
-            return (
-              <button key={f.id} role="radio" aria-checked={on} onClick={() => pickFamily(f.id)}
-                      title={f.trains}
-                      className={`rounded-xl border px-3 py-2 text-[15px] font-semibold transition-colors ${
-                        on ? "border-cream bg-cream text-bg" : "border-line bg-surface2 text-cream/85 hover:border-[#3A3331]"}`}>
-                {f.name}
-              </button>
-            );
-          })}
+      <div className={row}>
+        <span className={lbl}>Pattern</span>
+        <div className="flex flex-wrap items-center gap-1.5" >
+          <div className="contents" role="radiogroup" aria-label="Pattern">
+            {PATTERN_FAMILIES.map((f) => {
+              const on = f.id === fam.id;
+              return (
+                <button key={f.id} role="radio" aria-checked={on} onClick={() => pickFamily(f.id)}
+                        title={f.trains}
+                        className={`rounded-lg border px-2.5 py-1.5 text-[15px] font-semibold transition-colors sm:px-3 ${
+                          on ? "border-cream bg-cream text-bg" : "border-line bg-surface2 text-cream/85 hover:border-[#4A4240]"}`}>
+                  {f.name}
+                </button>
+              );
+            })}
+          </div>
           {fam.patterns.length > 1 && (
-            <Seg value={state.pattern} ariaLabel="Direction"
-                 options={fam.patterns.map((id) => ({
-                   label: PATTERNS.find((p) => p.id === id)!.variant, value: id as PatternId,
-                 }))}
-                 onChange={(v) => set("pattern", v)} />
+            <span className="sm:ml-2">
+              <Seg value={state.pattern} ariaLabel="Direction"
+                   options={fam.patterns.map((id) => ({
+                     label: PATTERNS.find((p) => p.id === id)!.variant, value: id as PatternId,
+                   }))}
+                   onChange={(v) => set("pattern", v)} />
+            </span>
           )}
         </div>
       </div>
+      {state.family === "custom" && !big && (
+        <div className="field">
+          <label>Your notes</label>
+          <CustomBuilder code={state.custom} scale={scale} onChange={(c) => set("custom", c)} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** A select with its label drawn inside the box, on the left: one row high. */
+function InsideLabel({ id, label, children }: { id: string; label: string; children: React.ReactNode }) {
+  return (
+    <div className="relative min-w-0">
+      <label htmlFor={id}
+             className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 font-mono text-[13px] uppercase tracking-[0.08em] text-muted">
+        {label}
+      </label>
+      {children}
     </div>
   );
 }
@@ -347,14 +446,13 @@ function ChordStrip({ scale, activePc, big = false }: {
   if (scale.error) return null;
   const tonic = scale.notes[0];
   return (
-    <div className={`well ${big ? "!p-4" : "!p-3"}`}>
-      <div className="mb-2.5 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-        <p className="text-[15px] text-cream/80">
+    <div className="well !p-3">
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5">
+        <p className="min-w-0 text-[15px] text-cream/75">
           <span className="font-semibold text-cream">Chords in this scale.</span>{" "}
-          Every chord made only from these notes. While it plays, the chords that contain the
-          sounding note turn bright: any of them fits under it.
+          <span className="lg:hidden 2xl:inline">Bright ones hold the sounding note.</span>
         </p>
-        <Seg value={size} ariaLabel="Chord size"
+        <Seg value={size} ariaLabel="Chord size" small
              options={[{ label: "Triads", value: 3 as const }, { label: "Sevenths", value: 4 as const }]}
              onChange={setSize} />
       </div>
@@ -363,16 +461,16 @@ function ChordStrip({ scale, activePc, big = false }: {
           {size === 4 ? "No four-note chord stacked in thirds fits inside this scale." : "No triad fits inside this scale."}
         </p>
       ) : (
-        <div className="grid gap-2 sm:grid-cols-3">
+        <div className="flex flex-wrap gap-x-5 gap-y-2">
           {(["tonic", "predominant", "dominant"] as HarmonicFunction[]).map((fn) => {
             const group = chords.filter((c) => tonic && harmonicFunction(tonic, c.names[0].voicing[0]) === fn);
             return (
-              <div key={fn} className="rounded-xl border border-line/70 p-2">
-                <p className={`px-1 font-mono uppercase tracking-[0.06em] text-muted ${big ? "text-[14px]" : "text-[12px]"}`}>
+              <div key={fn} className="min-w-0">
+                <p className="font-mono text-[13px] uppercase tracking-[0.06em] text-muted">
                   {FUNCTION_LABEL[fn]}
                 </p>
-                <div className="mt-1.5 flex flex-wrap gap-1.5">
-                  {group.length === 0 && <span className="px-1 text-[13px] text-muted">none in this scale</span>}
+                <div className="mt-1 flex flex-wrap gap-1.5">
+                  {group.length === 0 && <span className="py-1.5 text-[13px] text-muted">none here</span>}
                   {group.map((c, i) => {
                     const fits = activePc !== null && c.pcs.includes(activePc);
                     const name = c.names[0];
@@ -381,13 +479,13 @@ function ChordStrip({ scale, activePc, big = false }: {
                     return (
                       <button key={i} type="button" onClick={() => { void previewAudio(name.voicing.map(midi)); }}
                               title="Tap to hear it"
-                              className={`rounded-lg border text-left transition-colors duration-75 ${big ? "px-4 py-2.5" : "px-3 py-1.5"} ${
-                                fits ? "border-cream bg-cream text-bg" : "border-line bg-surface2 text-cream hover:border-[#3A3331]"}`}>
-                        <span className={`flex items-baseline gap-1.5 font-bold ${big ? "text-[22px]" : "text-[16px]"}`}>
+                              className={`rounded-lg border text-left transition-colors duration-75 ${big ? "px-3.5 py-2" : "px-2.5 py-1"} ${
+                                fits ? "border-cream bg-cream text-bg" : "border-line bg-surface2 text-cream hover:border-[#4A4240]"}`}>
+                        <span className={`flex items-baseline gap-1.5 font-bold ${big ? "text-[20px]" : "text-[16px]"}`}>
                           {roman && <span className={`font-serif font-normal italic ${fits ? "text-bg/70" : "text-cream/70"}`}>{roman}</span>}
                           {c.names.map((x) => prettyChord(x.symbol)).join(" = ")}
                         </span>
-                        <span className={`block font-mono ${big ? "text-[14px]" : "text-[12px]"} ${fits ? "text-bg/75" : "text-muted"}`}>
+                        <span className={`block font-mono text-[13px] ${fits ? "text-bg/75" : "text-muted"}`}>
                           {name.notes.map((n) => n.replace("#", "♯").replace(/b$/, "♭")).join(" ")}
                         </span>
                       </button>
@@ -409,27 +507,33 @@ function prettyChord(sym: string): string {
     .replace("dim7", "°7").replace("dim", "°").replace("m7b5", "m7♭5").replace("#5", "♯5");
 }
 
-/* ── how the page is organised, in three lines ────────────────────────── */
+/* ── how the page is organised: one line, open it for the detail ──────── */
 
 function HowItWorks() {
   const steps = [
     ["The notes", "Key, scale and mode, at the top. That's what you practise."],
     ["The pattern", "The shape you move through those notes: runs, fourths, thirds, sequences, broken chords, doubled notes."],
     ["The rhythm", "How many notes to a beat and where the accent falls. The bar counter shows where it lands on the one."],
-    ["Routines", "Ready-made practice plans below. Each one is a ladder of patterns; tap a step and it sets everything for you."],
+    ["Routines", "Ready-made plans below. Tap a step and it sets everything for you."],
   ];
   return (
-    <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="How Practice works">
-      {steps.map(([t, w], i) => (
-        <div key={t} className="rounded-2xl border border-line px-4 py-3.5">
-          <p className="flex items-baseline gap-2">
-            <span className="num text-lg text-muted">{i + 1}</span>
-            <span className="text-[16px] font-semibold text-cream">{t}</span>
-          </p>
-          <p className="mt-1 text-[15px] leading-relaxed text-cream/75">{w}</p>
-        </div>
-      ))}
-    </section>
+    <details className="group rounded-2xl border border-line px-4 py-2.5" aria-label="How Practice works">
+      <summary className="flex cursor-pointer list-none items-center gap-3 text-[15px] text-cream/75">
+        <span className="inline-block text-muted transition-transform group-open:rotate-90" aria-hidden>▸</span>
+        <span>
+          <span className="font-semibold text-cream">How Practice works:</span>{" "}
+          pick the notes, then a pattern, then a rhythm. Routines set all three for you.
+        </span>
+      </summary>
+      <ol className="mt-3 grid gap-x-6 gap-y-2 pb-1 sm:grid-cols-2 lg:grid-cols-4">
+        {steps.map(([t, w], i) => (
+          <li key={t} className="text-[15px] leading-relaxed text-cream/75">
+            <span className="num mr-1.5 text-muted">{i + 1}</span>
+            <span className="font-semibold text-cream">{t}.</span> {w}
+          </li>
+        ))}
+      </ol>
+    </details>
   );
 }
 
@@ -443,37 +547,40 @@ function Transport({
   const bars = pos?.bars ?? resolution.bars;
   const counting = playing && !pos && countdown > 0;
   const note = d.activeNote ? notePretty(d.activeNote) : null;
+  const beat = pos?.beat ?? (counting ? beats - countdown + 1 : 0);
 
   return (
     <div className="no-print sticky z-40 -mx-2 sm:-mx-3" style={{ top: navH + 6 }}>
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-line bg-[#14120F]/95 px-3 py-2.5 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.8)] backdrop-blur-xl sm:gap-x-6 sm:px-4">
-        <button className={`btn ${playing ? "btn-stop" : "btn-primary"} min-w-[104px] py-3 text-base tracking-wider sm:min-w-[120px]`}
+      <div className="flex items-center gap-x-2 rounded-2xl border border-line bg-[#14120F]/95 px-2 py-2 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.8)] backdrop-blur-xl sm:gap-x-5 sm:px-4">
+        <button className={`btn ${playing ? "btn-stop" : "btn-primary"} min-w-[80px] px-3 py-2.5 text-base tracking-wider sm:min-w-[112px]`}
                 onClick={d.toggle} aria-keyshortcuts="Space">
           {d.loadingAudio ? "STARTING…" : playing ? "STOP" : "PLAY"}
         </button>
 
         {/* the big number: the count-in, then the sounding note */}
-        <div className="flex h-12 min-w-[64px] items-center justify-center" aria-live="off">
+        <div className="flex h-11 min-w-[46px] items-center justify-center sm:min-w-[64px]" aria-live="off">
           {counting ? (
-            <span className="num text-5xl leading-none text-gold" aria-label={`count in ${countdown}`}>{countdown}</span>
+            <span className="num text-[40px] leading-none text-gold" aria-label={`count in ${countdown}`}>{countdown}</span>
           ) : note ? (
-            <span className="text-[40px] font-bold leading-none text-gold">{note}</span>
+            <span className="text-[32px] font-bold leading-none text-gold sm:text-[38px]">{note}</span>
           ) : (
-            <span className="text-[40px] font-bold leading-none text-cream/25">—</span>
+            <span className="text-[32px] font-bold leading-none text-cream/25 sm:text-[38px]">—</span>
           )}
         </div>
 
-        <div className="flex flex-col gap-1.5">
-          <span className="font-mono text-[13px] uppercase tracking-[0.06em] text-muted">
+        <div className="flex min-w-0 flex-col gap-1.5">
+          <span className="whitespace-nowrap font-mono text-[13px] uppercase tracking-[0.06em] text-muted">
             {counting ? "Count in" : (
-              <>Bar <span className="text-[17px] font-bold text-cream">{pos ? pos.bar : "–"}</span> of {bars}</>
+              <>Bar <span className="text-[16px] font-bold text-cream">{pos ? pos.bar : "–"}</span> of {bars}</>
+            )}
+            {pos?.pending && (
+              <span className="ml-2 hidden normal-case tracking-normal text-cream/80 sm:inline lg:hidden">· new setting next bar</span>
             )}
           </span>
-          <BeatDots n={beats} beat={pos?.beat ?? (counting ? beats - countdown + 1 : 0)}
-                    live={!!pos || counting} />
+          <BeatDots n={beats} beat={beat} live={!!pos || counting} />
         </div>
 
-        <p className="hidden min-w-[190px] text-[15px] text-cream/75 sm:block">
+        <p className="hidden min-w-[180px] text-[15px] leading-snug text-cream/75 lg:block">
           {pos && d.landsIn !== null
             ? d.landsIn <= beats
               ? <span className="font-semibold text-cream">Lands on the one in {d.landsIn} {d.landsIn === 1 ? "beat" : "beats"}</span>
@@ -482,43 +589,49 @@ function Transport({
           {pos?.pending && <span className="block font-mono text-[13px] text-muted">new setting from the next bar</span>}
         </p>
 
-        <div className="ml-auto flex items-center gap-1.5">
-          <button className="btn btn-ghost px-3 py-2.5" aria-label="Slower"
+        <div className="ml-auto flex items-center gap-1 sm:gap-1.5">
+          <button className="btn btn-ghost px-2 py-2 sm:px-3" aria-label="Slower"
                   onClick={() => set("bpm", Math.max(40, state.bpm - 4))}>−</button>
-          <label className="flex flex-col items-center px-1">
+          <span className="flex min-w-[38px] flex-col items-center">
             <span className="num text-xl leading-none text-cream">{state.bpm}</span>
             <span className="font-mono text-[13px] uppercase text-muted">bpm</span>
-          </label>
-          <button className="btn btn-ghost px-3 py-2.5" aria-label="Faster"
+          </span>
+          <button className="btn btn-ghost px-2 py-2 sm:px-3" aria-label="Faster"
                   onClick={() => set("bpm", Math.min(200, state.bpm + 4))}>+</button>
         </div>
-        <Toggle on={state.drone} onClick={() => set("drone", !state.drone)}
-                title="A soft tonic drone under the melody, so you hear each mode's colour">
-          Drone {state.drone ? "on" : "off"}
-        </Toggle>
-        <Toggle on={bigView} onClick={() => setBigView(!bigView)}
-                title={bigView ? "Back to the full page (Esc)" : "Fill the screen with the staff, the chords and the keyboard"}>
-          {bigView ? "Exit big view" : "Big view"}
-        </Toggle>
-
-        <p className="w-full text-[15px] text-cream/75 sm:hidden">
-          {pos && d.landsIn !== null ? `Lands on the one in ${d.landsIn} ${d.landsIn === 1 ? "beat" : "beats"}`
-            : `Lands on the one after ${resolution.bars} ${resolution.bars === 1 ? "bar" : "bars"}`}
-        </p>
+        <span className="hidden sm:contents">
+          <Toggle on={state.drone} onClick={() => set("drone", !state.drone)}
+                  title="A soft tonic drone under the melody, so you hear each mode's colour">
+            Drone {state.drone ? "on" : "off"}
+          </Toggle>
+          <Toggle on={bigView} onClick={() => setBigView(!bigView)}
+                  title={bigView ? "Back to the full page (Esc)" : "Fill the screen with the staff, the chords and the keyboard (B)"}>
+            {bigView ? "Exit big view" : "Big view"}
+          </Toggle>
+        </span>
       </div>
     </div>
   );
 }
 
+/** One dot per beat; the one gets a ring. Past eight beats (the long talas)
+ *  the dots would not fit a phone, so the count is written out instead. */
 function BeatDots({ n, beat, live }: { n: number; beat: number; live: boolean }) {
+  if (n > 8) {
+    return (
+      <span className="font-mono text-[13px] uppercase tracking-[0.06em] text-muted">
+        Beat <span className={`text-[16px] font-bold ${live && beat ? "text-gold" : "text-cream"}`}>{live && beat ? beat : "–"}</span> of {n}
+      </span>
+    );
+  }
   return (
-    <span className="flex items-center gap-2" aria-hidden="true">
+    <span className="flex items-center gap-1.5 sm:gap-2" aria-hidden="true">
       {Array.from({ length: n }, (_, i) => {
         const on = live && beat === i + 1;
         const one = i === 0;
         return (
           <i key={i}
-             className={`inline-block rounded-full ${one ? "h-[18px] w-[18px]" : "h-3 w-3"} ${
+             className={`inline-block rounded-full ${one ? "h-4 w-4 sm:h-[18px] sm:w-[18px]" : "h-2.5 w-2.5 sm:h-3 sm:w-3"} ${
                on ? "bg-gold" : live ? "bg-cream/25" : "bg-cream/15"} ${
                one ? "ring-1 ring-cream/50 ring-offset-2 ring-offset-[#14120F]" : ""}`} />
         );
@@ -529,12 +642,58 @@ function BeatDots({ n, beat, live }: { n: number; beat: number; live: boolean })
 
 function Legend() {
   return (
-    <div className="flex flex-wrap gap-x-6 gap-y-1.5 font-mono text-[13px] text-muted">
-      <span><i className="mr-2 inline-block h-2.5 w-2.5 rounded-sm bg-gold align-middle" />sounding now</span>
-      <span><i className="mr-2 inline-block h-2.5 w-2.5 rounded-sm bg-red align-middle" />the missing note</span>
-      <span><i className="mr-2 inline-block h-2.5 w-2.5 rounded-sm bg-cream align-middle" />in the scale</span>
+    <div className="flex flex-wrap gap-x-4 gap-y-1 font-mono text-[13px] text-muted">
+      <span><i className="mr-1.5 inline-block h-2.5 w-2.5 rounded-sm bg-gold align-middle" />sounding now</span>
+      <span><i className="mr-1.5 inline-block h-2.5 w-2.5 rounded-sm bg-red align-middle" />missing note</span>
       <span>&gt; accent</span>
     </div>
+  );
+}
+
+/* ── settings: the notes and pattern, the rhythm, the sound ───────────── */
+
+function Settings({ d, copied, copyLink }: { d: Drill; copied: boolean; copyLink: () => void }) {
+  const [tab, setTab] = useState<"pattern" | "rhythm" | "sound">("pattern");
+  const tabs = [["pattern", "Pattern"], ["rhythm", "Rhythm"], ["sound", "Sound"]] as const;
+  return (
+    <section className="card !p-3 sm:!p-5" aria-label="More settings">
+      <div className="mb-4 grid grid-cols-3 gap-1 rounded-xl border border-line bg-surface2 p-1 lg:hidden"
+           role="tablist" aria-label="Settings">
+        {tabs.map(([t, label]) => (
+          <button key={t} role="tab" aria-selected={tab === t}
+                  onClick={() => setTab(t)}
+                  className={`rounded-lg px-1 py-2 text-[15px] font-bold transition ${
+                    tab === t ? "bg-cream text-bg" : "text-muted"}`}>
+            {label}
+          </button>
+        ))}
+      </div>
+      <div className="grid gap-5 lg:grid-cols-[1fr_1.3fr_0.9fr] lg:gap-0 lg:divide-x lg:divide-line">
+        <div className={`${tab === "pattern" ? "" : "hidden"} space-y-3 lg:block lg:pr-6`}>
+          <PatternControls d={d} />
+        </div>
+        <div className={`${tab === "rhythm" ? "" : "hidden"} space-y-3 lg:block lg:px-6`}>
+          <RhythmControls d={d} />
+        </div>
+        <div className={`${tab === "sound" ? "" : "hidden"} space-y-3 lg:block lg:pl-6`}>
+          <SoundControls d={d} />
+        </div>
+      </div>
+      <div className="mt-4 flex flex-wrap items-center gap-2.5 border-t border-line pt-3">
+        <button className="btn btn-ghost" onClick={copyLink}>
+          {copied ? "✓ Link copied" : "Copy drill link"}
+        </button>
+        <button className="btn btn-ghost" onClick={() => window.print()}>Print</button>
+        <span className="ml-auto hidden font-mono text-[13px] text-muted lg:inline">
+          Space play · [ ] key · L loop · C click · D drone · B big view
+        </span>
+      </div>
+      <p className="mt-2 text-[15px] text-cream/75 empty:hidden" role="status" aria-live="polite">
+        {d.loadingAudio ? "Starting the audio…"
+          : d.audioReady ? "" : "Playback starts at once while the piano samples load."}
+      </p>
+      {d.audioError && <p className="mt-1 text-[15px] text-amber" role="alert">Audio: {d.audioError}</p>}
+    </section>
   );
 }
 
@@ -546,7 +705,7 @@ function MoreAbout({ d }: { d: Drill }) {
   if (scale.error) return null;
   const familyNote = scale.family.kind === "rotation" ? scale.family.note : null;
   return (
-    <details className="card group !py-4">
+    <details className="card group !py-3">
       <summary className="flex cursor-pointer list-none items-center gap-3 text-[15px] font-semibold text-cream">
         <span className="inline-block text-muted transition-transform group-open:rotate-90" aria-hidden>▸</span>
         More about this scale
@@ -575,36 +734,14 @@ function MoreAbout({ d }: { d: Drill }) {
         </div>
         <div className="hidden justify-center lg:flex">
           <ScaleRing notes={scale.notes} removed={scale.removed}
-                     activePc={d.activeNote ? pc(d.activeNote) : null} size={220} />
+                     activePc={d.activeNote ? pc(d.activeNote) : null} size={200} />
         </div>
       </div>
     </details>
   );
 }
 
-/* ── settings ─────────────────────────────────────────────────────────── */
-
-function ScaleControls({ d }: { d: Drill }) {
-  const { state, set, scale } = d;
-  return (
-    <>
-      <p className="eyebrow">The notes</p>
-      {state.family === "custom" && (
-        <div className="field">
-          <label>Your notes</label>
-          <CustomBuilder code={state.custom} scale={scale} onChange={(c) => set("custom", c)} />
-        </div>
-      )}
-      <div className="field">
-        <label>Octaves</label>
-        <Seg value={state.octaves} ariaLabel="Octaves"
-             options={[1, 2, 3].map((v) => ({ label: String(v), value: v }))}
-             onChange={(v) => set("octaves", v)} />
-      </div>
-      <p className="text-[15px] text-cream/75">Key, scale and mode are at the top of the page.</p>
-    </>
-  );
-}
+/* ── settings panels ──────────────────────────────────────────────────── */
 
 function PatternControls({ d }: { d: Drill }) {
   const { state, set, setState, scale } = d;
@@ -618,9 +755,14 @@ function PatternControls({ d }: { d: Drill }) {
 
   return (
     <>
-      <p className="eyebrow">The pattern</p>
-      <p className="text-[17px] font-semibold text-cream">{fam.name}</p>
+      <p className="eyebrow !text-cream/75">The notes and the pattern</p>
       <div className="flex flex-wrap items-end gap-4">
+        <div className="field">
+          <label>Octaves</label>
+          <Seg value={state.octaves} ariaLabel="Octaves"
+               options={[1, 2, 3].map((v) => ({ label: String(v), value: v }))}
+               onChange={(v) => set("octaves", v)} />
+        </div>
         {def.usesCell && (
           <div className="field">
             <label>Notes per cell</label>
@@ -640,10 +782,10 @@ function PatternControls({ d }: { d: Drill }) {
         )}
       </div>
       <p className="text-[15px] leading-relaxed text-cream/75">
-        {fam.trains} {skipLine}
+        <span className="font-semibold text-cream">{fam.name}.</span> {fam.trains} {skipLine}
       </p>
       {cost && (
-        <p className="rounded-xl border border-amber/40 bg-amber/[0.08] px-4 py-3 text-[15px] text-amber">
+        <p className="rounded-xl border border-amber/40 bg-amber/[0.08] px-3.5 py-2.5 text-[15px] text-amber">
           With the top note the pattern is {cost.length} notes long, so it takes {cost.withTop}{" "}
           {cost.withTop === 1 ? "bar" : "bars"} to land on the one instead of {cost.without}.
         </p>
@@ -657,7 +799,7 @@ function RhythmControls({ d }: { d: Drill }) {
   const g = groupingLabel(state.grouping, gatiFor(state.grouping));
   return (
     <>
-      <p className="eyebrow">The rhythm</p>
+      <p className="eyebrow !text-cream/75">The rhythm</p>
       <div className="field">
         <label>Accent every</label>
         <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Accent grouping">
@@ -666,10 +808,10 @@ function RhythmControls({ d }: { d: Drill }) {
             const trad = gatiFor(n)?.name?.toLowerCase();
             return (
               <button key={n} role="radio" aria-checked={on} onClick={() => set("grouping", n)}
-                      className={`min-w-[52px] rounded-xl border px-2.5 py-1.5 text-center transition-colors ${
-                        on ? "border-cream/70 bg-cream/[0.08]" : "border-line bg-surface2 hover:border-[#3A3331]"}`}>
+                      className={`min-w-[52px] rounded-xl border px-2.5 py-1 text-center transition-colors ${
+                        on ? "border-cream/70 bg-cream/[0.08]" : "border-line bg-surface2 hover:border-[#4A4240]"}`}>
                 <span className="num block text-lg leading-tight text-cream">{n}</span>
-                <span className="block font-mono text-[13px] leading-tight text-muted">{trad ?? " "}</span>
+                <span className="block font-mono text-[13px] leading-tight text-muted">{trad ?? " "}</span>
               </button>
             );
           })}
@@ -678,7 +820,7 @@ function RhythmControls({ d }: { d: Drill }) {
           {g.plain}{g.trad && <span className="text-muted"> · {g.trad}</span>}
         </p>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-2">
         <div className="field">
           <label htmlFor="sub">Notes per beat</label>
           <select id="sub" className="sel" value={state.sub}
@@ -724,7 +866,7 @@ function SoundControls({ d }: { d: Drill }) {
   const { state, set } = d;
   return (
     <>
-      <p className="eyebrow">The sound</p>
+      <p className="eyebrow !text-cream/75">The sound</p>
       <div className="field">
         <label htmlFor="bpm">Tempo · {state.bpm} bpm</label>
         <input id="bpm" type="range" min={40} max={200} value={state.bpm}
@@ -759,14 +901,13 @@ function Routines({ d }: { d: Drill }) {
     (Object.keys(partial) as (keyof DrillState)[]).every((k) => state[k] === partial[k]);
 
   return (
-    <section id="routines" className="card">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+    <section id="routines" className="card !p-3 sm:!p-5">
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="display text-3xl">Routines</h2>
-          <p className="mt-2 max-w-[60ch] text-[15px] leading-relaxed text-cream/75">
-            Ready-made practice plans for the scale you picked. Each routine is a ladder of
-            patterns, easiest first. Tap a step and it sets the pattern and rhythm for you;
-            play it at the first speed, then double, then double again.
+          <h2 className="display text-2xl sm:text-3xl">Routines</h2>
+          <p className="mt-1.5 max-w-[62ch] text-[15px] leading-relaxed text-cream/75">
+            Ready-made ladders for the scale you picked, easiest first. Tap a step and it sets
+            the pattern and rhythm; play it at the first speed, then double, then double again.
           </p>
         </div>
         <div className="field">
@@ -779,24 +920,24 @@ function Routines({ d }: { d: Drill }) {
                }} />
         </div>
       </div>
-      <ol className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      <ol className="mt-4 grid gap-2.5 md:grid-cols-2 xl:grid-cols-3">
         {ROUTINES.map((r, i) => (
-          <li key={r.id} className="well">
-            <p className="flex items-baseline gap-2">
+          <li key={r.id} className="well !p-3">
+            <p className="flex flex-wrap items-baseline gap-x-2">
               <span className="num text-lg text-muted">{i + 1}</span>
               <span className="text-[17px] font-semibold text-cream">{r.name}</span>
               <span className="font-mono text-[13px] text-muted">· {r.trad}</span>
             </p>
-            <p className="mt-1 text-[15px] leading-relaxed text-cream/75">{r.what}</p>
-            <div className="mt-3 flex flex-wrap gap-2">
+            <p className="mt-0.5 text-[15px] leading-relaxed text-cream/75">{r.what}</p>
+            <div className="mt-2 flex flex-wrap gap-1.5">
               {r.steps.map((st) => {
                 const next = stepState(st, bpm);
                 const on = isOn(next);
                 return (
                   <button key={st.label} onClick={() => apply(next)} aria-pressed={on}
-                          className={`rounded-lg border px-3 py-2 text-[15px] transition-colors ${
+                          className={`rounded-lg border px-3 py-1.5 text-[15px] transition-colors ${
                             on ? "border-cream/70 bg-cream/[0.08] text-cream"
-                               : "border-line bg-surface2 text-cream/85 hover:border-[#3A3331]"}`}>
+                               : "border-line bg-surface2 text-cream/85 hover:border-[#4A4240]"}`}>
                     {st.label}
                   </button>
                 );

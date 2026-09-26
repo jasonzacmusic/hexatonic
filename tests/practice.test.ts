@@ -151,6 +151,25 @@ describe("computed sentences", () => {
 });
 
 describe("the family menu", () => {
+  it("lists every scale group by name, in order, and hides compare and reference", () => {
+    const groups = groupFamilies(FAMILIES);
+    expect(groups.map((g) => g.group)).toEqual([
+      "Remove one note", "Pentatonic plus one", "Symmetric", "Colour scales",
+      "World scales (5 and 7 notes)", "Custom",
+    ]);
+    const ids = groups.flatMap((g) => g.families.map((f) => f.id));
+    for (const id of ["prometheus", "petrushka", "messiaen5", "hirajoshi", "insen", "iwato", "kumoi", "yo", "hijaz"])
+      expect(ids).toContain(id);
+    for (const id of ["penta", "hepta", "dim-wh", "dim-hw"]) expect(ids).not.toContain(id);
+  });
+
+  it("lets Surprise me roll the colour scales but never a world scale", () => {
+    const pool = FAMILIES.filter(isSixNoteSound).map((f) => f.id);
+    expect(pool).toEqual(expect.arrayContaining(["prometheus", "petrushka", "messiaen5"]));
+    for (const id of ["hirajoshi", "insen", "iwato", "kumoi", "yo", "hijaz", "custom"])
+      expect(pool).not.toContain(id);
+  });
+
   it("puts the six-note sounds first and never lets Surprise me roll custom or a non-six", () => {
     const groups = groupFamilies(FAMILIES);
     expect(groups.length).toBeGreaterThan(1);

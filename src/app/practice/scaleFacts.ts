@@ -8,7 +8,7 @@ import type { Note } from "../../lib/theory/note";
 import { pc } from "../../lib/theory/note";
 import { RAGAS, buildRaga, type Raga } from "../../lib/theory/ragas";
 import { solveResolution, type ResolveMode } from "../../lib/theory/resolution";
-import type { Family } from "../../lib/theory/scales";
+import { FAMILY_GROUPS, type Family, type FamilyGroup } from "../../lib/theory/scales";
 
 /** Carnatic ragas that use exactly these notes, the same way up and down. */
 export function ragasForScale(tonic: string, notes: Note[]): Raga[] {
@@ -47,38 +47,36 @@ export function tripletHint(
 }
 
 /* ── the family menu ──────────────────────────────────────────────────────
-   Six-note scales first; everything else is there to compare with. If the
-   theory module gives a family its own `group`, that wins; otherwise this
-   local map decides, so the menu never depends on another file's timing. */
+   Every scale the app knows, under the same group names the Sounds page uses,
+   in this order: Remove one note, Pentatonic plus one, Symmetric, Colour
+   scales, World scales, Custom. The "compare" and "reference" families (the
+   five- and seven-note parents, the octatonics) stay out of the menu. */
 
-const LOCAL_GROUP: Record<string, string> = {
-  diatonic: "Six-note scales", mixo: "Six-note scales", blues: "Six-note scales",
-  "blues-major": "Six-note scales", aug: "Six-note scales", whole: "Six-note scales",
-  prometheus: "Six-note scales", petrushka: "Six-note scales", messiaen5: "Six-note scales",
-  custom: "Build your own",
-};
+export const MENU_GROUPS: FamilyGroup[] = [
+  "remove", "pentatonic", "symmetric", "colour", "beyond", "custom",
+];
 
-export const familyGroup = (f: Family): string => {
-  const g = (f as Family & { group?: unknown }).group;
-  if (typeof g === "string" && g.trim()) return g;
-  return LOCAL_GROUP[f.id] ?? (f.size === 6 ? "Six-note scales" : "Compare with");
-};
+/** The six-note groups "Surprise me" may roll from. */
+const SURPRISE_GROUPS: FamilyGroup[] = ["remove", "pentatonic", "symmetric", "colour"];
 
-/** Families grouped for an <optgroup> menu, in first-seen order. */
+/** The plain-English label of a family's group, from FAMILY_GROUPS. */
+export const familyGroup = (f: Family): string =>
+  FAMILY_GROUPS.find((g) => g.id === f.group)?.label ?? "Compare with";
+
+/** Families grouped for an <optgroup> menu, in MENU_GROUPS order. */
 export function groupFamilies(families: Family[]): { group: string; families: Family[] }[] {
-  const out: { group: string; families: Family[] }[] = [];
-  for (const f of families) {
-    const g = familyGroup(f);
-    let slot = out.find((o) => o.group === g);
-    if (!slot) { slot = { group: g, families: [] }; out.push(slot); }
-    slot.families.push(f);
-  }
-  return out;
+  return MENU_GROUPS
+    .map((id) => ({
+      group: FAMILY_GROUPS.find((g) => g.id === id)?.label ?? id,
+      families: families.filter((f) => f.group === id),
+    }))
+    .filter((g) => g.families.length > 0);
 }
 
-/** The six-note families "Surprise me" may roll (never custom). */
+/** The six-note families "Surprise me" may roll: never custom, never the
+ *  five- or seven-note world scales. */
 export const isSixNoteSound = (f: Family) =>
-  f.size === 6 && f.kind !== "custom" && familyGroup(f) !== "Compare with";
+  f.size === 6 && f.kind !== "custom" && SURPRISE_GROUPS.includes(f.group);
 
 /** "b3" → "♭3", for display. */
 export const prettyDegree = (d: string) => d.replace(/b/g, "♭").replace(/#/g, "♯");
