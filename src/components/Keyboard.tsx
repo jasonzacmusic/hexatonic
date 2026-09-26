@@ -23,6 +23,8 @@ interface Props {
   activeMidi?: number | number[] | null;
   /** additional pitch classes to mark — used by improvise mode for chord tones */
   chordTonePcs?: number[];
+  /** exact keys to mark (one voicing), rather than a pitch class in every octave */
+  markMidi?: number[];
   startMidi?: number;
   octaves?: number;
   onNote?: (m: number) => void;
@@ -44,7 +46,7 @@ const BLACK: { semi: number; after: number; offset: number }[] = [
 ];
 
 export default function Keyboard({
-  scale, removed, activeMidi = null, chordTonePcs, startMidi = 60,
+  scale, removed, activeMidi = null, chordTonePcs, markMidi, startMidi = 60,
   octaves = 2, onNote, height = 132, showLabels = false, keyWidth = 40,
 }: Props) {
   const uid = useId().replace(/:/g, "");
@@ -84,6 +86,7 @@ export default function Keyboard({
     const p = ((m % 12) + 12) % 12;
     if (Array.isArray(activeMidi) ? activeMidi.includes(m) : activeMidi === m) return "active";
     if (p === removedPc) return "removed";
+    if (markMidi?.includes(m)) return "chord";
     if (chordSet?.has(p)) return "chord";
     if (inScale.has(p)) return "scale";
     return "off";
