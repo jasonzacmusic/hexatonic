@@ -162,7 +162,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className={`${archivo.variable} ${cormorant.variable} ${plex.variable} min-h-dvh font-sans antialiased`}>
         <Nav />
-        <main className="mx-auto max-w-content pb-28 pl-[max(20px,env(safe-area-inset-left))] pr-[max(20px,env(safe-area-inset-right))] pt-8 sm:px-8">{children}</main>
+        <main className="mx-auto max-w-content pb-12 pl-[max(20px,env(safe-area-inset-left))] pr-[max(20px,env(safe-area-inset-right))] pt-8 sm:px-8">{children}</main>
 
         <footer className="mt-10 border-t border-line pb-[env(safe-area-inset-bottom)]">
           <div className="mx-auto flex max-w-content flex-wrap items-start justify-between gap-10 px-5 py-12 sm:px-8">
