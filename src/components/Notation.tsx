@@ -15,7 +15,7 @@
  *
  * Following the music (the most important thing on the page while it plays):
  *   · a gold band sits behind the sounding note and a faint tint on its bar
- *   · notes already played in this pass dim, idle notes are #CFC7B8
+ *   · notes already played in this pass dim, idle notes are cream #F4EFE4
  *   · exactly one note is gold at a time: it lights instantly, no fade
  *   · the frame scrolls to keep the sounding system in view
  */
@@ -42,9 +42,14 @@ export interface NotationProps {
   compact?: boolean;
   /** cap the frame's height (px) and scroll inside it to follow the music */
   maxHeight?: number | string;
+  /** let the staff grow to the full width of its container (big view) */
+  fill?: boolean;
 }
 
-const INK = "#CFC7B8";
+/* Staff lines, ledger lines and noteheads use the brand's brightest colour.
+   Played notes dim; the sounding note turns gold. */
+const INK = "#F4EFE4";
+const LEDGER = { strokeStyle: "#F4EFE4", fillStyle: "#F4EFE4", lineWidth: 1.6 };
 const GOLD = "#C9A227";
 
 interface NoteBox { x: number; w: number; sys: number; bar: number }
@@ -53,7 +58,7 @@ interface BarBox { sys: number; x0: number; x1: number }
 
 export default function Notation({
   notes, subdivision, grouping, beatsPerBar = 4, meterId = "4-4",
-  maxBars = 35, keySignature = null, activeIndex = -1, compact = false, maxHeight,
+  maxBars = 35, keySignature = null, activeIndex = -1, compact = false, maxHeight, fill = false,
 }: NotationProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
@@ -156,6 +161,7 @@ export default function Notation({
               const n = notes[idx];
               if (!n) break;
               const sn = new VF.StaveNote({ keys: [vexKey(n)], duration: dur, auto_stem: true });
+              sn.setLedgerLineStyle(LEDGER);
               const accidentalKey = `${n.letter}${n.octave}`;
               const previous = accidentalState.get(accidentalKey)
                 ?? signatureAlts[n.letter];
@@ -334,7 +340,7 @@ export default function Notation({
         ref={frameRef}
         className="vf-host overflow-auto overscroll-contain rounded-xl border border-line bg-[#171512] p-3"
         style={{
-          maxWidth: naturalWidth ? naturalWidth * 1.15 : undefined,
+          maxWidth: fill ? undefined : naturalWidth ? naturalWidth * 1.15 : undefined,
           maxHeight: maxHeight ?? undefined,
         }}
         aria-hidden="true"

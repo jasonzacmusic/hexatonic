@@ -476,3 +476,21 @@ describe("janta and chordLadder patterns", () => {
     ]);
   });
 });
+
+describe("chords are spelled from their own root", () => {
+  it("names G♭ A D♭ in E♭ blues as F♯m, never G♭m", async () => {
+    const { findChords } = await import("../src/lib/theory/chords");
+    const { buildScale } = await import("../src/lib/theory/scales");
+    const s = buildScale("Eb", "blues", 0);
+    const syms = findChords(s.notes, [3]).flatMap((c) => c.names.map((n) => n.symbol));
+    expect(syms).not.toContain("Gbm");
+    expect(syms).toContain("F#m");
+  });
+  it("keeps the scale's spelling when it already stacks in thirds (G major no-4)", async () => {
+    const { findChords, tertianOnly } = await import("../src/lib/theory/chords");
+    const { buildScale } = await import("../src/lib/theory/scales");
+    const s = buildScale("G", "diatonic", 0);
+    const syms = tertianOnly(findChords(s.notes, [3])).map((c) => c.names[0].symbol).sort();
+    expect(syms).toEqual(["Bm", "D", "Em", "G"]);
+  });
+});

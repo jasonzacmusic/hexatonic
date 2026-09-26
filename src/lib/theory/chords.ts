@@ -7,7 +7,7 @@
  * the most valuable teaching moment in the app.
  */
 
-import { intervalName, letterIndex, midi, Note, note, noteName, pc } from "./note";
+import { intervalName, Letter, letterIndex, LETTERS, midi, Note, note, noteName, pc, spell, stepLetter } from "./note";
 
 type Family = "tertian" | "sus" | "quartal";
 
@@ -35,6 +35,49 @@ const TETRADS: Record<string, [string, Family]> = {
   "0,5,7,10": ["7sus4", "sus"],
   "0,2,5,7": ["quartal4", "quartal"],
 };
+
+
+/** How many letter names above the root each chord tone sits. A chord is
+ *  spelled from its own root (a minor third is always two letters up), not
+ *  borrowed from the scale — so G♭ A D♭ is named F♯m, never "G♭m". */
+function letterSteps(suffix: string, iv: number): number {
+  if (iv === 0) return 0;
+  if (iv === 1 || iv === 2) return 1;
+  if (iv === 3 || iv === 4) return 2;
+  if (iv === 5) return 3;
+  if (iv === 6) return suffix.startsWith("sus") || suffix.startsWith("quartal") ? 3 : 4;
+  if (iv === 7 || iv === 8) return 4;
+  if (iv === 9) return suffix === "dim7" ? 6 : 5;
+  return 6;
+}
+
+/** Spell every tone from a root letter; null if any tone needs a double accidental. */
+function spellFrom(rootLetter: Letter, rootPc: number, ivs: number[], suffix: string): Note[] | null {
+  const out: Note[] = [];
+  for (const iv of ivs) {
+    const n = spell(stepLetter(rootLetter, letterSteps(suffix, iv)), (rootPc + iv) % 12);
+    if (!n || Math.abs(n.alt) > 1) return null;
+    out.push(n);
+  }
+  return out;
+}
+
+/** The scale's own spelling if it is a correct stack; otherwise the enharmonic
+ *  root that spells cleanly (F♯m rather than G♭m with a B𝄫). */
+function chordSpelling(rootNote: Note, ivs: number[], suffix: string): Note[] | null {
+  // Diminished chords keep the scale's letters (C°7 is C E♭ G♭ A, not B♯°7).
+  if (suffix === "dim" || suffix === "dim7") return null;
+  const rp = pc(rootNote);
+  const own = spellFrom(rootNote.letter, rp, ivs, suffix);
+  if (own) return own;
+  for (const L of LETTERS) {
+    const r = spell(L as Letter, rp);
+    if (!r || Math.abs(r.alt) > 1 || r.letter === rootNote.letter) continue;
+    const alt = spellFrom(r.letter, rp, ivs, suffix);
+    if (alt) return alt;
+  }
+  return null;
+}
 
 const FAMILY_RANK: Record<Family, number> = { tertian: 0, sus: 1, quartal: 2 };
 
@@ -96,11 +139,19 @@ export function findChords(scaleNotes: Note[], sizes: (3 | 4)[] = [3, 4]): Chord
           voicing.push(voiced);
           previousMidi = midi(voiced);
         }
+        const ivs = ordered.map((p) => (((p - root) % 12) + 12) % 12);
+        const spelled = chordSpelling(rootNote, ivs, suffix);
+        const scaleSpelled = spelled?.every((n, k) => noteName(n) === noteName(byPc.get(ordered[k])!));
+        // Respell the voicing only when the scale's own letters don't stack.
+        if (spelled && !scaleSpelled) spelled.forEach((n, k) => {
+          voicing[k] = note(n.letter, n.alt, voicing[k].octave + Math.round((midi(voicing[k]) - midi(note(n.letter, n.alt, voicing[k].octave))) / 12));
+        });
+        const r = spelled ? spelled[0] : rootNote;
         names.push({
-          symbol: noteName(rootNote) + suffix,
-          root: noteName(rootNote),
+          symbol: noteName(r) + suffix,
+          root: noteName(r),
           family,
-          notes: ordered.map((p) => noteName(byPc.get(p)!)),
+          notes: spelled ? spelled.map(noteName) : ordered.map((p) => noteName(byPc.get(p)!)),
           voicing,
         });
       }
