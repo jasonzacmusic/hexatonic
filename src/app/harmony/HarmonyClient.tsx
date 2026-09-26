@@ -55,7 +55,7 @@ export default function HarmonyClient() {
       </div>
 
       {tab === "chords" && <ChordsTab />}
-      {tab === "pairs" && <PairAtlas />}
+      {tab === "pairs" && <PairAtlas onOpenSixth={() => choose("sixth")} />}
       {tab === "sixth" && <SixthDimTab />}
     </div>
   );

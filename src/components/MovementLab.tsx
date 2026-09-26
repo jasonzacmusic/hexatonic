@@ -1,191 +1,232 @@
 "use client";
 
 /**
- * The movement lab: one exact-cover pair as a playable inversion ladder.
+ * The movement lab for one two-triad pair.
  *
- * Alternate degrees of the scale give the two shapes. Voicing each one from
- * every successive degree walks both shapes through every inversion, with
- * every voice moving one scale step. The exercise builder turns that into a
- * timed drill.
+ * The ladder is Jason's: shape A in root position, shape B above it, shape A
+ * in first inversion, and so on until shape A comes back an octave higher,
+ * then down again. A second button plays the six-note scale the pair makes.
  *
- * The playback rule: the drill runs on the audio clock and never stops for a
- * change. Tempo and block/arpeggio land on the next pulse; a new exercise,
- * range, key or accent grouping lands on the next group and starts the new
- * drill from its first chord.
+ * THE PLAYBACK RULE. Both run on one live drill. Tempo lands on the next beat;
+ * a new pair, direction, chord style or "ladder ↔ scale" lands on the next bar
+ * and the music never stops. The plan carries its own events, so the chord
+ * named as sounding is always the one you hear, even for the bar between a
+ * change and its landing. Tapping a chord previews it only while stopped, so
+ * two players can never overlap.
  */
 
-import { useMemo, useState } from "react";
-import type { ReactNode } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { DrillPlan, previewAudio } from "@/lib/audio/engine";
 import { useLiveDrill } from "@/lib/audio/useLive";
 import BeatCounter from "@/components/BeatCounter";
+import PairKeyboard, { SHAPE_TONES } from "@/components/PairKeyboard";
 import { Seg } from "@/components/Panels";
-import { notePretty } from "@/lib/theory/note";
-import { InterlockedMovement } from "@/lib/theory/movement";
-import { buildPairExercise, PairExerciseId, proveExactCover } from "@/lib/theory/pairAtlas";
+import { notePretty, pc } from "@/lib/theory/note";
+import {
+  INVERSION_NAMES, LadderDirection, ladderEvents, PAIR_BEATS, pairLadder, PairEvent, parentInKey,
+  scaleEvents, TwoChordPair,
+} from "@/lib/theory/pairAtlas";
 
+type Material = "ladder" | "scale";
 type Voicing = "block" | "arpeggio";
 
-const EXERCISES: { id: PairExerciseId; title: string; note: string }[] = [
-  { id: "alternating", title: "Alternating ladder", note: "switch shape every pulse" },
-  { id: "shape-a", title: "Shape A only", note: "one chord, every inversion" },
-  { id: "shape-b", title: "Shape B only", note: "the partner chord" },
-  { id: "scale-chord", title: "Note, then chord", note: "hear the degree, then its harmony" },
-  { id: "scale-up-down", title: "Scale up and down", note: "one note per pulse" },
-];
+type PairPlan = DrillPlan & { meta: { pairId: string; material: Material; events: PairEvent[] } };
 
-export default function MovementLab({
-  movement, title, description, controls,
-}: {
-  movement: InterlockedMovement;
-  title: string;
-  description: string;
-  /** extra controls for the header, e.g. the key menu */
-  controls?: ReactNode;
+const SHORT_INV = ["root", "1st", "2nd"];
+
+export default function MovementLab({ pair, source }: {
+  pair: TwoChordPair;
+  /** where the pair came from, e.g. "G major" */
+  source: string;
 }) {
-  const [exerciseId, setExerciseId] = useState<PairExerciseId>("alternating");
-  const [octaves, setOctaves] = useState<1 | 2>(1);
-  const [bpm, setBpm] = useState(84);
-  const [accentEvery, setAccentEvery] = useState(movement.steps.length === 8 ? 4 : 3);
+  const [bpm, setBpm] = useState(76);
   const [voicing, setVoicing] = useState<Voicing>("block");
+  const [dir, setDir] = useState<LadderDirection>("up-down");
+  const [material, setMaterial] = useState<Material>("ladder");
+  const [wantPlay, setWantPlay] = useState(false);
 
-  const proof = useMemo(() => proveExactCover(movement), [movement]);
-  const events = useMemo(
-    () => buildPairExercise(movement, exerciseId, octaves, accentEvery),
-    [movement, exerciseId, octaves, accentEvery],
-  );
-  const chords = useMemo(() => events.map((e) => e.voicing), [events]);
-  const plan = useMemo<DrillPlan | null>(() => chords.length ? {
-    notes: [], chords, accents: events.map((e) => e.accent),
-    spread: voicing === "block" ? 0.012 : 0.11,
-    stepDur: 60 / bpm, grouping: accentEvery, subdivision: 1, beatsPerBar: accentEvery,
+  const steps = useMemo(() => pairLadder(pair), [pair]);
+  const ladder = useMemo(() => ladderEvents(steps, dir), [steps, dir]);
+  const scale = useMemo(() => scaleEvents(pair), [pair]);
+  const events = material === "ladder" ? ladder : scale;
+
+  const plan = useMemo<PairPlan>(() => ({
+    notes: [],
+    chords: events.map((e) => e.voicing),
+    accents: events.map((e) => e.accent),
+    spread: material === "ladder" && voicing === "arpeggio" ? 0.11 : 0.012,
+    stepDur: 60 / bpm,
+    grouping: PAIR_BEATS, subdivision: 1, beatsPerBar: PAIR_BEATS,
     loop: true, click: false,
-  } : null, [chords, events, voicing, bpm, accentEvery]);
+    meta: { pairId: pair.id, material, events },
+  }), [events, material, voicing, bpm, pair.id]);
+
   const live = useLiveDrill(plan, () => ({ countInBeats: 0, beatDur: 60 / bpm }));
+
+  /* Start only after the render that holds the chosen material, so Play never
+     starts the previous one. */
+  useEffect(() => {
+    if (!wantPlay) return;
+    setWantPlay(false);
+    if (!live.playing) void live.play();
+  }, [wantPlay, live]);
+
+  const press = (m: Material) => {
+    if (live.playing && material === m) { live.stop(); return; }
+    setMaterial(m);
+    if (!live.playing) setWantPlay(true);
+  };
+
+  /* What is sounding, read from the plan that is sounding. */
   const p = live.position;
-  const active = p && p.plan.chords === chords ? p.index : -1;
-  const activeEvent = active >= 0 ? events[active] : null;
-  /* Light the ladder step whose notes are sounding, when a chord is. */
-  const activeStep = activeEvent
-    ? movement.steps.findIndex((s) => s.voicing.join() === activeEvent.voicing.join())
-    : -1;
+  const sounding = p ? (p.plan as PairPlan).meta : null;
+  const now = sounding ? sounding.events[p!.index] ?? null : null;
+  const here = !!sounding && sounding.pairId === pair.id;
+  const litStep = here && sounding!.material === "ladder" && now?.step != null ? now.step : -1;
+  const litNote = here && sounding!.material === "scale" && now?.step != null ? now.step : -1;
+  const activeKeys = now?.voicing ?? [];
+  const nowLabel = now ? (now.voicing ? now.label : "hold") : null;
+
+  const used = useMemo(
+    () => [...steps.flatMap((s) => s.voicing), ...scale.flatMap((e) => e.voicing ?? [])],
+    [steps, scale],
+  );
+  const [A, B] = pair.shapes;
+  const shapeOfPc = (x: number): 0 | 1 => (A.notes.some((n) => pc(n) === x) ? 0 : 1);
+  const extraFits = pair.fits.filter((f) => parentInKey(pair.tonic, f.parent) !== source);
 
   return (
-    <section className="card">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="max-w-2xl">
-          <p className="eyebrow">Movement lab</p>
-          <h2 className="mt-2 text-2xl font-extrabold">{title}</h2>
-          <p className="mt-2 text-[15px] leading-relaxed text-cream/80">{description}</p>
-        </div>
-        {controls}
+    <section className="card" aria-labelledby="pair-lab-title">
+      {/* ── what this pair is ──────────────────────────────────────────── */}
+      <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+        <p className="eyebrow">Practise the pair</p>
+        {pair.roman && <p className="font-mono text-[13px] text-muted">{source} · {pair.roman}</p>}
       </div>
-
-      <p className="mt-4 font-mono text-2xl tracking-wide text-cream">
-        {movement.scale.notes.map(notePretty).join("  ")}
-      </p>
-      <p className="mt-1 font-mono text-[13px] text-muted">
-        {proof.disjoint && proof.complete
-          ? `no shared notes · all ${movement.scale.notes.length} covered`
-          : "these shapes overlap"}
+      <h2 id="pair-lab-title" className="mt-2 text-3xl font-black tracking-[-0.02em]">
+        <span style={{ color: SHAPE_TONES[0].ink }}>{A.symbol}</span>
+        <span className="px-2 text-muted">+</span>
+        <span style={{ color: SHAPE_TONES[1].ink }}>{B.symbol}</span>
+      </h2>
+      <p className="mt-2 text-[16px] leading-snug text-cream">
+        <span className="font-semibold">{pair.name}</span>
+        {pair.modal && <span className="text-cream/70"> · {pair.modal}</span>}
       </p>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        {movement.pairLabels.map((label, pair) => (
-          <div key={pair} className={`well rounded-xl p-4 ${pair === 0 ? "border-l-2 border-l-cream/60" : ""}`}>
-            <p className="font-mono text-[13px] uppercase tracking-[0.1em] text-muted">
-              shape {pair === 0 ? "A" : "B"}
-            </p>
-            <p className="mt-1 text-2xl font-extrabold text-cream">{label}</p>
-            {movement.steps[pair].aliases.length > 1 && (
-              <p className="mt-1 font-mono text-[13px] text-muted">
-                same notes: {movement.steps[pair].aliases.join(" = ")}
-              </p>
-            )}
-          </div>
+      {/* the six notes, each in its chord's colour, and the one left out */}
+      <div className="mt-3 flex flex-wrap items-center gap-1.5" aria-label="The six notes">
+        {pair.notes.map((n, i) => {
+          const s = shapeOfPc(pc(n));
+          const lit = litNote === i || (litNote === 6 && i === 0);
+          return (
+            <span key={i}
+              className={`min-w-[2.25rem] rounded-lg border px-1.5 py-1 sm:min-w-[2.6rem] sm:px-2 text-center font-mono text-[15px] font-semibold ${
+                lit ? "chip-lit" : "border-line bg-surface2"}`}
+              style={lit ? undefined : { color: SHAPE_TONES[s].ink }}>
+              {notePretty(n)}
+            </span>
+          );
+        })}
+        {pair.removed && (
+          <span className="ml-1 rounded-lg border border-red/60 px-2 py-1 font-mono text-[14px] text-red"
+                title="the parent note this pair leaves out">
+            no <s className="decoration-2">{notePretty(pair.removed)}</s>
+          </span>
+        )}
+      </div>
+      {(extraFits.length > 0 || pair.rootless) && (
+        <p className="mt-2 text-[15px] text-cream/75">
+          {pair.rootless
+            ? `No ${notePretty(pair.tonic)}: this pair leaves out the home note, so it floats.`
+            : `Same six notes are also inside ${extraFits
+                .map((f) => `${parentInKey(pair.tonic, f.parent)} (add ${notePretty(f.add)})`).join(" and ")}.`}
+        </p>
+      )}
+
+      {/* legend + keyboard */}
+      <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1 font-mono text-[13px] text-cream/80">
+        {[A, B].map((c, s) => (
+          <span key={s} className="inline-flex items-center gap-2">
+            <i className="inline-block h-3 w-3 rounded-sm" style={{ background: SHAPE_TONES[s].ink }} aria-hidden="true" />
+            {c.symbol}: {c.notes.map(notePretty).join(" ")}
+          </span>
         ))}
+        <span className="inline-flex items-center gap-2">
+          <i className="inline-block h-3 w-3 rounded-sm bg-gold" aria-hidden="true" /> sounding
+        </span>
+      </div>
+      <div className="mt-3">
+        <PairKeyboard shapes={[A.notes, B.notes]} removed={pair.removed} used={used} active={activeKeys} />
       </div>
 
-      {/* the ladder itself */}
-      <div className={`mt-4 grid gap-2 ${movement.steps.length === 8 ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-6"}`}>
-        {movement.steps.map((step, i) => (
-          <button key={step.degree}
-            onClick={() => void previewAudio(step.voicing, voicing === "block" ? 0.015 : 0.12)}
-            aria-label={`Play ${step.label}, ${step.inversion}`}
-            className={`rounded-xl border px-3 py-3 text-left transition-colors duration-100 ${
-              activeStep === i
-                ? "border-gold bg-gold/15"
-                : step.pair === 0
-                  ? "border-cream/25 bg-surface2 hover:border-cream/50"
-                  : "border-line bg-surface2 hover:border-cream/35"}`}>
-            <span className={`block text-lg font-extrabold ${activeStep === i ? "text-gold" : "text-cream"}`}>
-              {step.label}
-            </span>
-            <span className="mt-0.5 block font-mono text-[13px] text-muted">{step.inversion}</span>
-            <span className="mt-1 block font-mono text-[13px] text-cream/75">
-              {step.notes.map(notePretty).join(" ")}
-            </span>
+      {/* ── the ladder ─────────────────────────────────────────────────── */}
+      <div className="mt-5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <h3 className="text-[17px] font-bold">The ladder: both chords, every inversion</h3>
+        <p className="font-mono text-[13px] text-muted">
+          {pair.stepwise ? "every voice moves one note up" : "the chords overlap, so voices cross"}
+        </p>
+      </div>
+      <ol className="mt-2 grid grid-cols-4 gap-1 sm:grid-cols-7 sm:gap-1.5">
+        {steps.map((s, i) => {
+          const lit = litStep === i;
+          return (
+            <li key={i}>
+              <button type="button"
+                onClick={() => { if (!live.playing) void previewAudio(s.voicing, voicing === "block" ? 0.012 : 0.11); }}
+                aria-label={`${s.label}, ${INVERSION_NAMES[s.inversion]}`}
+                className={`w-full rounded-lg border px-1.5 py-2 text-left sm:px-2 ${lit ? "chip-lit" : "border-line bg-surface2"}`}
+                style={lit ? undefined : { borderLeft: `3px solid ${SHAPE_TONES[s.shape].ink}` }}>
+                <span className="block truncate text-[15px] font-extrabold sm:text-[16px]">{s.label}</span>
+                <span className={`block font-mono text-[13px] ${lit ? "text-[#2A2208]" : "text-muted"}`}>
+                  {i === 6 ? "octave" : <>{SHORT_INV[s.inversion]}<span className="max-sm:hidden">{s.inversion ? " inv" : ""}</span></>}
+                </span>
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+
+      {/* ── play ───────────────────────────────────────────────────────── */}
+      <div className="mt-5 grid grid-cols-2 items-end gap-x-4 gap-y-3 border-t border-line pt-4 sm:flex sm:flex-wrap">
+        <div className="col-span-2 flex gap-2">
+          <button type="button" onClick={() => press("ladder")}
+            className={`btn min-w-[132px] flex-1 sm:flex-none ${live.playing && material === "ladder" ? "btn-stop" : "btn-primary"}`}>
+            {live.playing && material === "ladder" ? "■ Stop" : "▶ Play ladder"}
           </button>
-        ))}
-      </div>
-
-      {/* the drill */}
-      <div className="mt-6 border-t border-line pt-5">
-        <p className="eyebrow">Practise it</p>
-        <div className="mt-3 grid gap-2 sm:grid-cols-3 lg:grid-cols-5">
-          {EXERCISES.map((ex) => (
-            <button key={ex.id} onClick={() => setExerciseId(ex.id)} aria-pressed={exerciseId === ex.id}
-              className={`rounded-xl border p-3 text-left transition-colors ${
-                exerciseId === ex.id ? "border-cream/70 bg-white/[0.05]" : "border-line bg-surface2 hover:border-cream/30"}`}>
-              <span className="block text-[15px] font-bold">{ex.title}</span>
-              <span className="mt-1 block text-[13px] text-cream/70">{ex.note}</span>
-            </button>
-          ))}
-        </div>
-
-        <div className="mt-5 flex flex-wrap items-end gap-4">
-          <button className={`btn ${live.playing ? "btn-stop" : "btn-primary"} min-w-[120px]`} onClick={live.toggle}>
-            {live.playing ? "■ Stop" : "▶ Play"}
+          <button type="button" onClick={() => press("scale")}
+            className={`btn min-w-[132px] flex-1 sm:flex-none ${live.playing && material === "scale" ? "btn-stop" : "btn-ghost"}`}>
+            {live.playing && material === "scale" ? "■ Stop" : "▶ Play scale"}
           </button>
-          <div className="field">
-            <label htmlFor="ml-tempo">Tempo · {bpm}</label>
-            <input id="ml-tempo" type="range" min={45} max={160} value={bpm}
-                   onChange={(e) => setBpm(Number(e.target.value))} className="w-40 accent-[#C9A227]" />
-          </div>
-          <div className="field">
-            <label>Chords</label>
-            <Seg value={voicing} ariaLabel="Chord articulation"
-                 options={[{ label: "block", value: "block" as const }, { label: "arpeggio", value: "arpeggio" as const }]}
-                 onChange={setVoicing} />
-          </div>
-          <div className="field">
-            <label>Range</label>
-            <Seg value={octaves} ariaLabel="Scale range"
-                 options={[{ label: "1 octave", value: 1 as const }, { label: "2 octaves", value: 2 as const }]}
-                 onChange={setOctaves} />
-          </div>
-          <div className="field">
-            <label htmlFor="ml-accent">Accent every</label>
-            <select id="ml-accent" className="sel !w-24" value={accentEvery}
-                    onChange={(e) => setAccentEvery(Number(e.target.value))}>
-              {[2, 3, 4, 5].map((n) => <option key={n} value={n}>{n}</option>)}
-            </select>
-          </div>
         </div>
-        <BeatCounter at={p} beats={accentEvery} bars={Math.ceil(events.length / accentEvery)}
-                     barLabel="group" className="mt-4" />
-        {live.error && <p className="mt-2 text-[15px] text-red-hi">{live.error}</p>}
-
-        <div className="mt-4 flex flex-wrap gap-1.5">
-          {events.map((event, index) => (
-            <span key={event.id}
-              className={`rounded-md border px-2 py-1 font-mono text-[13px] transition-colors duration-75 ${
-                active === index ? "border-gold bg-gold/15 text-gold" : "border-line text-cream/75"}`}>
-              {event.accent && <span aria-hidden="true">› </span>}{event.label}
-            </span>
-          ))}
+        <div className="field col-span-2">
+          <label htmlFor="pl-tempo">Tempo · {bpm}</label>
+          <input id="pl-tempo" type="range" min={40} max={160} value={bpm}
+                 onChange={(e) => setBpm(Number(e.target.value))} className="w-full accent-[#C9A227] sm:w-36" />
+        </div>
+        <div className="col-span-2 flex flex-wrap items-end gap-x-4 gap-y-3 whitespace-nowrap">
+        <div className="field">
+          <label>Chords</label>
+          <Seg value={voicing} ariaLabel="Chord style"
+               options={[{ label: "block", value: "block" as const }, { label: "arpeggio", value: "arpeggio" as const }]}
+               onChange={setVoicing} />
+        </div>
+        <div className="field">
+          <label>Ladder</label>
+          <Seg value={dir} ariaLabel="Ladder direction"
+               options={[{ label: "both ways", value: "up-down" as const }, { label: "up", value: "up" as const }]}
+               onChange={setDir} />
+        </div>
         </div>
       </div>
+      <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2">
+        <BeatCounter at={p} beats={PAIR_BEATS} bars={Math.ceil(events.length / PAIR_BEATS)} />
+        <p className="font-mono text-[13px] uppercase tracking-[0.06em] text-muted">
+          now <span className={`ml-1 text-[17px] font-bold normal-case tracking-normal ${nowLabel ? "text-gold" : "text-muted"}`}>
+            {nowLabel ?? "–"}
+          </span>
+        </p>
+      </div>
+      {live.loading && <p className="mt-2 text-[15px] text-cream/70">Loading the piano…</p>}
+      {live.error && <p className="mt-2 text-[15px] text-red-hi">{live.error}</p>}
     </section>
   );
 }

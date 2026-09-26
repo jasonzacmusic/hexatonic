@@ -8,7 +8,7 @@ import { describe, it, expect } from "vitest";
 
 import { KEYS, buildScale, DIATONIC_MODES, buildDiatonic, MAJOR, FAMILIES } from "../src/lib/theory/scales";
 import { pc, noteName, letterIndex, LETTERS, Letter } from "../src/lib/theory/note";
-import { PAIR_ATLAS, buildAtlasMovement } from "../src/lib/theory/pairAtlas";
+import { buildParent, pairLadder, parentPairs, PARENTS, sixNoteScales } from "../src/lib/theory/pairAtlas";
 
 const stepL = (l: Letter, k: number) => LETTERS[(letterIndex(l) + k) % 7] as Letter;
 
@@ -22,34 +22,36 @@ const spelledInThirds = (letters: Letter[]) =>
   });
 
 describe("audit: every chord the Pair Atlas prints is spelled as that chord", () => {
-  it("spells all twelve entries in all twelve keys with letters a third apart", () => {
+  it("spells every ladder chord of every pair, in every parent and six-note scale, in all twelve keys", () => {
     const wrong: string[] = [];
-    for (const entry of PAIR_ATLAS) {
-      if (entry.voices !== 3) continue;
-      for (const key of KEYS) {
-        for (const step of buildAtlasMovement(entry, key).steps) {
+    for (const key of KEYS) {
+      const pairs = [
+        ...PARENTS.flatMap((p) => parentPairs(buildParent(key, p.id))),
+        ...sixNoteScales(key).flatMap((s) => s.pairs),
+      ];
+      for (const pair of pairs)
+        for (const step of pairLadder(pair))
           if (!spelledInThirds(step.notes.map((n) => n.letter)))
-            wrong.push(`${entry.id}/${key} ${step.label} = ${step.notes.map(noteName).join("-")}`);
-        }
-      }
+            wrong.push(`${key} ${pair.symbol} ${step.label} = ${step.notes.map(noteName).join("-")}`);
     }
     expect(wrong).toEqual([]);
   });
 
-  it("writes Db minor with an Fb, not an E", () => {
-    const m = buildAtlasMovement(PAIR_ATLAS.find((e) => e.id === "dorian-pair")!, "Db");
-    expect(m.steps[0].notes.map(noteName)).toEqual(["Db", "Fb", "Ab"]);
+  it("writes C♯ Dorian rather than D♭ Dorian with seven flats", () => {
+    const i = parentPairs(buildParent("Db", "dorian")).find((p) => p.roman === "i + ii")!;
+    expect(i.shapes[0].notes.map(noteName)).toEqual(["C#", "E", "G#"]);
   });
 
-  it("writes D major with an F#, even when the collection is flat-side", () => {
-    const m = buildAtlasMovement(PAIR_ATLAS.find((e) => e.id === "major-pair-semitone")!, "Db");
-    const d = m.steps.find((s) => s.label === "D")!;
-    expect(d.notes.map(noteName)).toEqual(["D", "F#", "A"]);
+  it("writes D major with an F#, even beside a flat-side chord", () => {
+    const d = parentPairs(buildParent("Db", "ionian")).flatMap((p) => p.shapes).find((s) => noteName(s.root) === "Gb")!;
+    expect(d.notes.map(noteName)).toEqual(["Gb", "Bb", "Db"]);
+    const petrushka = sixNoteScales("C").find((s) => s.familyId === "petrushka")!.pairs[0];
+    expect(petrushka.shapes.map((s) => s.notes.map(noteName).join(" "))).toEqual(["C E G", "F# A# C#"]);
   });
 
   it("still spells the plain keys the obvious way", () => {
-    const m = buildAtlasMovement(PAIR_ATLAS.find((e) => e.id === "major-no3")!, "C");
-    expect(m.pairLabels.slice().sort()).toEqual(["F", "G"]);
+    const iv = parentPairs(buildParent("C", "ionian")).find((p) => p.roman === "IV + V")!;
+    expect(iv.shapes.map((s) => s.symbol)).toEqual(["F", "G"]);
   });
 });
 
