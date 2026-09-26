@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import SupportPanel from "@/components/SupportPanel";
+import ShareButton from "@/components/ShareButton";
 
 /* Six places, in the order a new player needs them. Everything else
    (About, the bar-count calculator) lives in the footer. */
@@ -66,7 +67,8 @@ export default function Nav() {
           })}
         </nav>
 
-        <div className="ml-auto flex items-center gap-3">
+        <div className="ml-auto flex items-center gap-2 sm:gap-3">
+          <ShareButton className="max-[379px]:hidden" />
           <SupportPanel variant="nav" />
           <button className="-mr-1.5 grid h-10 w-10 place-items-center rounded-lg lg:hidden"
                   aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open}
@@ -91,6 +93,7 @@ export default function Nav() {
               {n.label}
             </Link>
           ))}
+          <ShareButton variant="menu" />
           <div className="mt-3 border-t border-line/70 px-1 pt-4">
             <SupportPanel variant="inline" />
           </div>

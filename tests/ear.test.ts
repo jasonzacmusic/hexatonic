@@ -130,7 +130,29 @@ describe("every game", () => {
 });
 
 describe("the pitch games play exactly the scale they ask about", () => {
-  for (const game of ["quality", "mode", "family"] as GameId[])
+  /* The quality game leads with the CHORD, not the scale: it asks about the
+     3rd, so it plays the triad and nothing else, and every note of it
+     belongs to the scale the answer names. */
+  it("quality: the prompt is the triad (1, the 3rd that decides, 5), all from the answer's scale", () => {
+    const third = { major: 4, minor: 3, sus: 5 } as const;
+    for (const { q } of questions("quality")) {
+      const def = soundById(q.facts.sound as string);
+      const heard = relPcs(tonicMidi(q), melody(q).flatMap((e) => e.midis));
+      expect(heard).toEqual([0, third[q.answer as keyof typeof third], 7].sort((a, b) => a - b));
+      expect(heard.every((p) => def.semis.includes(p))).toBe(true);
+    }
+  });
+
+  it("quality: the chord arrives within 2.5 seconds, and the question is over within 7", () => {
+    for (const { q } of questions("quality")) {
+      const m = melody(q);
+      expect(m[0].midis.length).toBeGreaterThanOrEqual(3);
+      expect(m[0].at).toBeLessThanOrEqual(2.5);
+      expect(Math.max(...m.map((e) => e.at + e.dur))).toBeLessThan(7);
+    }
+  });
+
+  for (const game of ["mode", "family"] as GameId[])
     it(`${game}: the melody is the six notes, all of them, nothing else`, () => {
       for (const { q } of questions(game)) {
         const def = soundById(q.facts.sound as string);

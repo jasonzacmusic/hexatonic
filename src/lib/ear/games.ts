@@ -163,13 +163,16 @@ function playRun(
   b: ProgramBuilder, midis: number[], step: number, row: string | null, updown: boolean,
 ) {
   const all = [...midis, midis[0] + 12];
-  for (const i of runIndices(updown)) {
+  const idx = runIndices(updown);
+  idx.forEach((i, k) => {
+    /* shape the line: lean into the top, relax on the way home */
+    const vel = 0.62 + 0.1 * Math.sin((Math.PI * k) / Math.max(1, idx.length - 1));
     b.add({
-      midis: [all[i]], dur: step * 0.95, vel: 0.72, melody: true,
+      midis: [all[i]], dur: step * 0.95, vel, melody: true,
       mark: row ? { row, chips: [i] } : undefined,
     });
     b.wait(step);
-  }
+  });
 }
 
 function playSixChord(b: ProgramBuilder, midis: number[], row: string | null) {
@@ -181,10 +184,12 @@ function playSixChord(b: ProgramBuilder, midis: number[], row: string | null) {
   b.wait(2.4);
 }
 
-/** Set the key with the tonic alone. Neutral: it gives away no 3rd, no 5th. */
+/** Set the key with the tonic alone. Neutral: it gives away no 3rd, no 5th.
+ *  Long enough to register (tests hold it to 1.5 s at least), short enough
+ *  that the question arrives while the ear is still waiting for it. */
 function droneIntro(b: ProgramBuilder, step: number) {
   b.phase("Setting the key");
-  b.wait(Math.max(1.8, step * 4));
+  b.wait(Math.max(1.5, step * 3));
 }
 
 /** "This one has ♭6 (E♭). Minor (no 6) has 2 (A) instead." Only when one or
@@ -231,13 +236,23 @@ function triad(tonic: Note, tonicMidi: number, q: Quality) {
   };
 }
 
-function playTriad(b: ProgramBuilder, midis: number[], row: string, chipIdx: number[]) {
+/** The chord first, as a block with the root doubled below, then broken
+ *  upward so the 3rd can be heard on its own. Leading with the chord is the
+ *  point: the question is about its colour, so the ear gets it at once. */
+function playTriad(b: ProgramBuilder, midis: number[], row: string | null, chipIdx: number[], again = false) {
+  const mark = (chips: number[]) => (row ? { row, chips } : undefined);
+  const block = [midis[0] - 12, ...midis];
+  b.add({ midis: block, dur: 1.5, vel: 0.58, spread: 0.012, melody: true, mark: mark(chipIdx) });
+  b.wait(1.6);
   midis.forEach((m, i) => {
-    b.add({ midis: [m], dur: 0.5, vel: 0.62, melody: true, mark: { row, chips: [chipIdx[i]] } });
+    b.add({ midis: [m], dur: 0.6, vel: 0.56 + i * 0.04, melody: true, mark: mark([chipIdx[i]]) });
     b.wait(0.36);
   });
-  b.add({ midis, dur: 1.6, vel: 0.55, spread: 0.02, melody: true, mark: { row, chips: chipIdx } });
-  b.wait(1.8);
+  if (again) {
+    b.wait(0.1);
+    b.add({ midis: block, dur: 1.6, vel: 0.6, spread: 0.012, melody: true, mark: mark(chipIdx) });
+    b.wait(1.8);
+  } else b.wait(0.5);
 }
 
 export function qualityQuestion(opts: Options, prevKey: string | null, rng: Rng = Math.random): Question {
@@ -251,9 +266,8 @@ export function qualityQuestion(opts: Options, prevKey: string | null, rng: Rng 
   const b = new ProgramBuilder();
   droneIntro(b, step);
   b.phase("Listen");
-  playRun(b, sp.midis, step, null, true);
   const tri = [0, deg(QUALITY_NOTE[q].semi), deg(7)];
-  playTriad(b, tri.map((i) => sp.midis[i]), "q", [0, 1, 2]);
+  playTriad(b, tri.map((i) => sp.midis[i]), null, [0, 1, 2], true);
   b.drone(sp.midis[0], 0, b.t);
   const prompt = b.build();
 
@@ -275,8 +289,9 @@ export function qualityQuestion(opts: Options, prevKey: string | null, rng: Rng 
       const chips = noteChips(sp, { ...def, tellSemis: [QUALITY_NOTE[q].semi] });
       rows.push({ id: "answer", title: `The answer: ${def.label}`, kind: "notes", chips });
       r.phase(`The answer: ${label(QUALITY_CHOICES, q).toLowerCase()}`);
-      playRun(r, sp.midis, step, "answer", false);
       playTriad(r, tri.map((i) => sp.midis[i]), "answer", tri);
+      r.phase(`${def.label}: the scale it came from`);
+      playRun(r, sp.midis, step, "answer", false);
       r.drone(sp.midis[0], 0, r.t);
       const decides = sp.notes[deg(QUALITY_NOTE[q].semi)];
       const named = `${degreeLabel(tonic, decides)} (${notePretty(decides)})`;
@@ -316,7 +331,7 @@ function scaleQuestion(
   const b = new ProgramBuilder();
   droneIntro(b, step);
   b.phase("Listen");
-  playRun(b, sp.midis, step, null, true);
+  playRun(b, sp.midis, step, null, false);
   playSixChord(b, sp.midis, null);
   b.drone(sp.midis[0], 0, b.t);
 
