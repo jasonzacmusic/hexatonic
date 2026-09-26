@@ -94,7 +94,13 @@ export interface VampChord {
   bass: number;
   voicing: number[];
   bars: number;
+  /** Optional bass line: walk[barWithinChord][hit] for each bass hit of the
+   *  feel's pattern. Without it the bass plays root and fifth. */
+  walk?: number[][];
 }
+
+/** One note of a melody played over the vamp, in beats from the top of the loop. */
+export interface LeadNote { at: number; midi: number; dur: number; vel?: number }
 
 /** Everything about a vamp that may change while it plays. */
 export interface VampPlan {
@@ -105,6 +111,8 @@ export interface VampPlan {
   click: boolean;
   bassOn: boolean;
   compOn: boolean;
+  /** An example melody over the loop (Improvise's "Hear an example"). */
+  lead?: LeadNote[];
 }
 
 export interface VampOptions extends VampPlan {
@@ -183,11 +191,15 @@ export const sameVampMaterial = (a: CompiledVamp, b: CompiledVamp) =>
   a.src.chords.every((c, i) => {
     const d = b.src.chords[i];
     return c.bass === d.bass && c.bars === d.bars &&
-      c.voicing.length === d.voicing.length && c.voicing.every((m, j) => m === d.voicing[j]);
+      c.voicing.length === d.voicing.length && c.voicing.every((m, j) => m === d.voicing[j]) &&
+      JSON.stringify(c.walk ?? null) === JSON.stringify(d.walk ?? null);
   });
+/* The example melody is part of the mix, not the material: switching it on or
+   off lands on the next beat and the loop carries on from where it was. */
 const sameVampPlan = (a: CompiledVamp, b: CompiledVamp) =>
   sameVampMaterial(a, b) && a.src.beatDur === b.src.beatDur && a.src.click === b.src.click &&
-  a.src.bassOn === b.src.bassOn && a.src.compOn === b.src.compOn;
+  a.src.bassOn === b.src.bassOn && a.src.compOn === b.src.compOn &&
+  JSON.stringify(a.src.lead ?? null) === JSON.stringify(b.src.lead ?? null);
 
 /** Comp patterns, in beats from the top of the bar.
  *  Kept deliberately sparse — this is a bed to improvise over, not a performance
@@ -708,7 +720,11 @@ export class AudioEngine {
   private playBeat(s: Step<CompiledVamp>) {
     const { src: o, barChord } = s.seg.plan;
     const beat = s.index % o.beatsPerBar;
-    const chord = o.chords[barChord[Math.floor(s.index / o.beatsPerBar)] ?? 0];
+    const barIdx = Math.floor(s.index / o.beatsPerBar);
+    const chord = o.chords[barChord[barIdx] ?? 0];
+    let first = barIdx;
+    while (first > 0 && barChord[first - 1] === barChord[barIdx]) first--;
+    const walk = chord.walk?.[barIdx - first];
     const pattern = COMP[o.feel] ?? COMP.straight;
     const swing = o.feel === "swing";
     const at = (b: number) => {
@@ -727,10 +743,14 @@ export class AudioEngine {
     if (o.bassOn)
       for (const [i, b] of pattern.bass.entries())
         if (Math.floor(b) === beat) {
-          const m = i === 0 ? chord.bass
-                            : chord.bass + [0, 7, 12, 7][i % 4]; // root/fifth movement
+          const m = walk?.[i] ?? (i === 0 ? chord.bass
+                            : chord.bass + [0, 7, 12, 7][i % 4]); // root/fifth movement
           this.note(m, at(b), o.beatDur * 0.9, 0.42, this.vampNodes);
         }
+
+    for (const n of o.lead ?? [])
+      if (Math.floor(n.at + 1e-6) === s.index)
+        this.note(n.midi, at(beat + n.at - s.index), o.beatDur * n.dur, n.vel ?? 0.5, this.vampNodes);
 
     if (o.click) this.clickAt(s.when, beat === 0, this.vampNodes);
   }

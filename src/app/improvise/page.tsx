@@ -4,7 +4,7 @@ import ImproviseClient from "./ImproviseClient";
 export const metadata: Metadata = {
   title: "Improvise",
   description:
-    "Improvise over six backing beds: a drone, a two-chord vamp, a four-chord loop, a suspended pad, swing and a 12-bar blues. The notes to land on light up as the chords change. Any six-note scale, any key.",
+    "A backing band that plays chords made only from your scale: a drone, two- and four-chord loops, an open pad, swing and a 12-bar blues. The notes of the chord sounding now light up, so you know where to land. Every scale, every key, with an example to copy.",
   alternates: { canonical: "https://hexatonic.nathanielschool.com/improvise" },
 };
 
