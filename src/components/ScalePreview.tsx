@@ -53,15 +53,17 @@ export function usePreviewRun() {
     setPending(id);
     const ok = await previewAudio(midis, spread, 0.72);
     if (mine !== run.current) return;
-    setPending(null);
-    if (!ok) return;
+    if (!ok) { setPending(null); return; }
+    /* `pending` stays set until the first note lights, so there is never a
+       frame where the phrase is scheduled but the screen says nothing is
+       playing (a key change in that gap used to drop the phrase). */
     const t0 = performance.now() + 20;
     let last = -2;
     const tick = () => {
       if (mine !== run.current) return;
       const k = Math.floor((performance.now() - t0) / (spread * 1000));
-      if (k >= midis.length) { setLit(null); return; }
-      if (k !== last && k >= 0) { last = k; setLit({ id, step: k }); }
+      if (k >= midis.length) { setLit(null); setPending(null); return; }
+      if (k !== last && k >= 0) { last = k; setPending(null); setLit({ id, step: k }); }
       raf.current = requestAnimationFrame(tick);
     };
     raf.current = requestAnimationFrame(tick);

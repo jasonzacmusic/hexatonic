@@ -2,15 +2,22 @@
 
 /**
  * Sounds: the variety page. Every six-note family and mode, grouped by how you
- * reach six notes, each playable in the chosen key and one tap from Practice.
+ * reach six notes, then the colour scales and the world scales (5 and 7
+ * notes). Each has a play button, its ring shape and a Practise link, in the
+ * key chosen on the sticky key bar.
  *
  * Everything shown is computed: names, degrees and characters come from
  * src/lib/theory/scales.ts, "other names" and "one note away" from
  * src/lib/theory/workout.ts, and the knock-one-out table counts real tritones.
+ *
+ * Playback rule: changing the key (or the knock-out parent) never silences a
+ * sound that is playing. The same sound carries on in the new key: every
+ * playable registers its notes under a key-independent id while it renders,
+ * and after the change the sounding id is played again from its new notes.
  */
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   KEYS, DIATONIC_MODES, FAMILY_GROUPS, buildScale, familyById, familiesIn, prettyDegree,
   ScaleInstance,
@@ -22,12 +29,24 @@ import {
   PARENTS, knockOut, identify, neighbours, maskOf, practiceQuery, pcsOf,
 } from "@/lib/theory/workout";
 import { PlayGlyph, litIndex, upToOctave, usePreviewRun, Lit } from "@/components/ScalePreview";
+import ScaleRing from "@/components/ScaleRing";
+import KeyPicker, { prettyKey as PRETTY_KEY } from "@/components/KeyPicker";
 
-const PRETTY_KEY = (k: string) => k.replace(/#/g, "♯").replace(/b/g, "♭");
 const DEFAULT_KEY = "G";
+const SPREAD = 0.26;
 
 /** The order a player meets the rotations: brightest major to darkest minor. */
 const MODE_ORDER = [0, 3, 4, 2, 1, 5];
+
+/** The groups in page order, with the short names used by the jump links. */
+const GROUPS: { id: string; short: string }[] = [
+  { id: "remove", short: "Remove one" },
+  { id: "pentatonic", short: "Pentatonic + 1" },
+  { id: "symmetric", short: "Symmetric" },
+  { id: "colour", short: "Colour" },
+  { id: "beyond", short: "World" },
+  { id: "custom", short: "Custom" },
+];
 
 interface Entry {
   id: string;
@@ -54,12 +73,23 @@ function entryFor(key: string, famId: string, mode = 0): Entry {
   };
 }
 
-type Player = ReturnType<typeof usePreviewRun>;
+type Player = ReturnType<typeof usePreviewRun> & {
+  /** Record what `id` plays in the current key. Called while rendering. */
+  register: (id: string, midis: number[], spread: number) => void;
+};
 
 export default function SoundsClient() {
   const [key, setKey] = useState(DEFAULT_KEY);
-  const [parent, setParent] = useState("major");
-  const player = usePreviewRun();
+  const [parent, setParentRaw] = useState("major");
+  const run = usePreviewRun();
+  const reg = useRef<Record<string, { midis: number[]; spread: number }>>({});
+  const replay = useRef<string | null>(null);
+  reg.current = {};
+  const player: Player = {
+    ...run,
+    register: (id, midis, spread) => { reg.current[id] = { midis, spread }; },
+  };
+  const sounding = run.lit?.id ?? run.pending;
 
   // the key lives in the URL so a link opens on the same page
   useEffect(() => {
@@ -67,11 +97,22 @@ export default function SoundsClient() {
     if (k && KEYS.includes(k)) setKey(k);
   }, []);
   const pickKey = (k: string) => {
+    replay.current = sounding;
     setKey(k);
-    player.stop();
     const q = k === DEFAULT_KEY ? "" : `?k=${encodeURIComponent(k)}`;
-    window.history.replaceState(null, "", `${window.location.pathname}${q}`);
+    window.history.replaceState(null, "", `${window.location.pathname}${q}${window.location.hash}`);
   };
+  const setParent = (p: string) => { replay.current = sounding; setParentRaw(p); };
+
+  /* Once a key or parent change has rendered, carry on with whatever was
+     sounding, from its notes in the new key. */
+  const { play } = run;
+  useEffect(() => {
+    const id = replay.current;
+    replay.current = null;
+    const r = id ? reg.current[id] : undefined;
+    if (id && r) void play(id, r.midis, r.spread);
+  }, [key, parent, play]);
 
   const remove = useMemo(() => [
     ...MODE_ORDER.map((m) => entryFor(key, "diatonic", m)),
@@ -79,52 +120,56 @@ export default function SoundsClient() {
   ], [key]);
   const penta = useMemo(() => familiesIn("pentatonic").map((f) => entryFor(key, f.id)), [key]);
   const symmetric = useMemo(() => familiesIn("symmetric").map((f) => entryFor(key, f.id)), [key]);
-  const beyond = useMemo(() => familiesIn("beyond").map((f) => entryFor(key, f.id)), [key]);
+  const colour = useMemo(() => familiesIn("colour").map((f) => entryFor(key, f.id)), [key]);
+  const world = useMemo(() => familiesIn("beyond").map((f) => entryFor(key, f.id)), [key]);
   const rows = useMemo(() => knockOut(key, parent), [key, parent]);
   const parentDef = PARENTS.find((p) => p.id === parent)!;
 
   const group = (id: string) => FAMILY_GROUPS.find((g) => g.id === id)!;
+  const jump = (cls: string) => (
+    <nav aria-label="Groups" className={cls}>
+      {GROUPS.map((g) => <a key={g.id} href={`#${g.id}`} className="link-gold">{g.short}</a>)}
+    </nav>
+  );
 
   return (
-    <div className="pb-10">
-      <header className="max-w-3xl pt-2">
-        <p className="eyebrow">Sounds</p>
-        <h1 className="display mt-3 text-[44px] sm:text-6xl">Every <span className="whitespace-nowrap">six-note</span> sound.</h1>
-        <p className="lede mt-5">
-          Tap any one to hear it. Each is shown in the key you pick, spelled the way a
-          player reads it, and one tap away from Practice.
+    <div className="-mb-16">
+      <header className="flex flex-wrap items-end justify-between gap-x-10 gap-y-3 pt-1">
+        <div>
+          <p className="eyebrow">Sounds</p>
+          <h1 className="display mt-2 text-[40px] sm:text-5xl lg:text-[56px]">
+            Every <span className="whitespace-nowrap">six-note</span> sound.
+          </h1>
+        </div>
+        <p className="quiet max-w-[46ch] lg:pb-1">
+          Tap any one to hear it. Each is spelled the way a player reads it in the key
+          you pick, and is one tap away from Practice.
         </p>
       </header>
 
-      <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-3">
-        <span className="micro-caps" id="key-label">Key</span>
-        <div className="seg flex-wrap" role="group" aria-labelledby="key-label">
-          {KEYS.map((k) => (
-            <button key={k} type="button" data-on={k === key} aria-pressed={k === key}
-                    onClick={() => pickKey(k)} className="min-w-[40px] font-mono">
-              {PRETTY_KEY(k)}
-            </button>
-          ))}
+      {/* The key bar stays under the nav as you scroll, so changing key is one
+          tap from anywhere on the page. */}
+      <div className="sticky top-[calc(env(safe-area-inset-top)+64px)] z-30 lg:top-[calc(env(safe-area-inset-top)+58px)] -mx-5 mt-4 border-b border-line/70 bg-bg/90 px-5 py-2.5 backdrop-blur-xl sm:-mx-8 sm:px-8">
+        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
+          <KeyPicker value={key} onChange={pickKey} size="sm" className="w-full sm:w-auto" />
+          {jump("hidden flex-wrap gap-x-4 gap-y-1 xl:flex")}
         </div>
       </div>
-
-      <nav aria-label="Groups" className="mt-6 flex flex-wrap gap-x-5 gap-y-2">
-        {["remove", "pentatonic", "symmetric", "custom", "beyond"].map((g) => (
-          <a key={g} href={`#${g}`} className="link-gold">{group(g).label}</a>
-        ))}
-      </nav>
+      {jump("mt-3 flex flex-wrap gap-x-4 gap-y-1.5 xl:hidden")}
 
       {/* ── remove one note ─────────────────────────────────────────────── */}
-      <Group id="remove" title={group("remove").label} blurb={group("remove").blurb}>
-        <Cards entries={remove} player={player} />
-        <KnockOut keyName={key} parent={parent} setParent={setParent} rows={rows}
-                  note={parentDef.note} player={player} />
+      <Group id="remove" title={group("remove").label} blurb={group("remove").blurb} first>
+        <Cards entries={remove} player={player}
+               extra={<KnockOut keyName={key} parent={parent} setParent={setParent} rows={rows}
+                                note={parentDef.note} player={player} />} />
       </Group>
 
+      {/* Two small groups of two share a row on a wide screen. */}
+      <div className="xl:grid xl:grid-cols-2 xl:gap-x-8">
       {/* ── pentatonic plus one ─────────────────────────────────────────── */}
       <Group id="pentatonic" title={group("pentatonic").label} blurb={group("pentatonic").blurb}>
-        <Cards entries={penta} player={player} />
-        <p className="quiet mt-5">
+        <Cards entries={penta} player={player} two />
+        <p className="quiet mt-3">
           Two more are in the first group: {DIATONIC_MODES[4].name} is the minor
           pentatonic plus the 2nd, and {DIATONIC_MODES[0].name} is the major pentatonic
           plus the 7th.
@@ -133,12 +178,23 @@ export default function SoundsClient() {
 
       {/* ── symmetric ───────────────────────────────────────────────────── */}
       <Group id="symmetric" title={group("symmetric").label} blurb={group("symmetric").blurb}>
-        <Cards entries={symmetric} player={player} />
+        <Cards entries={symmetric} player={player} two />
+      </Group>
+      </div>
+
+      {/* ── colour scales ───────────────────────────────────────────────── */}
+      <Group id="colour" title={group("colour").label} blurb={group("colour").blurb}>
+        <Cards entries={colour} player={player} />
+      </Group>
+
+      {/* ── world scales, 5 and 7 notes ─────────────────────────────────── */}
+      <Group id="beyond" title={group("beyond").label} blurb={group("beyond").blurb}>
+        <Cards entries={world} player={player} />
       </Group>
 
       {/* ── custom ──────────────────────────────────────────────────────── */}
       <Group id="custom" title={group("custom").label} blurb={group("custom").blurb}>
-        <div className="card flex flex-wrap items-center justify-between gap-4">
+        <div className="card flex flex-wrap items-center justify-between gap-4 p-4 sm:p-5">
           <p className="quiet max-w-[52ch]">
             Choose any six notes and Practice spells them, finds the chords inside them and
             counts the bars, exactly as it does for the named scales.
@@ -148,35 +204,37 @@ export default function SoundsClient() {
           </Link>
         </div>
       </Group>
-
-      {/* ── beyond six notes ────────────────────────────────────────────── */}
-      <Group id="beyond" title={group("beyond").label} blurb={group("beyond").blurb}>
-        <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
-          {beyond.map((e) => <BeyondRow key={e.id} e={e} player={player} />)}
-        </ul>
-      </Group>
     </div>
   );
 }
 
 /* ── pieces ───────────────────────────────────────────────────────────── */
 
-function Group({ id, title, blurb, children }: {
-  id: string; title: string; blurb: string; children: React.ReactNode;
+function Group({ id, title, blurb, children, first = false }: {
+  id: string; title: string; blurb: string; children: React.ReactNode; first?: boolean;
 }) {
   return (
-    <section id={id} aria-labelledby={`${id}-h`} className="mt-16 scroll-mt-24 border-t border-line pt-10">
-      <h2 id={`${id}-h`} className="display text-3xl sm:text-4xl">{title}</h2>
-      <p className="quiet mt-2">{blurb}</p>
-      <div className="mt-6">{children}</div>
+    <section id={id} aria-labelledby={`${id}-h`}
+             className={`scroll-mt-[200px] sm:scroll-mt-[150px] ${first ? "mt-5" : "mt-10 border-t border-line pt-7"}`}>
+      <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+        <h2 id={`${id}-h`} className="display text-[28px] sm:text-[34px]">{title}</h2>
+        <p className="quiet">{blurb}</p>
+      </div>
+      <div className="mt-4">{children}</div>
     </section>
   );
 }
 
-function Cards({ entries, player }: { entries: Entry[]; player: Player }) {
+/** A grid of cards. `extra` fills the rest of the last row (two columns wide);
+ *  `two` keeps it at two columns for a half-width group. */
+function Cards({ entries, player, extra, two = false }: {
+  entries: Entry[]; player: Player; extra?: React.ReactNode; two?: boolean;
+}) {
   return (
-    <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+    <ul className={`grid gap-2.5 sm:grid-cols-2 ${two ? "lg:grid-cols-3 xl:grid-cols-2" : "lg:grid-cols-3"} ${
+      extra ? "lg:[&>li:nth-last-child(2)]:items-start" : ""}`}>
       {entries.map((e) => <li key={e.id} className="flex max-w-none"><Card e={e} player={player} /></li>)}
+      {extra && <li className="flex max-w-none sm:col-span-2">{extra}</li>}
     </ul>
   );
 }
@@ -188,15 +246,20 @@ function PlayButton({ on, label, onClick, big = false }: {
     <button type="button" onClick={onClick} aria-label={label} aria-pressed={on}
             className={`grid shrink-0 place-items-center rounded-full border transition-[background-color,border-color,transform] duration-150 active:scale-95 ${
               big ? "h-10 w-10" : "h-8 w-8"} ${
-              on ? "border-gold bg-gold text-[#17130a]" : "border-line-control/70 text-cream hover:border-cream/60"}`}>
+              on ? "border-gold bg-gold text-[#17130a]" : "border-line-control/70 bg-surface2 text-cream hover:border-cream/60"}`}>
       <PlayGlyph playing={on} size={big ? 13 : 11} />
     </button>
   );
 }
 
 const isOn = (p: Player, id: string) => p.lit?.id === id || p.pending === id;
-const toggle = (p: Player, id: string, notes: Note[]) =>
-  isOn(p, id) ? p.stop() : void p.play(id, upToOctave(notes.map(midi)), 0.26);
+
+/** Register a scale run under `id` and return its play/stop handler. */
+const runOf = (p: Player, id: string, notes: Note[]) => {
+  const midis = upToOctave(notes.map(midi));
+  p.register(id, midis, SPREAD);
+  return () => (isOn(p, id) ? p.stop() : void p.play(id, midis, SPREAD));
+};
 
 function Dots({ notes, lit, id }: { notes: Note[]; lit: Lit | null; id: string }) {
   const idx = litIndex(lit, id, notes.length);
@@ -212,39 +275,59 @@ function Dots({ notes, lit, id }: { notes: Note[]; lit: Lit | null; id: string }
 function Card({ e, player }: { e: Entry; player: Player }) {
   const on = isOn(player, e.id);
   const s = e.scale;
+  const tap = runOf(player, e.id, s.notes);
+  const idx = litIndex(player.lit, e.id, s.notes.length);
   const mask = maskOf(s.pcs);
   const selfName = `${PRETTY_KEY(s.tonic)} ${e.name}`;
   const others = identify(mask).map((x) => x.name).filter((n) => n !== selfName);
   const near = neighbours(mask).slice(0, 6);
+  const count = s.notes.length;
+  const hasMore = others.length > 0 || near.length > 0;
+  const [more, setMore] = useState(false);
   return (
-    <article className={`card flex w-full flex-col ${on ? "border-gold/60" : ""}`}>
-      <div className="flex items-start justify-between gap-3">
-        <span className="font-serif text-[20px] italic leading-none text-cream/75">{e.character}</span>
-        <PlayButton on={on} label={`${on ? "Stop" : "Play"} ${selfName}`} onClick={() => toggle(player, e.id, s.notes)} big />
+    <article className={`card flex w-full flex-col p-4 sm:p-5 ${on ? "border-gold/60" : ""}`}>
+      <div className="flex items-start gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="font-serif text-[19px] italic leading-none text-cream/75">
+            {e.character}
+            {count !== 6 && <span className="ml-2 font-mono text-[13px] not-italic text-muted">{count} notes</span>}
+          </p>
+          <h3 className="mt-1.5 text-[21px] font-extrabold leading-tight tracking-[-0.015em]">{e.name}</h3>
+          <p className="mt-1 font-mono text-[13px] tracking-[0.02em] text-muted">
+            {s.degrees.map(prettyDegree).join("  ")}
+          </p>
+          <div className="mt-2.5"><Dots notes={s.notes} lit={player.lit} id={e.id} /></div>
+        </div>
+        {/* the shape, with its play button in the middle */}
+        <ScaleRing notes={s.notes} removed={s.removed} size="sm"
+                   className="-mr-1 -mt-1 !w-[104px] sm:!w-[112px]"
+                   activePc={idx === null ? null : pc(s.notes[idx])}>
+          <span className="pointer-events-auto">
+            <PlayButton on={on} label={`${on ? "Stop" : "Play"} ${selfName}`} onClick={tap} big />
+          </span>
+        </ScaleRing>
       </div>
-      <h3 className="mt-2 text-[22px] font-extrabold leading-tight tracking-[-0.015em]">{e.name}</h3>
-      <p className="mt-1 font-mono text-[13px] tracking-[0.02em] text-muted">
-        {s.degrees.map(prettyDegree).join("  ")}
-      </p>
-      <div className="mt-3"><Dots notes={s.notes} lit={player.lit} id={e.id} /></div>
       {s.respelledFrom && (
         <p className="micro mt-2">Written from {PRETTY_KEY(s.tonic)}: in {PRETTY_KEY(s.respelledFrom)} it would need double flats.</p>
       )}
-      <p className="quiet mt-3 flex-1">{e.colour}</p>
+      <p className="quiet mt-2.5 flex-1">{e.colour}</p>
 
-      <div className="mt-4 flex flex-wrap items-center gap-2">
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
         <Link href={e.practice} className="btn btn-ghost px-3.5 py-2 text-[14px]">Practise this →</Link>
+        {hasMore && (
+          <button type="button" onClick={() => setMore(!more)} aria-expanded={more} aria-controls={`${e.id}-more`}
+                  className="inline-flex items-center gap-2 rounded-lg px-2 py-2 font-mono text-[13px] uppercase tracking-[0.08em] text-cream/75 transition-colors hover:text-cream">
+            Related scales
+            <span aria-hidden="true" className={`inline-block transition-transform duration-200 ${more ? "rotate-45" : ""}`}>+</span>
+          </button>
+        )}
       </div>
 
-      {(others.length > 0 || near.length > 0) && (
-        <details className="group mt-4 border-t border-line pt-3">
-          <summary className="flex cursor-pointer list-none items-center justify-between font-mono text-[13px] uppercase tracking-[0.08em] text-cream/75 transition-colors hover:text-cream [&::-webkit-details-marker]:hidden">
-            Other names · one note away
-            <span aria-hidden="true" className="transition-transform duration-200 group-open:rotate-45">+</span>
-          </summary>
+      {hasMore && more && (
+        <div id={`${e.id}-more`} className="mt-3 border-t border-line pt-1">
           {others.length > 0 && (
             <div className="mt-3">
-              <p className="micro-caps">Same six notes</p>
+              <p className="micro-caps">Same notes</p>
               <p className="mt-1 text-[15px] leading-relaxed text-cream/85">{others.slice(0, 5).join(" · ")}</p>
             </div>
           )}
@@ -252,13 +335,13 @@ function Card({ e, player }: { e: Entry; player: Player }) {
             <div className="mt-4">
               <p className="micro-caps">One note away</p>
               <ul className="mt-1.5 space-y-1">
-                {near.map((n) => (
-                  <Neighbour key={n.mask} from={s} n={n} player={player} baseId={e.id} />
+                {near.map((n, i) => (
+                  <Neighbour key={n.mask} from={s} n={n} player={player} id={`${e.id}~${i}`} />
                 ))}
               </ul>
             </div>
           )}
-        </details>
+        </div>
       )}
     </article>
   );
@@ -272,22 +355,19 @@ function scaleFromQuery(q: string): ScaleInstance {
     : buildScale(st.key, st.family, st.mode);
 }
 
-function Neighbour({ from, n, player, baseId }: {
-  from: ScaleInstance; n: ReturnType<typeof neighbours>[number]; player: Player; baseId: string;
+function Neighbour({ from, n, player, id }: {
+  from: ScaleInstance; n: ReturnType<typeof neighbours>[number]; player: Player; id: string;
 }) {
-  const id = `${baseId}~${n.mask}`;
   const theirs = scaleFromQuery(n.names[0].practice);
   const dropNote = from.notes.find((x) => pc(x) === n.drop);
   const addNote = theirs.notes.find((x) => pc(x) === n.add);
   const on = isOn(player, id);
-  const compare = () => {
-    if (on) { player.stop(); return; }
-    const base = midi(from.notes[0]);
-    const lift = (p: number) => base + ((((p - pc(from.notes[0])) % 12) + 12) % 12);
-    const mine = from.notes.map(midi);
-    const other = pcsOf(n.mask).map(lift).sort((a, b) => a - b);
-    void player.play(id, [...mine, ...other], 0.2);
-  };
+  // yours, then theirs, from the same tonic
+  const base = midi(from.notes[0]);
+  const lift = (p: number) => base + ((((p - pc(from.notes[0])) % 12) + 12) % 12);
+  const both = [...from.notes.map(midi), ...pcsOf(n.mask).map(lift).sort((a, b) => a - b)];
+  player.register(id, both, 0.2);
+  const compare = () => (on ? player.stop() : void player.play(id, both, 0.2));
   return (
     <li className="flex items-center gap-2.5 py-1">
       <PlayButton on={on} label={`Play yours, then ${n.names[0].name}`} onClick={compare} />
@@ -309,70 +389,64 @@ function KnockOut({ keyName, parent, setParent, rows, note, player }: {
   rows: ReturnType<typeof knockOut>; note: string; player: Player;
 }) {
   return (
-    <div className="card mt-6">
+    <div className="card w-full p-4 sm:p-5">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h3 className="text-[22px] font-extrabold leading-tight tracking-[-0.015em]">
+          <h3 className="text-[21px] font-extrabold leading-tight tracking-[-0.015em]">
             Which note do you take out?
           </h3>
-          <p className="quiet mt-1.5">Remove each note in turn and count the tritones left.</p>
+          <p className="quiet mt-1">Remove each note in turn and count the tritones left.</p>
         </div>
-        <div className="seg flex-wrap" role="group" aria-label="Seven-note parent">
-          {PARENTS.map((p) => (
-            <button key={p.id} type="button" data-on={p.id === parent} aria-pressed={p.id === parent}
-                    onClick={() => setParent(p.id)}>{p.name}</button>
-          ))}
+        {/* Selected is cream, like the key picker: gold only means "sounding now". */}
+        <div className="inline-flex flex-wrap gap-[3px] rounded-xl border border-line-control/70 bg-surface2 p-[3px]"
+             role="group" aria-label="Seven-note parent">
+          {PARENTS.map((p) => {
+            const sel = p.id === parent;
+            return (
+              <button key={p.id} type="button" aria-pressed={sel} onClick={() => setParent(p.id)}
+                      className={`rounded-lg px-3 py-1.5 text-[15px] transition-[background-color,color,transform] duration-150 active:scale-[0.97] ${
+                        sel ? "bg-cream font-semibold text-[#17130a] shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_1px_2px_rgba(0,0,0,0.5)]"
+                            : "text-cream/75 hover:bg-white/[0.06] hover:text-cream"}`}>
+                {p.name}
+              </button>
+            );
+          })}
         </div>
       </div>
-      <p className="quiet mt-3">{note}</p>
+      <p className="quiet mt-2">{note}</p>
 
-      <ul className="mt-5 divide-y divide-line border-y border-line">
+      <ul className="mt-3 divide-y divide-line border-y border-line">
         {rows.map((r) => {
-          const id = `ko-${parent}-${r.removedIndex}`;
+          const id = `ko-${r.removedIndex}`;
           const on = isOn(player, id);
+          const tap = runOf(player, id, r.notes);
           const named = identify(r.mask).find((e) => e.rank < 1000 && e.tonic === keyName);
           const href = `/practice?${named ? named.practice : practiceQuery(keyName, r.semis)}`;
           const clean = r.tritones === 0;
           return (
-            <li key={r.removedIndex} className="grid max-w-none grid-cols-[auto_1fr_auto] items-center gap-x-3 gap-y-2 py-3 sm:grid-cols-[7rem_1fr_9rem_auto]">
+            <li key={r.removedIndex} className="grid max-w-none grid-cols-[3.75rem_1fr] items-center gap-x-3 gap-y-1.5 py-2.5 sm:grid-cols-[6rem_1fr_11rem_auto]">
               <span className="font-mono text-[14px]">
                 <span className="text-red">−{prettyDegree(r.removedDegree)}</span>
                 <span className="ml-1.5 text-muted">{notePretty(r.removedNote)}</span>
               </span>
               <span className="min-w-0"><Dots notes={r.notes} lit={player.lit} id={id} /></span>
-              <span className={`col-span-3 font-mono text-[13px] sm:col-span-1 ${clean ? "text-cream" : "text-muted"} order-last sm:order-none`}>
-                {clean ? "no tritone" : `${r.tritones} tritone${r.tritones === 1 ? "" : "s"}`}
-                {named && <span className="block text-muted">{named.name.replace(/^\S+\s/, "")}</span>}
-              </span>
-              <span className="flex items-center gap-2">
-                <PlayButton on={on} label={`Play ${keyName} without ${r.removedDegree}`}
-                            onClick={() => toggle(player, id, r.notes)} />
-                <Link href={href} className="btn btn-ghost px-3 py-1.5 text-[13px]" aria-label={`Practise ${keyName} without ${r.removedDegree}`}>
-                  Practise
-                </Link>
+              {/* on a phone the count and the buttons share the second line */}
+              <span className="col-start-2 flex items-center justify-between gap-3 sm:contents">
+                <span className={`font-mono text-[13px] ${clean ? "text-cream" : "text-muted"}`}>
+                  {clean ? "no tritone" : `${r.tritones} tritone${r.tritones === 1 ? "" : "s"}`}
+                  {named && <span className="block text-muted">{named.name.replace(/^\S+\s/, "")}</span>}
+                </span>
+                <span className="flex items-center gap-2">
+                  <PlayButton on={on} label={`Play ${keyName} without ${r.removedDegree}`} onClick={tap} />
+                  <Link href={href} className="btn btn-ghost px-3 py-1.5 text-[13px]" aria-label={`Practise ${keyName} without ${r.removedDegree}`}>
+                    Practise
+                  </Link>
+                </span>
               </span>
             </li>
           );
         })}
       </ul>
     </div>
-  );
-}
-
-function BeyondRow({ e, player }: { e: Entry; player: Player }) {
-  const on = isOn(player, e.id);
-  const s = e.scale;
-  return (
-    <li className="grid max-w-none gap-x-5 gap-y-2 p-4 sm:grid-cols-[auto_14rem_1fr] sm:items-start sm:p-5">
-      <PlayButton on={on} label={`${on ? "Stop" : "Play"} ${e.name}`} onClick={() => toggle(player, e.id, s.notes)} big />
-      <div>
-        <h3 className="text-[18px] font-bold leading-tight">{e.name}</h3>
-        <p className="mt-1 font-mono text-[13px] text-muted">
-          {s.notes.length} notes · <span className="font-serif text-[15px] italic normal-case text-cream/70">{e.character}</span>
-        </p>
-        <div className="mt-2"><Dots notes={s.notes} lit={player.lit} id={e.id} /></div>
-      </div>
-      <p className="quiet">{e.colour}</p>
-    </li>
   );
 }

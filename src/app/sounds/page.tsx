@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://hexatonic.nathanielschool.com/sounds" },
   title: "Sounds",
   description:
-    "Every six-note scale, side by side and playable in any key: major and minor with one note out, blues and major blues, whole tone and augmented, or build your own. Plus Prometheus, the Japanese pentatonics and Hijaz for reference.",
+    "Every six-note scale, side by side and playable in any key: major and minor with one note out, the Sunday Scale, blues and major blues, whole tone and augmented, the colour scales (Prometheus, Petrushka, Messiaen mode 5), or build your own. Plus the world scales: Hirajoshi, In sen, Iwato, Kumoi, Yo and Hijaz.",
 };
 
 export default function Page() { return <SoundsClient />; }
