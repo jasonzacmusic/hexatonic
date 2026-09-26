@@ -17,6 +17,11 @@ import { EAR_KEYS } from "@/lib/ear/sounds";
 import { useEarPlayer } from "@/lib/ear/useEarPlayer";
 import GamePicker, { Tally } from "@/components/ear/GamePicker";
 import ChipRow from "@/components/ear/ChipRow";
+import ShareSheet from "@/components/ShareSheet";
+import {
+  EMPTY_PROGRESS, Progress, SET_SIZE, SetResult, abandonSet, liveDays, loadProgress, localDay, rankFor, record,
+} from "@/lib/ear/progress";
+import { CardSpec, scoreText } from "@/lib/share";
 
 const TEMPOS = [
   { id: 90, label: "Slow" },
@@ -24,8 +29,8 @@ const TEMPOS = [
   { id: 150, label: "Quick" },
 ];
 const EMPTY: Tally = { right: 0, total: 0, streak: 0, best: 0 };
-const STORE = "hx-ear-scores-v1";
-const SITE = "https://hexatonic.nathanielschool.com/ear";
+const LEGACY_STORE = "hx-ear-scores-v1";
+const STORE = "hx-ear-progress-v1";
 
 const pretty = (k: string) => k.replace("#", "♯").replace(/b$/, "♭");
 
@@ -53,8 +58,12 @@ export default function EarClient() {
   const [q, setQ] = useState<Question | null>(null);
   const [picked, setPicked] = useState<string | null>(null);
   const [reveal, setReveal] = useState<Reveal | null>(null);
-  const [scores, setScores] = useState<Partial<Record<GameId, Tally>>>({});
-  const [copied, setCopied] = useState(false);
+  const [progress, setProgress] = useState<Progress>(EMPTY_PROGRESS);
+  const [gain, setGain] = useState<{ n: number; id: number } | null>(null);
+  const [rankUp, setRankUp] = useState<string | null>(null);
+  const [result, setResult] = useState<SetResult | null>(null);
+  const [challenge, setChallenge] = useState<{ score: number; total: number } | null>(null);
+  const [sharing, setSharing] = useState<{ spec: CardSpec; text: string; title: string } | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const prevKey = useRef<string | null>(null);
   const player = useEarPlayer();
@@ -62,31 +71,42 @@ export default function EarClient() {
   /* deep link (?game=mode) and remembered scores: conveniences only */
   useEffect(() => {
     try {
-      const g = new URLSearchParams(window.location.search).get("game");
+      const q = new URLSearchParams(window.location.search);
+      const g = q.get("game");
       if (g && GAMES.some((x) => x.id === g)) setGame(g as GameId);
-      const saved = window.localStorage.getItem(STORE);
-      if (saved) setScores(JSON.parse(saved));
+      /* arriving from a shared score: "beat 8 of 10" */
+      const beat = Number(q.get("beat")), of = Number(q.get("of") || SET_SIZE);
+      if (Number.isInteger(beat) && beat >= 0 && beat <= of && of === SET_SIZE && q.get("beat") !== null)
+        setChallenge({ score: beat, total: of });
     } catch {}
+    let raw: string | null = null, legacy: string | null = null;
+    try { raw = window.localStorage.getItem(STORE); legacy = window.localStorage.getItem(LEGACY_STORE); } catch {}
+    setProgress(loadProgress(raw, legacy));
   }, []);
   useEffect(() => {
-    try { window.localStorage.setItem(STORE, JSON.stringify(scores)); } catch {}
-  }, [scores]);
+    if (progress === EMPTY_PROGRESS) return;
+    try { window.localStorage.setItem(STORE, JSON.stringify(progress)); } catch {}
+  }, [progress]);
 
   const info = gameById(game);
-  const tally = scores[game] ?? EMPTY;
+  const tally: Tally = progress.games[game] ?? EMPTY;
+  const rank = rankFor(progress.xp);
+  const days = liveDays(progress, localDay());
+  const setAnswers = progress.set?.game === game ? progress.set.answers : [];
   const set = <K extends keyof Options>(k: K, v: Options[K]) => setOpts((o) => ({ ...o, [k]: v }));
 
   const choose = useCallback((id: GameId) => {
     if (id === game) return;
     player.stop();
     setGame(id);
-    setQ(null); setPicked(null); setReveal(null);
+    setQ(null); setPicked(null); setReveal(null); setResult(null);
+    setProgress((p) => abandonSet(p));
   }, [game, player]);
 
   const next = useCallback(() => {
     const question = makeQuestion(game, opts, prevKey.current);
     prevKey.current = question.key;
-    setQ(question); setPicked(null); setReveal(null);
+    setQ(question); setPicked(null); setReveal(null); setResult(null); setRankUp(null);
     void player.play(question.prompt, "prompt");
   }, [game, opts, player]);
 
@@ -99,15 +119,13 @@ export default function EarClient() {
     const r = q.reveal(id);
     setPicked(id);
     setReveal(r);
-    setScores((all) => {
-      const s = all[game] ?? EMPTY;
-      const streak = r.right ? s.streak + 1 : 0;
-      return { ...all, [game]: {
-        right: s.right + (r.right ? 1 : 0), total: s.total + 1, streak, best: Math.max(s.best, streak),
-      } };
-    });
+    const rec = record(progress, game, r.right, localDay());
+    setProgress(rec.progress);
+    setGain({ n: rec.gained, id: Date.now() });
+    if (rec.rankUp) setRankUp(rec.rankUp.name);
+    if (rec.setDone) setResult(rec.setDone);
     void player.play(r.program, "reveal");
-  }, [q, picked, game, player]);
+  }, [q, picked, game, player, progress]);
 
   const hearReveal = useCallback(() => {
     if (reveal) void player.play(reveal.program, "reveal");
@@ -144,16 +162,17 @@ export default function EarClient() {
     };
   }, []);
 
-  const share = async () => {
-    const pct = tally.total ? Math.round((tally.right / tally.total) * 100) : 0;
-    const text =
-      `Hexatonic ear training · ${info.title} ${tally.right}/${tally.total} (${pct}%), ` +
-      `best streak ${tally.best}. ${SITE}?game=${game}`;
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1600);
-    } catch {}
+  const closeShare = useCallback(() => setSharing(null), []);
+
+  /* Share a finished set if there is one (this round's, else the best),
+     otherwise the set so far. The link is a challenge: "beat my score". */
+  const shareScore = (res: SetResult | null) => {
+    const g = progress.games[game];
+    const score = res ? res.score : g?.bestSet ? g.bestSet : setAnswers.filter(Boolean).length;
+    const total = res || g?.bestSet ? SET_SIZE : Math.max(1, setAnswers.length);
+    const best = g?.best ?? 0;
+    const spec: CardSpec = { kind: "score", game, score, total, streak: best, rank: rank.name };
+    setSharing({ spec, title: `Share your ${score}/${total}`, text: scoreText(game, score, total, best, rank.name) });
   };
 
   const levelSeg = useMemo(() => {
@@ -188,12 +207,46 @@ export default function EarClient() {
         <p className="eyebrow">Ear training</p>
         <h1 className="display mt-3 text-4xl sm:text-5xl">Train your ear</h1>
         <p className="lede mt-4">
-          Five short games. Each round sets the key first, then asks one question.
-          When you answer, you hear your pick and the right answer back to back.
+          Five short games. Each round sets the key, then asks one question; you hear
+          your pick and the right answer back to back. Ten rounds make a set: score it,
+          climb the ranks, and challenge a friend to beat you.
         </p>
       </header>
 
-      <GamePicker games={GAMES} current={game} scores={scores} onPick={choose} />
+      {/* progress: rank and day streak on one line, points to the next rank below */}
+      <section aria-label="Your progress" className="rounded-2xl border border-line bg-surface px-5 py-4 sm:px-6">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+          <p className="text-[19px] font-bold leading-tight text-cream">
+            <span className="mr-2 font-mono text-[13px] font-normal uppercase tracking-[0.08em] text-muted">Rank</span>
+            {rank.name}
+          </p>
+          <p className="font-mono text-[14px] text-cream/85">
+            {days > 0 ? <><b className="num text-[17px] text-cream">{days}</b>-day streak</> : "Start a streak today"}
+          </p>
+        </div>
+        <div className="mt-3 flex items-baseline justify-between gap-3 font-mono text-[13px] text-muted">
+          <span><b className="num text-[16px] text-cream">{progress.xp}</b> points</span>
+          {rank.next && <span>{rank.next.min - progress.xp} to {rank.next.name}</span>}
+        </div>
+        <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-surface2" role="progressbar"
+             aria-label={rank.next ? `Progress to ${rank.next.name}` : "Top rank"}
+             aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(rank.progress * 100)}>
+          <div className="h-full rounded-full bg-cream/85 transition-[width] duration-500 ease-out"
+               style={{ width: `${Math.max(2, rank.progress * 100)}%` }} />
+        </div>
+      </section>
+
+      {challenge && (
+        <section className="hx-rise flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-cream/40 bg-surface2 px-5 py-4">
+          <p className="text-[17px] text-cream">
+            <b>A friend scored {challenge.score}/{challenge.total}.</b>{" "}
+            <span className="text-cream/80">Beat it in one set of {SET_SIZE}.</span>
+          </p>
+          {!q && <button type="button" className="btn btn-primary min-h-[46px] px-6" onClick={next}>Start the set</button>}
+        </section>
+      )}
+
+      <GamePicker games={GAMES} current={game} scores={progress.games} onPick={choose} />
 
       <section className="card" aria-labelledby="ear-game-title">
         {/* title + score */}
@@ -210,6 +263,32 @@ export default function EarClient() {
             <div className="flex items-baseline gap-1.5"><dt>streak</dt><dd className="num text-[17px] text-cream">{tally.streak}</dd></div>
             <div className="flex items-baseline gap-1.5"><dt>best</dt><dd className="num text-[17px] text-cream">{tally.best}</dd></div>
           </dl>
+        </div>
+
+        {/* the set of ten: one dot per answer */}
+        <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+          <span className="font-mono text-[13px] uppercase tracking-[0.08em] text-muted">Set</span>
+          <ol className="flex gap-1.5" aria-label={`Set: ${setAnswers.length} of ${SET_SIZE} answered, ${setAnswers.filter(Boolean).length} right`}>
+            {Array.from({ length: SET_SIZE }, (_, i) => {
+              const a = setAnswers[i];
+              return (
+                <li key={i} aria-hidden
+                    className={`grid h-5 w-5 place-items-center rounded-full border text-[11px] leading-none ${
+                      a === true ? "border-cream bg-cream text-bg"
+                      : a === false ? "border-cream/40 text-cream/60"
+                      : "border-line bg-surface2"}`}>
+                  {a === false ? "×" : ""}
+                </li>
+              );
+            })}
+          </ol>
+          <span className="font-mono text-[13px] text-muted">
+            {setAnswers.length}/{SET_SIZE}
+            {progress.games[game]?.bestSet ? ` · best set ${progress.games[game]!.bestSet}/${SET_SIZE}` : ""}
+          </span>
+          {gain && gain.n > 0 && picked && (
+            <span key={gain.id} className="hx-rise font-mono text-[15px] font-bold text-cream">+{gain.n}</span>
+          )}
         </div>
 
         {/* settings: they apply from the next round, never to the one sounding.
@@ -325,6 +404,42 @@ export default function EarClient() {
             <div className="space-y-4">
               {reveal.rows.map((row) => <ChipRow key={row.id} row={row} lit={lit(row.id)} />)}
             </div>
+            {rankUp && (
+              <p className="rounded-xl border border-cream/40 bg-surface2 px-4 py-3 text-[17px] text-cream">
+                New rank: <b>{rankUp}</b>.
+              </p>
+            )}
+            {result && (
+              <div className="rounded-2xl border border-cream/50 bg-surface2 p-5 sm:p-6">
+                <p className="eyebrow">Set complete</p>
+                <div className="mt-3 flex flex-wrap items-end gap-x-6 gap-y-3">
+                  <p className="display text-[56px] leading-none text-cream">
+                    {result.score}<span className="text-[28px] text-muted">/{result.total}</span>
+                  </p>
+                  <p className="pb-1.5 text-[28px] tracking-[0.2em] text-cream" aria-label={`${result.stars} of 3 stars`}>
+                    {"★".repeat(result.stars)}<span className="text-cream/25">{"★".repeat(3 - result.stars)}</span>
+                  </p>
+                  <p className="pb-2 font-mono text-[14px] text-muted">
+                    +{result.points} points{result.newBest ? " · new best" : ""}
+                  </p>
+                </div>
+                <p className="mt-3 font-serif text-[21px] italic text-cream/90">
+                  {challenge
+                    ? result.score > challenge.score ? `You beat ${challenge.score}/${challenge.total}. Send it back.`
+                      : result.score === challenge.score ? `A tie at ${result.score}. One more set settles it.`
+                      : `${challenge.score - result.score} short of the challenge. Another set?`
+                    : result.stars === 3 ? "A perfect set. Send it to someone who thinks they can match it."
+                    : result.stars >= 2 ? "Sharp. See if a friend can beat it."
+                    : "Every set trains the ear. Go again, or challenge a friend."}
+                </p>
+                <div className="mt-4 flex flex-wrap gap-3">
+                  <button type="button" className="btn btn-primary min-h-[48px] px-6" onClick={() => shareScore(result)}>
+                    Share my score
+                  </button>
+                  <button type="button" className="btn btn-ghost min-h-[48px] px-5" onClick={next}>Play another set</button>
+                </div>
+              </div>
+            )}
             <div className="flex flex-wrap gap-3">
               <button type="button" className="btn btn-ghost min-h-[48px] px-5 text-[15px]" onClick={hearReveal}>
                 {reveal.right ? "Hear the answer again" : "Hear both again"}
@@ -341,13 +456,14 @@ export default function EarClient() {
             Keys: <b className="text-cream/85">1–{q ? q.choices.length : 6}</b> answer ·{" "}
             <b className="text-cream/85">Space</b> replay · <b className="text-cream/85">Enter</b> next
           </p>
-          {tally.total > 0 && (
-            <button type="button" className="btn btn-ghost" onClick={share}>
-              {copied ? "Copied" : "Copy my score"}
+          {!result && (setAnswers.length > 0 || (progress.games[game]?.bestSet ?? 0) > 0) && (
+            <button type="button" className="btn btn-ghost" onClick={() => shareScore(null)}>
+              Share my score
             </button>
           )}
         </div>
       </section>
+      {sharing && <ShareSheet {...sharing} onClose={closeShare} />}
     </div>
   );
 }

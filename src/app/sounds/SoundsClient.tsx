@@ -10,7 +10,7 @@
  */
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   KEYS, DIATONIC_MODES, FAMILY_GROUPS, buildScale, familyById, familiesIn, prettyDegree,
   ScaleInstance,
@@ -22,6 +22,8 @@ import {
   PARENTS, knockOut, identify, neighbours, maskOf, practiceQuery, pcsOf,
 } from "@/lib/theory/workout";
 import { PlayGlyph, litIndex, upToOctave, usePreviewRun, Lit } from "@/components/ScalePreview";
+import ShareSheet from "@/components/ShareSheet";
+import { parseCard, scaleFace, scaleText } from "@/lib/share";
 
 const PRETTY_KEY = (k: string) => k.replace(/#/g, "♯").replace(/b/g, "♭");
 const DEFAULT_KEY = "G";
@@ -209,6 +211,24 @@ function Dots({ notes, lit, id }: { notes: Note[]; lit: Lit | null; id: string }
   );
 }
 
+/** Share one sound: its card is the ring with the removed note in red. */
+function ShareScale({ practice }: { practice: string }) {
+  const [open, setOpen] = useState(false);
+  const spec = useMemo(() => parseCard(new URLSearchParams(`kind=scale&${practice.split("?")[1] ?? ""}`)).spec, [practice]);
+  const face = useMemo(() => (spec.kind === "scale" ? scaleFace(spec) : null), [spec]);
+  const close = useCallback(() => setOpen(false), []);
+  if (!face) return null;
+  return (
+    <>
+      <button type="button" className="btn btn-ghost px-3.5 py-2 text-[14px]" onClick={() => setOpen(true)}
+              aria-label={`Share ${face.name}`}>
+        Share
+      </button>
+      {open && <ShareSheet spec={spec} title={`Share ${face.name}`} text={scaleText(face)} onClose={close} />}
+    </>
+  );
+}
+
 function Card({ e, player }: { e: Entry; player: Player }) {
   const on = isOn(player, e.id);
   const s = e.scale;
@@ -234,6 +254,7 @@ function Card({ e, player }: { e: Entry; player: Player }) {
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
         <Link href={e.practice} className="btn btn-ghost px-3.5 py-2 text-[14px]">Practise this →</Link>
+        <ShareScale practice={e.practice} />
       </div>
 
       {(others.length > 0 || near.length > 0) && (
