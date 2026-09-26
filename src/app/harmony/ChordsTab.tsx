@@ -16,11 +16,14 @@ import {
   ChordSet, chordsUnderEachNote, findChords, lostTriads, stackInThirds, susQuartal, tertianOnly,
   ThirdsStack,
 } from "@/lib/theory/chords";
-import { midi, note, Note, notePretty, pc } from "@/lib/theory/note";
+import { letterIndex, midi, note, Note, notePretty, pc } from "@/lib/theory/note";
 import { prettyChordSymbol } from "@/lib/theory/movement";
 import { previewAudio } from "@/lib/audio/engine";
 import { playableStack } from "@/lib/audio/voicing";
 import { optionById, PROSE, ScalePicker } from "./scaleOptions";
+import {
+  FUNCTION_LABEL, FUNCTION_LINE, HarmonicFunction, harmonicFunction, romanNumeral, triadQuality,
+} from "@/lib/theory/functions";
 
 /** Chord symbols for display: ♭ ♯ °, and the fourth stacks named in words. */
 const chordName = (symbol: string) =>
@@ -53,10 +56,10 @@ export default function ChordsTab() {
   /* One piano for the whole page: `picked` marks a chord at rest, `lit` is sounding. */
   const [picked, setPicked] = useState<{ label: string; pcs: number[] } | null>(null);
   const [lit, setLit] = useState<number[] | null>(null);
-  const [lastInv, setLastInv] = useState<Record<string, number[]>>({});
+  const [invOf, setInvOf] = useState<Record<string, number>>({});
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
-  useEffect(() => { setPicked(null); setLit(null); setLastInv({}); }, [key, optionId]);
+  useEffect(() => { setPicked(null); setLit(null); setInvOf({}); }, [key, optionId]);
 
   const sound = (label: string, midis: number[], spread = 0.03) => {
     const ms = playableStack(midis);
@@ -79,6 +82,14 @@ export default function ChordsTab() {
     return lostTriads(parent, notes);
   }, [notes, scale.removed]);
   const under = useMemo(() => chordsUnderEachNote(notes), [notes]);
+  const tonic = notes[0];
+  const label = (c: ChordSet) => {
+    const [r, t, f] = c.names[0].voicing;
+    const deg = (letterIndex(r.letter) - letterIndex(tonic.letter) + 7) % 7;
+    return { c, deg, roman: romanNumeral(tonic, r, triadQuality(r, t, f)), fn: harmonicFunction(tonic, r) };
+  };
+  const triFn = tonic ? tri.map(label).sort((a, b) => a.deg - b.deg) : [];
+  const lostFn = tonic ? lost.map(label) : [];
   const stack = useMemo(() => stackInThirds(notes), [notes]);
 
   if (scale.error) return <p className="card text-amber">{scale.error}</p>;
@@ -108,34 +119,57 @@ export default function ChordsTab() {
         <Legend />
       </section>
 
-      {/* ── triads and their inversions ──────────────────────────────── */}
+      {/* ── triads, grouped by what they do ──────────────────────────── */}
       <section className="card">
         <Head title="Triads" n={tri.length}
               line={scale.removed && lost.length
-                ? `${cap(count(tri.length))} three-note chords live in this scale. ${list(lost.map((c) => chordName(c.names[0].symbol)))} ${lost.length === 1 ? "is" : "are"} gone: ${lost.length === 1 ? "it" : "each one"} needed ${notePretty(scale.removed)}.`
-                : `${cap(count(tri.length))} three-note chords live in this scale.`} />
-        <p className={`mt-1 ${PROSE}`}>Play each one in root position and both inversions. Same notes, a different note on the bottom.</p>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {tri.map((c, i) => {
-            const n = c.names[0];
-            const name = chordName(n.symbol);
+                ? `${cap(count(tri.length))} three-note chords live in this scale, grouped by what they do. ${list(lost.map((c) => chordName(c.names[0].symbol)))} ${lost.length === 1 ? "is" : "are"} gone: ${lost.length === 1 ? "it" : "each one"} needed ${notePretty(scale.removed)}.`
+                : `${cap(count(tri.length))} three-note chords live in this scale, grouped by what they do.`} />
+        <div className="mt-4 grid gap-3 lg:grid-cols-3">
+          {(["tonic", "predominant", "dominant"] as HarmonicFunction[]).map((fn) => {
+            const group = triFn.filter((t) => t.fn === fn);
+            const gone = lostFn.filter((t) => t.fn === fn);
             return (
-              <div key={i} className="well space-y-3">
-                <button className="block w-full text-left" onClick={() => { const ms = inversion(n.voicing, 0); setLastInv((v) => ({ ...v, [name]: ms })); sound(name, ms); }}>
-                  <span className="block text-[22px] font-bold leading-tight text-cream">{name}</span>
-                  <span className="block font-mono text-[14px] text-cream/75">{n.notes.map(pn).join(" · ")}</span>
-                </button>
-                <MiniKeys scale={notes} removed={scale.removed} voicing={lastInv[name] ?? inversion(n.voicing, 0)} lit={lit} />
-                <div className="grid gap-1.5">
-                  {[0, 1, 2].map((k) => {
-                    const ms = inversion(n.voicing, k);
-                    const bottomUp = [...n.notes.slice(k), ...n.notes.slice(0, k)].map(pn);
+              <div key={fn} className="rounded-2xl border border-line p-3">
+                <p className="px-1">
+                  <span className="block text-[17px] font-bold text-cream">{FUNCTION_LABEL[fn]}</span>
+                  <span className="block text-[13px] text-muted">{FUNCTION_LINE[fn]}</span>
+                </p>
+                <div className="mt-2.5 grid gap-2">
+                  {group.length === 0 && (
+                    <p className="px-1 text-[14px] leading-relaxed text-cream/75">
+                      None in this scale{gone.length && scale.removed
+                        ? `: ${list(gone.map((g) => `${g.roman} (${chordName(g.c.names[0].symbol)})`))} would need ${notePretty(scale.removed)}.`
+                        : "."}
+                    </p>
+                  )}
+                  {group.map(({ c, roman }) => {
+                    const n = c.names[0];
+                    const name = chordName(n.symbol);
+                    const inv = invOf[name] ?? 0;
                     return (
-                      <button key={k} onClick={() => { setLastInv((v) => ({ ...v, [name]: ms })); sound(`${name}, ${INVERSIONS[k].toLowerCase()}`, ms); }}
-                              className="flex items-baseline justify-between gap-3 rounded-lg border border-line bg-surface2 px-3 py-2 text-left transition-colors hover:border-[#3A3331]">
-                        <span className="text-[14px] text-cream/85">{INVERSIONS[k]}</span>
-                        <span className="font-mono text-[13px] text-muted">{bottomUp.join(" ")}</span>
-                      </button>
+                      <div key={name} className="well !p-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <button className="text-left" onClick={() => { setInvOf((v) => ({ ...v, [name]: 0 })); sound(`${roman} · ${name}`, inversion(n.voicing, 0)); }}>
+                            <span className="flex items-baseline gap-2">
+                              <span className="font-serif text-[22px] italic leading-none text-cream/80">{roman}</span>
+                              <span className="text-[20px] font-bold leading-none text-cream">{name}</span>
+                            </span>
+                            <span className="mt-1 block font-mono text-[13px] text-cream/70">
+                              {[...n.notes.slice(inv), ...n.notes.slice(0, inv)].map(pn).join(" · ")}
+                            </span>
+                          </button>
+                          <div className="seg shrink-0" role="group" aria-label={`${name} inversion`}>
+                            {["Root", "1st", "2nd"].map((lbl, k) => (
+                              <button key={lbl} type="button" data-on={inv === k}
+                                      title={INVERSIONS[k]}
+                                      onClick={() => { setInvOf((v) => ({ ...v, [name]: k })); sound(`${roman} · ${name}, ${INVERSIONS[k].toLowerCase()}`, inversion(n.voicing, k)); }}
+                                      className="!px-2.5 !py-1 !text-[13px]">{lbl}</button>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="mt-2"><MiniKeys small scale={notes} removed={scale.removed} voicing={inversion(n.voicing, inv)} lit={lit} /></div>
+                      </div>
                     );
                   })}
                 </div>
@@ -241,8 +275,8 @@ export default function ChordsTab() {
 const NONE: Note[] = [];
 
 /** A small piano inside a card: the chord's notes marked, gold while it sounds. */
-function MiniKeys({ scale, removed, voicing, lit }: {
-  scale: Note[]; removed: Note | null; voicing: number[]; lit: number[] | null;
+function MiniKeys({ scale, removed, voicing, lit, small = false }: {
+  scale: Note[]; removed: Note | null; voicing: number[]; lit: number[] | null; small?: boolean;
 }) {
   const sounding = !!lit && lit.length === voicing.length && lit.every((m, i) => ((m - voicing[i]) % 12 + 12) % 12 === 0);
   const start = Math.floor(Math.min(...voicing) / 12) * 12;
@@ -251,7 +285,7 @@ function MiniKeys({ scale, removed, voicing, lit }: {
     <div className="pointer-events-none">
       <Keyboard scale={NONE} removed={null} markMidi={voicing}
                 activeMidi={sounding ? voicing : null} startMidi={start} octaves={span >= 12 ? 2 : 1}
-                height={60} keyWidth={20} />
+                height={small ? 48 : 60} keyWidth={small ? 14 : 20} />
     </div>
   );
 }

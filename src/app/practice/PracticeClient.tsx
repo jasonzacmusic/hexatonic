@@ -14,6 +14,7 @@ import { SUBDIVISIONS, gatiFor } from "@/lib/theory/resolution";
 import { METERS, saptaTalaMeters } from "@/lib/theory/meters";
 import { midi, notePretty, pc } from "@/lib/theory/note";
 import { findChords, tertianOnly } from "@/lib/theory/chords";
+import { FUNCTION_LABEL, HarmonicFunction, harmonicFunction, romanNumeral, triadQuality } from "@/lib/theory/functions";
 import { previewAudio } from "@/lib/audio/engine";
 import CustomBuilder from "@/components/CustomBuilder";
 import MidiPanel from "@/components/MidiPanel";
@@ -344,6 +345,7 @@ function ChordStrip({ scale, activePc, big = false }: {
     [scale, size],
   );
   if (scale.error) return null;
+  const tonic = scale.notes[0];
   return (
     <div className={`well ${big ? "!p-4" : "!p-3"}`}>
       <div className="mb-2.5 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
@@ -361,22 +363,38 @@ function ChordStrip({ scale, activePc, big = false }: {
           {size === 4 ? "No four-note chord stacked in thirds fits inside this scale." : "No triad fits inside this scale."}
         </p>
       ) : (
-        <div className="flex flex-wrap gap-2">
-          {chords.map((c, i) => {
-            const fits = activePc !== null && c.pcs.includes(activePc);
-            const name = c.names[0];
+        <div className="grid gap-2 sm:grid-cols-3">
+          {(["tonic", "predominant", "dominant"] as HarmonicFunction[]).map((fn) => {
+            const group = chords.filter((c) => tonic && harmonicFunction(tonic, c.names[0].voicing[0]) === fn);
             return (
-              <button key={i} type="button" onClick={() => { void previewAudio(name.voicing.map(midi)); }}
-                      title="Tap to hear it"
-                      className={`rounded-xl border text-left transition-colors duration-75 ${big ? "px-5 py-3" : "px-3.5 py-2"} ${
-                        fits ? "border-cream bg-cream text-bg" : "border-line bg-surface2 text-cream hover:border-[#3A3331]"}`}>
-                <span className={`block font-bold ${big ? "text-[24px]" : "text-[17px]"}`}>
-                  {c.names.map((x) => prettyChord(x.symbol)).join(" = ")}
-                </span>
-                <span className={`block font-mono ${big ? "text-[15px]" : "text-[13px]"} ${fits ? "text-bg/75" : "text-muted"}`}>
-                  {name.notes.map((n) => n.replace("#", "♯").replace(/b$/, "♭")).join(" ")}
-                </span>
-              </button>
+              <div key={fn} className="rounded-xl border border-line/70 p-2">
+                <p className={`px-1 font-mono uppercase tracking-[0.06em] text-muted ${big ? "text-[14px]" : "text-[12px]"}`}>
+                  {FUNCTION_LABEL[fn]}
+                </p>
+                <div className="mt-1.5 flex flex-wrap gap-1.5">
+                  {group.length === 0 && <span className="px-1 text-[13px] text-muted">none in this scale</span>}
+                  {group.map((c, i) => {
+                    const fits = activePc !== null && c.pcs.includes(activePc);
+                    const name = c.names[0];
+                    const [r, t, f5] = name.voicing;
+                    const roman = size === 3 && tonic ? romanNumeral(tonic, r, triadQuality(r, t, f5)) : null;
+                    return (
+                      <button key={i} type="button" onClick={() => { void previewAudio(name.voicing.map(midi)); }}
+                              title="Tap to hear it"
+                              className={`rounded-lg border text-left transition-colors duration-75 ${big ? "px-4 py-2.5" : "px-3 py-1.5"} ${
+                                fits ? "border-cream bg-cream text-bg" : "border-line bg-surface2 text-cream hover:border-[#3A3331]"}`}>
+                        <span className={`flex items-baseline gap-1.5 font-bold ${big ? "text-[22px]" : "text-[16px]"}`}>
+                          {roman && <span className={`font-serif font-normal italic ${fits ? "text-bg/70" : "text-cream/70"}`}>{roman}</span>}
+                          {c.names.map((x) => prettyChord(x.symbol)).join(" = ")}
+                        </span>
+                        <span className={`block font-mono ${big ? "text-[14px]" : "text-[12px]"} ${fits ? "text-bg/75" : "text-muted"}`}>
+                          {name.notes.map((n) => n.replace("#", "♯").replace(/b$/, "♭")).join(" ")}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             );
           })}
         </div>
