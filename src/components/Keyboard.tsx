@@ -156,7 +156,7 @@ export default function Keyboard({
                         stroke="#C4353C" strokeWidth={3} strokeLinecap="round" />
                 </>
               )}
-              {showLabels && (st === "active" || st === "scale") && labelFor(m) && (
+              {showLabels && (st === "active" || st === "scale" || st === "chord") && labelFor(m) && (
                 <text x={x + W / 2} y={felt + height - 14} textAnchor="middle"
                       className="font-mono" fontSize={13} fontWeight={600}
                       fill={st === "active" ? "#2A2208" : "#3A332C"}>
@@ -190,7 +190,7 @@ export default function Keyboard({
                       x2={x + BW * 0.78} y2={felt + BH * 0.85}
                       stroke="#C4353C" strokeWidth={2.5} strokeLinecap="round" />
               )}
-              {showLabels && (st === "active" || st === "scale") && labelFor(m) && (
+              {showLabels && (st === "active" || st === "scale" || st === "chord") && labelFor(m) && (
                 <text x={x + BW / 2} y={felt + BH - 10} textAnchor="middle"
                       className="font-mono" fontSize={12} fontWeight={700}
                       fill={st === "active" ? "#2A2208" : "#2A2520"}>
