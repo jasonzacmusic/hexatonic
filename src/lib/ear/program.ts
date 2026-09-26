@@ -55,13 +55,17 @@ export class ProgramBuilder {
     this.t += s;
     return this;
   }
-  /** a quiet low tonic held under everything from `from` to `to` */
+  /** A quiet low tonic under everything from `from` to `to`. A piano cannot
+   *  sustain, so it is struck again, but seldom and softer each time: the
+   *  first strike sets the key, the rest only keep it in the ear. Frequent
+   *  re-strikes read as a thumping bass line, not a drone. */
   drone(tonic: number, from: number, to: number) {
-    const every = 2.4;
-    for (let at = from; at < to - 0.2; at += every)
+    const every = 3.4;
+    let k = 0;
+    for (let at = from; at < to - 0.2; at += every, k++)
       this.events.push({
-        at, dur: Math.min(every + 0.3, to - at + 0.4),
-        midis: [tonic - 24, tonic - 12], vel: 0.3, spread: 0,
+        at, dur: Math.min(every + 0.6, to - at + 0.6),
+        midis: [tonic - 24, tonic - 12], vel: k === 0 ? 0.32 : 0.22, spread: 0,
       });
     return this;
   }
