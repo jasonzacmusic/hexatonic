@@ -1,242 +1,245 @@
 "use client";
 
 /**
- * Two-triad pairs: the finder, the curated pairs, and the movement lab for
- * whichever pair is chosen. Every fact on screen is computed: whether two
- * triads share a note, how many pairs make a given six notes, and which note
- * each neighbouring pair of a major scale leaves out.
+ * Harmony → Two-triad pairs.
+ *
+ * Two ways in, both inside a real scale, nothing typed in by hand:
+ *   · a seven-note scale (the modes, harmonic and melodic minor): the seven
+ *     pairs of neighbouring triads, each leaving out one note;
+ *   · a six-note scale from the app: every way two triads make exactly it.
+ * The chosen pair runs in the movement lab below, which stays mounted while
+ * you change pairs, so the music never stops for a selection.
  */
 
-import { useMemo, useState } from "react";
-import { previewAudio } from "@/lib/audio/engine";
+import { useMemo, useRef, useState } from "react";
 import MovementLab from "@/components/MovementLab";
-import { augmentedPair, triadPair, triadPairsCovering, TriadQuality } from "@/lib/theory/chords";
-import { notePretty } from "@/lib/theory/note";
-import { KEYS } from "@/lib/theory/scales";
-import { InterlockedMovement } from "@/lib/theory/movement";
+import { SHAPE_TONES } from "@/components/PairKeyboard";
+import { Seg } from "@/components/Panels";
+import { notePretty, pc } from "@/lib/theory/note";
+import { FAMILY_GROUPS, KEYS } from "@/lib/theory/scales";
 import {
-  adjacentDiatonicPairs, buildAtlasMovement, PAIR_ATLAS, pairMovement,
+  buildParent, ParentId, parentInKey, parentPairs, PARENTS, SixNoteScale, sixNoteScales, TwoChordPair,
 } from "@/lib/theory/pairAtlas";
 
-const PC_NAMES = ["C", "D♭", "D", "E♭", "E", "F", "F♯", "G", "A♭", "A", "B♭", "B"];
-const PC_ASCII = ["C", "Db", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
-const QUALS: { id: TriadQuality; label: string; suffix: string }[] = [
-  { id: "maj", label: "major", suffix: "" },
-  { id: "min", label: "minor", suffix: "m" },
-  { id: "dim", label: "diminished", suffix: "°" },
-  { id: "aug", label: "augmented", suffix: "+" },
-];
-const SHAPE: Record<TriadQuality, number[]> = { maj: [0, 4, 7], min: [0, 3, 7], dim: [0, 3, 6], aug: [0, 4, 8] };
-const triName = (root: number, q: TriadQuality) => PC_NAMES[root] + QUALS.find((x) => x.id === q)!.suffix;
+type Source = "parent" | "six";
+
 const pretty = (s: string) => s.replace(/([A-G])b/g, "$1♭").replace(/#/g, "♯");
 
-type Pick = { kind: "atlas"; id: string } | { kind: "custom" };
-
-export default function PairAtlas() {
-  /* The finder: G + Am by default, the pair that makes G's no-4 neighbour. */
-  const [rootA, setRootA] = useState(7);
-  const [qualA, setQualA] = useState<TriadQuality>("maj");
-  const [rootB, setRootB] = useState(9);
-  const [qualB, setQualB] = useState<TriadQuality>("min");
-  const [pick, setPick] = useState<Pick>({ kind: "atlas", id: PAIR_ATLAS[0].id });
+export default function PairAtlas({ onOpenSixth }: { onOpenSixth?: () => void }) {
+  const [source, setSource] = useState<Source>("parent");
   const [key, setKey] = useState("G");
+  const [parentId, setParentId] = useState<ParentId>("ionian");
+  const [sixId, setSixId] = useState("diatonic-3");
+  const [pick, setPick] = useState<string | null>(null);
 
-  const pcs = triadPair(rootA, qualA, rootB, qualB);
-  const aPcs = SHAPE[qualA].map((i) => (rootA + i) % 12);
-  const bPcs = SHAPE[qualB].map((i) => (rootB + i) % 12);
-  const shared = aPcs.filter((p) => bPcs.includes(p));
-  const covers = useMemo(() => (pcs ? triadPairsCovering(pcs) : []), [pcs?.join()]);
+  const ps = useMemo(() => buildParent(key, parentId), [key, parentId]);
+  const fromParent = useMemo(() => parentPairs(ps), [ps]);
+  const sixes = useMemo(() => sixNoteScales(key), [key]);
+  const six = sixes.find((s) => s.id === sixId) ?? sixes[0];
+  const list = source === "parent" ? fromParent : six.pairs;
+  const chosen = list.find((p) => p.id === pick) ?? list[0] ?? null;
 
-  /* The custom pair as a movement, spelled from the first triad's root. */
-  const custom = useMemo<InterlockedMovement | null>(() => {
-    if (!pcs) return null;
-    const semis = [...new Set([...aPcs, ...bPcs].map((p) => (p - rootA + 12) % 12))].sort((x, y) => x - y);
-    try { return pairMovement(PC_ASCII[rootA], semis, 3, `${triName(rootA, qualA)} + ${triName(rootB, qualB)}`); }
-    catch { return null; }
-  }, [pcs?.join(), rootA, qualA, rootB, qualB]);
+  /* A scale two triads cannot make leaves the lab on the last real pair, so
+     nothing that is playing stops because of a click. */
+  const last = useRef<{ pair: TwoChordPair; source: string } | null>(null);
+  const sourceName = source === "parent" ? parentInKey(ps.tonic, ps.parent) : `${notePretty(six.tonic)} ${six.name}`;
+  if (chosen) last.current = { pair: chosen, source: sourceName };
+  const lab = last.current;
 
-  const entry = pick.kind === "atlas" ? PAIR_ATLAS.find((e) => e.id === pick.id) ?? PAIR_ATLAS[0] : null;
-  const movement = useMemo<InterlockedMovement | null>(() => {
-    if (pick.kind === "custom") return custom;
-    try { return buildAtlasMovement(entry!, key); } catch { return null; }
-  }, [pick, custom, entry, key]);
-
-  const sameMajor = [1, 2, 6].map((iv) => ({ iv, pcs: triadPair(7, "maj", (7 + iv) % 12, "maj")! }));
-  const neighbours = useMemo(() => adjacentDiatonicPairs(key), [key]);
-  const spelled = custom?.scale.notes.map(notePretty) ?? (pcs ?? []).map((p) => PC_NAMES[p]);
+  const plain = list.filter((p) => p.plain);
+  const colour = list.filter((p) => !p.plain);
 
   return (
     <div className="space-y-5">
-      {/* ── the finder ─────────────────────────────────────────────────── */}
       <section className="card">
-        <p className="eyebrow">Two triads, six notes</p>
-        <p className="mt-3 max-w-[68ch] text-[15px] leading-relaxed text-cream/80">
-          Pick two triads. If they share no note, together they make a six-note scale, and the
-          two shapes can alternate through every inversion.
-        </p>
-        <div className="mt-5 flex flex-wrap items-end gap-3">
-          <TriadPicker label="First triad" root={rootA} qual={qualA} setRoot={setRootA} setQual={setQualA} />
-          <span className="pb-2.5 text-2xl text-muted">+</span>
-          <TriadPicker label="Second triad" root={rootB} qual={qualB} setRoot={setRootB} setQual={setQualB} />
-        </div>
-
-        {pcs ? (
-          <div className="well mt-5 rounded-xl p-4">
-            <p className="font-mono text-[13px] uppercase tracking-[0.1em] text-muted">six notes, none shared</p>
-            <p className="mt-1 font-mono text-2xl tracking-wide text-cream">{spelled.join("  ")}</p>
-            <p className="mt-2 text-[15px] text-cream/80">
-              {covers.length === 1
-                ? "This is the only pair of triads that makes these six notes."
-                : `${covers.length} different pairs of triads make these six notes: ${covers
-                    .map((c) => `${triName(c.a.root, c.a.qual)} + ${triName(c.b.root, c.b.qual)}`).join(", ")}.`}
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div className="max-w-[60ch]">
+            <p className="eyebrow">Two triads, no shared note</p>
+            <p className="mt-2 text-[15px] leading-relaxed text-cream/80">
+              Two triads that share no note make six notes: a hexatonic scale. Pick a scale and
+              every such pair inside it is listed.
             </p>
-            <div className="mt-4 flex flex-wrap gap-3">
-              <button className="btn btn-ghost" onClick={() => previewAudio(
-                        pcs.map((p) => (p - rootA + 12) % 12).sort((x, y) => x - y)
-                          .map((rel) => 55 + ((rootA - 7 + 12) % 12) + rel), 0.14)}>
-                ▶ Hear the six notes
-              </button>
-              {custom && (
-                <button className="btn btn-primary" onClick={() => setPick({ kind: "custom" })}>
-                  Practise this pair ↓
-                </button>
-              )}
+          </div>
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="field">
+              <label>Start from</label>
+              <Seg value={source} ariaLabel="Start from"
+                   options={[{ label: "7-note scale", value: "parent" as const }, { label: "6-note scale", value: "six" as const }]}
+                   onChange={(v) => { setSource(v); setPick(null); }} />
+            </div>
+            <div className="field">
+              <label htmlFor="pa-key">Key</label>
+              <select id="pa-key" className="sel !w-24" value={key} onChange={(e) => setKey(e.target.value)}>
+                {KEYS.map((k) => <option key={k} value={k}>{pretty(k)}</option>)}
+              </select>
             </div>
           </div>
+        </div>
+
+        {source === "parent" ? (
+          <ParentPicker ps={ps} parentId={parentId} chosen={chosen}
+            onParent={(id) => { setParentId(id); setPick(null); }} />
         ) : (
-          <div className="well mt-5 rounded-xl p-4">
-            <p className="font-mono text-[13px] uppercase tracking-[0.1em] text-muted">not a pair</p>
-            <p className="mt-1 text-[15px] text-cream/85">
-              {triName(rootA, qualA)} and {triName(rootB, qualB)} share {shared.map((p) => PC_NAMES[p]).join(" and ")},
-              so together they make only {new Set([...aPcs, ...bPcs]).size} notes, not six.
+          <SixPicker sixes={sixes} six={six} onSix={(id) => { setSixId(id); setPick(null); }} />
+        )}
+
+        {/* ── the pairs ─────────────────────────────────────────────────── */}
+        {list.length > 0 ? (
+          <div className="mt-5 space-y-4">
+            {[{ title: "Two major or minor chords", items: plain },
+              { title: "With a diminished or augmented chord", items: colour }]
+              .filter((g) => g.items.length)
+              .map((g) => (
+                <div key={g.title}>
+                  <p className="micro-caps mb-2">{g.title}</p>
+                  <div className="grid grid-cols-2 gap-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {g.items.map((p) => (
+                      <PairCard key={p.id} pair={p} on={chosen?.id === p.id} onPick={() => setPick(p.id)} />
+                    ))}
+                  </div>
+                </div>
+              ))}
+          </div>
+        ) : (
+          <div className="well mt-5">
+            <p className="text-[15px] text-cream/85">
+              <span className="font-semibold text-cream">{six.name}</span> cannot be made from two triads:
+              no major, minor, diminished or augmented pair covers its six notes.
+              {six.susSplits.length > 0 && <> It splits only with a sus chord: <span className="font-semibold text-cream">{six.susSplits.join(", ")}</span>.</>}
             </p>
           </div>
         )}
 
-        <div className="mt-5 grid gap-5 border-t border-line pt-5 lg:grid-cols-2">
-          <div>
-            <h3 className="text-[17px] font-bold">Two major triads: only three distances work</h3>
-            <p className="mt-1 text-[15px] leading-relaxed text-cream/80">
-              A semitone, a whole step or a tritone apart. At any other distance they share a note.
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {sameMajor.map(({ iv, pcs: r }) => (
-                <button key={iv} className="chip text-left hover:border-cream/40"
-                        onClick={() => previewAudio(r.map((p) => 55 + ((p - 7 + 12) % 12)), 0.12)}>
-                  <span className="block text-[15px] font-semibold">G + {PC_NAMES[(7 + iv) % 12]}</span>
-                  <span className="block font-mono text-[13px] text-muted">
-                    {iv === 1 ? "semitone" : iv === 2 ? "whole step" : "tritone"}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <h3 className="text-[17px] font-bold">Two augmented triads: only two results</h3>
-            <p className="mt-1 text-[15px] leading-relaxed text-cream/80">
-              A whole step apart they make the whole-tone scale; a semitone apart, the augmented scale.
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {([[3, 1], [3, 0]] as const).map(([a, b]) => {
-                const r = augmentedPair(a, b);
+        <p className="mt-5 border-t border-line pt-4 text-[15px] text-cream/75">
+          Eight notes, two four-note chords with nothing shared, such as Barry Harris&rsquo;s
+          sixth + diminished:{" "}
+          {onOpenSixth ? (
+            <button type="button" onClick={onOpenSixth} className="font-semibold text-cream underline decoration-cream/40 underline-offset-4 hover:decoration-cream">
+              Sixth–diminished tab →
+            </button>
+          ) : (
+            <a href="/harmony?tab=sixth" className="font-semibold text-cream underline decoration-cream/40 underline-offset-4">
+              Sixth–diminished tab →
+            </a>
+          )}
+        </p>
+      </section>
+
+      {lab && <MovementLab pair={lab.pair} source={lab.source} />}
+    </div>
+  );
+}
+
+/* ── pickers ─────────────────────────────────────────────────────────── */
+
+function ParentPicker({ ps, parentId, chosen, onParent }: {
+  ps: ReturnType<typeof buildParent>;
+  parentId: ParentId;
+  chosen: TwoChordPair | null;
+  onParent: (id: ParentId) => void;
+}) {
+  const inPair = (sym: string) => chosen?.shapes.findIndex((s) => s.symbol === sym) ?? -1;
+  return (
+    <div className="mt-4">
+      <div className="flex flex-wrap gap-1.5" role="group" aria-label="Parent scale">
+        {PARENTS.map((p) => (
+          <button key={p.id} type="button" aria-pressed={p.id === parentId} onClick={() => onParent(p.id)}
+            className={`rounded-lg border px-3 py-1.5 text-[15px] font-medium transition-colors duration-150 ${
+              p.id === parentId ? "border-cream bg-cream text-bg" : "border-line-control bg-surface2 text-cream/80 hover:border-cream/50"}`}>
+            {p.name}
+          </button>
+        ))}
+      </div>
+      <p className="mt-3 text-[15px] text-cream/80">
+        <span className="font-semibold text-cream">{parentInKey(ps.tonic, ps.parent)}</span>
+        {ps.parent.mode && <span className="text-muted"> ({ps.parent.mode})</span>}
+        {ps.respelled && <span className="text-muted"> · written from {notePretty(ps.tonic)}, fewer accidentals than {pretty(ps.asked)}</span>}
+      </p>
+      {/* the seven triads, so every numeral in the pairs can be checked by eye */}
+      <ol className="mt-2 grid grid-cols-7 gap-1" aria-label="The triad on each degree">
+        {ps.triads.map((t, i) => {
+          const s = inPair(t.symbol);
+          return (
+            <li key={i} className="rounded-md bg-black/25 px-1 py-1.5 text-center"
+                style={s >= 0 ? { boxShadow: `inset 0 -3px 0 ${SHAPE_TONES[s].ink}` } : undefined}>
+              <span className="block font-mono text-[13px] text-muted">{t.roman}</span>
+              <span className="block truncate text-[15px] font-bold text-cream">{t.symbol}</span>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
+  );
+}
+
+const GROUP_ORDER = ["remove", "pentatonic", "symmetric", "colour"] as const;
+
+function SixPicker({ sixes, six, onSix }: {
+  sixes: SixNoteScale[];
+  six: SixNoteScale;
+  onSix: (id: string) => void;
+}) {
+  return (
+    <div className="mt-4 space-y-3">
+      {GROUP_ORDER.map((g) => {
+        const items = sixes.filter((s) => s.group === g);
+        if (!items.length) return null;
+        return (
+          <div key={g}>
+            <p className="micro-caps mb-1.5">{FAMILY_GROUPS.find((x) => x.id === g)?.label}</p>
+            <div className="flex flex-wrap gap-1.5">
+              {items.map((s) => {
+                const on = s.id === six.id;
                 return (
-                  <button key={`${a}${b}`} className="chip text-left hover:border-cream/40"
-                          onClick={() => previewAudio(r.pcs.map((p) => 55 + ((p - 7 + 12) % 12)), 0.12)}>
-                    <span className="block text-[15px] font-semibold">
-                      G+ + {PC_NAMES[b === 1 ? 9 : 8]}+
+                  <button key={s.id} type="button" aria-pressed={on} onClick={() => onSix(s.id)}
+                    className={`rounded-lg border px-3 py-1.5 text-left text-[15px] font-medium transition-colors duration-150 ${
+                      on ? "border-cream bg-cream text-bg" : "border-line-control bg-surface2 text-cream/85 hover:border-cream/50"}`}>
+                    {s.name}
+                    <span className={`ml-2 font-mono text-[13px] ${on ? "text-bg/70" : "text-muted"}`}>
+                      {s.pairs.length ? `${s.pairs.length} ${s.pairs.length === 1 ? "pair" : "pairs"}` : "none"}
                     </span>
-                    <span className="block font-mono text-[13px] text-muted">{r.result === "whole-tone" ? "whole tone" : "augmented"}</span>
                   </button>
                 );
               })}
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* ── pairs to practise ──────────────────────────────────────────── */}
-      <section>
-        <p className="eyebrow mb-3">Pairs to practise</p>
-        <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {PAIR_ATLAS.map((e) => {
-            const on = pick.kind === "atlas" && pick.id === e.id;
-            return (
-              <button key={e.id} onClick={() => setPick({ kind: "atlas", id: e.id })} aria-pressed={on}
-                className={`rounded-xl border p-4 text-left transition-colors ${
-                  on ? "border-cream/70 bg-white/[0.05]" : "border-line bg-surface hover:border-cream/30"}`}>
-                <span className="block text-[17px] font-extrabold text-cream">{e.title}</span>
-                <span className="mt-1 block text-[14px] text-cream/75">{e.subtitle}</span>
-                <span className="mt-2 block font-mono text-[13px] text-muted">{e.formula}</span>
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-      {movement ? (
-        <MovementLab
-          key={pick.kind === "atlas" ? `${pick.id}` : "custom"}
-          movement={movement}
-          title={pick.kind === "custom" ? `${triName(rootA, qualA)} + ${triName(rootB, qualB)}` : `${entry!.title} · ${pretty(key)}`}
-          description={pick.kind === "custom"
-            ? "Your pair, alternating through every inversion."
-            : entry!.description}
-          controls={pick.kind === "atlas" ? (
-            <div className="field">
-              <label htmlFor="pa-key">Key</label>
-              <select id="pa-key" className="sel" value={key} onChange={(e) => setKey(e.target.value)}>
-                {KEYS.map((k) => <option key={k} value={k}>{pretty(k)}</option>)}
-              </select>
-            </div>
-          ) : undefined}
-        />
-      ) : (
-        <p className="card text-[15px] text-cream/80">
-          These two triads make six notes, but their alternate notes do not form the two triads again,
-          so there is no inversion ladder to play.
-        </p>
-      )}
-
-      {/* ── the seven neighbours ───────────────────────────────────────── */}
-      <section className="card">
-        <p className="eyebrow">Inside the major scale</p>
-        <h2 className="mt-2 text-2xl font-extrabold">Seven neighbours, seven six-note scales</h2>
-        <p className="mt-2 max-w-[68ch] text-[15px] leading-relaxed text-cream/80">
-          Neighbouring triads of {pretty(key)} major never share a note, so every neighbouring pair
-          makes a six-note scale that leaves out one note.
-        </p>
-        <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-          {neighbours.map((n) => (
-            <div key={n.pair} className="well rounded-lg p-3">
-              <p className="text-[15px] font-bold">{pretty(n.chords[0])} + {pretty(n.chords[1])}</p>
-              <p className="mt-1 font-mono text-[13px] text-muted">{n.pair} · no {pretty(n.omitted)}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+        );
+      })}
+      <p className="text-[15px] text-cream/80">
+        <span className="font-semibold text-cream">{notePretty(six.tonic)} {six.name}</span>
+        <span className="ml-2 font-mono text-cream/75">{six.notes.map(notePretty).join(" ")}</span>
+        {six.removed && <span className="ml-2 font-mono text-red">no {notePretty(six.removed)}</span>}
+      </p>
     </div>
   );
 }
 
-function TriadPicker({ label, root, qual, setRoot, setQual }: {
-  label: string; root: number; qual: TriadQuality;
-  setRoot: (n: number) => void; setQual: (q: TriadQuality) => void;
-}) {
-  const id = label.replace(/\s/g, "-").toLowerCase();
+function PairCard({ pair, on, onPick }: { pair: TwoChordPair; on: boolean; onPick: () => void }) {
+  const [A, B] = pair.shapes;
+  const shapeOf = (n: (typeof pair.notes)[number]) => (A.notes.some((x) => pc(x) === pc(n)) ? 0 : 1);
   return (
-    <div className="flex items-end gap-2">
-      <div className="field">
-        <label htmlFor={`${id}-root`}>{label}</label>
-        <select id={`${id}-root`} className="sel !w-24" value={root} onChange={(e) => setRoot(Number(e.target.value))}>
-          {PC_NAMES.map((n, i) => <option key={i} value={i}>{n}</option>)}
-        </select>
-      </div>
-      <div className="field">
-        <label htmlFor={`${id}-qual`} className="sr-only">{label} quality</label>
-        <select id={`${id}-qual`} className="sel !w-36" value={qual} onChange={(e) => setQual(e.target.value as TriadQuality)}>
-          {QUALS.map((q) => <option key={q.id} value={q.id}>{q.label}</option>)}
-        </select>
-      </div>
-    </div>
+    <button type="button" onClick={onPick} aria-pressed={on}
+      className={`rounded-xl border p-2.5 text-left transition-colors duration-150 sm:p-3 ${
+        on ? "border-cream/80 bg-white/[0.06]" : "border-line bg-surface2 hover:border-cream/35"}`}>
+      <span className="flex flex-wrap items-baseline justify-between gap-x-2">
+        <span className="text-[18px] font-extrabold tracking-[-0.01em] sm:text-[19px]">
+          <span style={{ color: SHAPE_TONES[0].ink }}>{A.symbol}</span>
+          <span className="px-1 text-muted">+</span>
+          <span style={{ color: SHAPE_TONES[1].ink }}>{B.symbol}</span>
+        </span>
+        {pair.roman && <span className="shrink-0 font-mono text-[13px] text-muted">{pair.roman}</span>}
+      </span>
+      <span className="mt-1 flex flex-wrap items-baseline gap-x-1.5 font-mono text-[13px] sm:text-[14px]">
+        {pair.notes.map((n, i) => (
+          <span key={i} style={{ color: SHAPE_TONES[shapeOf(n)].ink }}>{notePretty(n)}</span>
+        ))}
+        {pair.removed && <span className="ml-1 text-red">no {notePretty(pair.removed)}</span>}
+      </span>
+      <span className="mt-1 block text-[14px] leading-snug text-cream/80">
+        {pair.name}
+        {pair.rootless && <span className="text-muted"> · floats</span>}
+        {!pair.stepwise && <span className="text-muted"> · voices cross</span>}
+      </span>
+    </button>
   );
 }

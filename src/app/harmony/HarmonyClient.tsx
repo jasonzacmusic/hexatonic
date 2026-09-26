@@ -75,7 +75,7 @@ export default function HarmonyClient() {
 
       <div id="harmony-panel" role="tabpanel" aria-labelledby={`tab-${tab}`}>
         {tab === "chords" && <ChordsTab />}
-        {tab === "pairs" && <PairAtlas />}
+        {tab === "pairs" && <PairAtlas onOpenSixth={() => choose("sixth")} />}
         {tab === "sixth" && <SixthDimTab />}
       </div>
     </div>
