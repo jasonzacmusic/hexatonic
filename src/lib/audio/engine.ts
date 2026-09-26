@@ -189,10 +189,14 @@ const sameVampPlan = (a: CompiledVamp, b: CompiledVamp) =>
  * [1, 3] — both whole beats — so the shift below could never fire and the swing
  * feel came out perfectly straight. Beat 2 plus an anticipation on the swung
  * "and of 4" is the standard two-feel comp and makes the shift audible. */
-const COMP: Record<string, { chord: number[]; bass: number[] }> = {
+/* 6/8 is six eighth-note beats in two groups of three. The old pattern
+ * ([0, 1, 2] and bass [0, 1.5]) was written for one group, so beats 4–6 of
+ * every bar were silent. The lilt is long–short in each half: a chord on the
+ * group's first beat and a lighter one on its third, the bass on 1 and 4. */
+export const COMP: Record<string, { chord: number[]; bass: number[] }> = {
   straight: { chord: [0, 1.5, 2.5], bass: [0, 2] },
   swing:    { chord: [1, 3.5],      bass: [0, 1, 2, 3] },
-  "68":     { chord: [0, 1, 2],     bass: [0, 1.5] },
+  "68":     { chord: [0, 2, 3, 5],  bass: [0, 3] },
 };
 
 type Scheduled = Map<AudioScheduledSourceNode, number>;
@@ -458,10 +462,18 @@ export class AudioEngine {
     this.track(o, when, into);
   }
 
+  /** One click per count-in beat, the first one strong. Heard whether or not
+   *  the running click is on: a count-in you cannot hear is only a silence. */
+  private countIn(t0: number, beats: number, beatDur: number) {
+    for (let i = 0; i < beats; i++) this.clickAt(t0 + i * beatDur, i === 0);
+  }
+
   /* ── the drill ──────────────────────────────────────────────────────── */
 
   async start(opts: PlaybackOptions): Promise<boolean> {
     const request = ++this.requestId;
+    // Two players never sound together: a drill replaces a running vamp too.
+    this.stopVamp(true);
     this.stopPlayback(true);
 
     const first = compileDrill(opts);
@@ -484,10 +496,9 @@ export class AudioEngine {
     const t0 = this.ctx.currentTime + 0.3;
     this.drill = new LiveTimeline(drillGrid, sameDrillMaterial, first, t0 + countIn);
     this.lastOrigin = this.drill.origin;
-    if (opts.click) {
-      for (let i = 0; i < opts.countInBeats; i++)
-        this.clickAt(t0 + i * opts.beatDur, i === 0);
-    }
+    // The count-in always sounds. With the click off it used to be a silent
+    // wait of a whole bar after Play, which reads as "Play is broken".
+    this.countIn(t0, opts.countInBeats, opts.beatDur);
     this.pump();
     this.timer = setInterval(() => this.pump(), TICK_MS);
     return true;
@@ -595,9 +606,7 @@ export class AudioEngine {
     const countIn = opts.countInBeats * opts.beatDur;
     const t0 = this.ctx.currentTime + 0.3;
     this.vamp = new LiveTimeline(vampGrid, sameVampMaterial, compileVamp(opts), t0 + countIn);
-    if (opts.click)
-      for (let i = 0; i < opts.countInBeats; i++)
-        this.clickAt(t0 + i * opts.beatDur, i === 0);
+    this.countIn(t0, opts.countInBeats, opts.beatDur);
 
     this.pumpVamp();
     this.vampTimer = setInterval(() => this.pumpVamp(), TICK_MS);
