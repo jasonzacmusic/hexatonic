@@ -47,7 +47,7 @@ describe("mode names are computed from the degrees", () => {
   it("the plain names are the agreed ones", () => {
     expect(DIATONIC_MODES.map((m) => m.name)).toEqual([
       "Major (no 4)", "Suspended (no 3rd)", "Dark minor (no 2)",
-      "Folk major (no 7)", "Minor (no 6)", "Phrygian (no 5th)",
+      "Sunday Scale (no 7)", "Minor (no 6)", "Phrygian (no 5th)",
     ]);
   });
 
@@ -121,8 +121,11 @@ describe("the sentences in the scale data are true", () => {
     expect(familyById("hijaz").note).toContain("maqam");
   });
 
-  it("#7: Messiaen mode 5 is gone", () => {
-    expect(FAMILIES.some((f) => f.id === "messiaen5")).toBe(false);
+  it("#7: Messiaen mode 5 is back, six notes, with a true note", () => {
+    const m = FAMILIES.find((f) => f.id === "messiaen5")!;
+    expect(m.size).toBe(6);
+    expect(m.note).toMatch(/other is the whole-tone scale/);
+    expect(buildScale("C", "messiaen5", 0).pcs).toEqual([0, 1, 5, 6, 7, 11]);
   });
 
   it("the augmented note: 3 major, 3 minor triads, no dominant 7th, three perfect 5ths", () => {
@@ -269,8 +272,8 @@ describe("groups", () => {
       for (const f of familiesIn(g)) expect(f.size, f.id).toBe(6);
   });
 
-  it("Prometheus, the Japanese pentatonics and Hijaz sit under 'Beyond six notes'", () => {
-    expect(familiesIn("beyond").map((f) => f.id)).toEqual(
-      ["prometheus", "hirajoshi", "insen", "iwato", "kumoi", "yo", "hijaz"]);
+  it("Prometheus, Petrushka and Messiaen 5 are 'Colour scales'; the Japanese scales and Hijaz are 'World scales'", () => {
+    expect(familiesIn("colour").map((f) => f.id)).toEqual(["prometheus", "petrushka", "messiaen5"]);
+    expect(familiesIn("beyond").map((f) => f.id)).toEqual(["hirajoshi", "insen", "iwato", "kumoi", "yo", "hijaz"]);
   });
 });

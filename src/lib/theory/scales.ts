@@ -113,13 +113,13 @@ export const DIATONIC_MODES: ModeDef[] = [
   },
   {
     index: 3,
-    name: "Folk major (no 7)",
+    name: "Sunday Scale (no 7)",
     modal: "Ionian/Mixolydian hexatonic",
     character: "warm",
     colour: "No 7th, so there is no leading note pulling upward; plain, singable major.",
     aka: [
+      "Folk major (no 7)",
       "Ionian/Mixolydian hexatonic",
-      "Sunday Scale (Peter Martin / Open Studio)",
       "Guidonian hexachord",
     ],
     degrees: "1 2 3 4 5 6",
@@ -168,7 +168,7 @@ export type FamilyKind = "rotation" | "omit" | "omitMulti" | "fixed" | "symmetri
  *   reference   — data other screens need (Harmony's triad pairs, octatonics)
  */
 export type FamilyGroup =
-  | "remove" | "pentatonic" | "symmetric" | "custom" | "beyond" | "compare" | "reference";
+  | "remove" | "pentatonic" | "symmetric" | "colour" | "custom" | "beyond" | "compare" | "reference";
 
 export const FAMILY_GROUPS: { id: FamilyGroup; label: string; blurb: string }[] = [
   { id: "remove", label: "Remove one note",
@@ -177,9 +177,11 @@ export const FAMILY_GROUPS: { id: FamilyGroup; label: string; blurb: string }[] 
     blurb: "Take a five-note scale and add one note." },
   { id: "symmetric", label: "Symmetric",
     blurb: "Two identical halves. The pattern repeats inside the octave." },
+  { id: "colour", label: "Colour scales",
+    blurb: "Six-note sounds from composers: mystic, clashing, eerie." },
   { id: "custom", label: "Custom", blurb: "Pick any notes you like." },
-  { id: "beyond", label: "Beyond six notes",
-    blurb: "Other sounds worth knowing, for reference." },
+  { id: "beyond", label: "World scales (5 and 7 notes)",
+    blurb: "Japanese pentatonics and Hijaz: not six notes, but close relatives worth playing." },
   { id: "compare", label: "Compare with", blurb: "The five- and seven-note parents." },
   { id: "reference", label: "Reference", blurb: "Used by the Harmony pages." },
 ];
@@ -261,20 +263,27 @@ export const FAMILIES: Family[] = [
   {
     id: "prometheus", short: "Prometheus",
     label: "Prometheus (Scriabin)", kind: "fixed", size: 6,
-    group: "beyond", character: "mystic", mixOk: true,
+    group: "colour", character: "mystic", mixOk: true,
     semis: [0, 2, 4, 6, 9, 10], letters: [0, 1, 2, 3, 5, 6],
     note: "Scriabin's synthetic harmony. 'Mystic chord' was coined by Arthur Eaglefield Hull in 1916; Scriabin never used the term.",
   },
   {
-    id: "petrushka", short: "Tritone pair",
-    label: "Tritone pair (Petrushka): two major triads a tritone apart", kind: "fixed", size: 6,
-    group: "reference", character: "clash", mixOk: true,
+    id: "petrushka", short: "Petrushka (tritone pair)",
+    label: "Petrushka: two major triads a tritone apart", kind: "fixed", size: 6,
+    group: "colour", character: "clash", mixOk: true,
     semis: [0, 1, 4, 6, 7, 10],
     /* Spelled so the second triad reads as a triad: on C that is C + F♯
        (C C♯ E F♯ G A♯) or C + G♭ (C D♭ E G♭ G B♭). Never C D♭ E F♯ G B♭,
        where D♭ and B♭ do not belong to an F♯ chord. */
     letters: [0, 0, 2, 3, 4, 5], letterAlts: [[0, 1, 2, 4, 4, 6]],
     note: "Two major triads a tritone apart, stacked: the Petrushka chord. Two major triads share no note only a semitone, a whole step or a tritone apart. The semitone pair gives 1 ♭2 3 4 5 ♭6, the whole-step pair gives 1 2 3 ♯4 5 6, and the tritone pair gives this one.",
+  },
+  {
+    id: "messiaen5", short: "Messiaen mode 5",
+    label: "Messiaen mode 5 (a mode of limited transposition)", kind: "fixed", size: 6,
+    group: "colour", character: "eerie", mixOk: true,
+    semis: [0, 1, 5, 6, 7, 11], letters: [0, 1, 3, 4, 4, 6],
+    note: "One of Messiaen's two six-note modes of limited transposition; the other is the whole-tone scale. Two semitone-and-fourth cells a tritone apart, so it has only six transpositions.",
   },
   {
     id: "dim-wh", short: "Octatonic (whole–half)",
