@@ -38,8 +38,8 @@ describe("the two hexatonic gaps we filled", () => {
     expect(legal).toContain(6); // the tritone — Petrushka's case
   });
 
-  it("Messiaen mode 5 is not in the app any more", () => {
-    expect(familyById("messiaen5").id).toBe("diatonic"); // unknown ids fall back
+  it("Messiaen mode 5 is in the app, spelled C D♭ F G♭ G B on C", () => {
+    expect(familyById("messiaen5").id).toBe("messiaen5");
   });
 });
 
