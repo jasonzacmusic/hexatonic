@@ -16,6 +16,7 @@
 
 import { midi, Note } from "../theory/note";
 import { Grid, LiveTimeline, Step } from "./timeline";
+import { installAudioUnlock } from "./unlock";
 
 const SAMPLES: Record<number, string> = {
   36: "C2", 39: "Ds2", 42: "Fs2", 45: "A2",
@@ -77,6 +78,13 @@ export interface DrillPosition {
   rev: number;
 }
 
+/** iOS can leave resume() pending forever when it is not allowed to start.
+ *  Play must never hang on that: after this long it reports "blocked". */
+const RESUME_TIMEOUT_MS = 1500;
+/** A tapped chord should sound like the piano, not the stand-in synth. On the
+ *  very first tap the few files it needs usually arrive well inside this. */
+const PREVIEW_SAMPLE_WAIT_MS = 1200;
+const DRILL_SAMPLE_WAIT_MS = 900;
 const LOOKAHEAD = 3.0;
 const TICK_MS = 400;
 /** The earliest a live change may land: enough to schedule the seam cleanly. */
@@ -201,6 +209,15 @@ export const COMP: Record<string, { chord: number[]; bass: number[] }> = {
 
 type Scheduled = Map<AudioScheduledSourceNode, number>;
 
+const SAMPLE_KEYS = Object.keys(SAMPLES).map(Number);
+/** The sample file a note is pitched from: the nearest one recorded. */
+const sampleFor = (m: number) => {
+  let nearest = SAMPLE_KEYS[0];
+  for (const key of SAMPLE_KEYS)
+    if (Math.abs(m - key) < Math.abs(m - nearest)) nearest = key;
+  return nearest;
+};
+
 export class AudioEngine {
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
@@ -243,7 +260,7 @@ export class AudioEngine {
   get fallbackNoteCount() { return this.fallbackNotes; }
 
   private ensureContext() {
-    if (this.ctx) return;
+    if (this.ctx && this.ctx.state !== "closed") return;
     const Ctor = window.AudioContext ?? (window as any).webkitAudioContext;
     if (!Ctor) throw new Error("Web Audio is not supported in this browser.");
     this.ctx = new Ctor();
@@ -263,15 +280,23 @@ export class AudioEngine {
   private beginSampleLoading(priorityMidis: number[] = []) {
     if (!this.ctx) return;
     const keys = Object.keys(SAMPLES).map(Number);
-    const priority = new Set<number>();
-    for (const m of priorityMidis) {
-      let nearest = keys[0];
-      for (const key of keys)
-        if (Math.abs(m - key) < Math.abs(m - nearest)) nearest = key;
-      priority.add(nearest);
-    }
+    const priority = new Set(priorityMidis.map(sampleFor));
     const ordered = [...priority, ...keys.filter((key) => !priority.has(key))];
     for (const key of ordered) this.loadSample(key);
+  }
+
+  /** Wait, at most `ms`, for the sample files these notes need. */
+  private async samplesFor(midis: number[], ms: number) {
+    const waits = [...new Set(midis.map(sampleFor))]
+      .map((key) => this.samplePromises.get(key))
+      .filter((p): p is Promise<void> => !!p);
+    if (!waits.length) return;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    await Promise.race([
+      Promise.allSettled(waits),
+      new Promise<void>((r) => { timer = setTimeout(r, ms); }),
+    ]);
+    if (timer) clearTimeout(timer);
   }
 
   private loadSample(key: number) {
@@ -282,7 +307,7 @@ export class AudioEngine {
       try {
         const res = await fetch(`${this.sampleBasePath}/${name}.mp3`, { cache: "force-cache" });
         if (!res.ok) throw new Error(`sample ${name} failed (${res.status})`);
-        const decoded = await this.ctx!.decodeAudioData(await res.arrayBuffer());
+        const decoded = await this.decode(await res.arrayBuffer());
         this.buffers.set(key, decoded);
         this.failedSamples.delete(key);
       } catch {
@@ -294,6 +319,35 @@ export class AudioEngine {
       }
     })();
     this.samplePromises.set(key, task);
+  }
+
+  /** decodeAudioData in both forms at once. Older Safari only calls the
+   *  callbacks and returns nothing; newer browsers return a promise too.
+   *  Whichever answers first wins. */
+  private decode(data: ArrayBuffer): Promise<AudioBuffer> {
+    const ctx = this.ctx!;
+    return new Promise<AudioBuffer>((resolve, reject) => {
+      let done = false;
+      const ok = (b: AudioBuffer) => { if (!done) { done = true; resolve(b); } };
+      const bad = (e?: unknown) => { if (!done) { done = true; reject(e ?? new Error("decode failed")); } };
+      try {
+        const p = ctx.decodeAudioData(data, ok, bad) as Promise<AudioBuffer> | undefined;
+        if (p && typeof p.then === "function") p.then(ok, bad);
+      } catch (e) {
+        bad(e);
+      }
+    });
+  }
+
+  /**
+   * Called from the first tap anywhere on the page (see ./unlock.ts), inside
+   * the event handler: create the context, resume it before anything awaits,
+   * and start fetching the piano so the first Play is already the piano.
+   */
+  warm() {
+    this.ensureContext();
+    void this.resume();
+    this.beginSampleLoading();
   }
 
   /** Test/diagnostic hook: playback never waits on this. */
@@ -330,17 +384,32 @@ export class AudioEngine {
     oscillator.stop(now + 0.008);
   }
 
-  /** Resume after a tab-visibility change — the AudioContext suspend trap. */
+  /**
+   * Resume a suspended or "interrupted" context (tab switch, phone call, Siri,
+   * lock screen). resume() is CALLED synchronously, so inside a tap iOS counts
+   * it as part of the gesture; only the waiting is asynchronous, and it is
+   * capped so a refusal can never leave Play spinning.
+   */
   async resume(): Promise<boolean> {
-    if (!this.ctx) return false;
+    const ctx = this.ctx;
+    if (!ctx) return false;
+    if (ctx.state === "running") return true;
+    let pending: Promise<void> | undefined;
     try {
       this.unlock();
-      if (this.ctx.state !== "running")
-        await this.ctx.resume();
+      pending = ctx.resume?.();
     } catch {
       return false;
     }
-    return this.ctx.state === "running";
+    if (pending && typeof pending.then === "function") {
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      await Promise.race([
+        pending.catch(() => {}),
+        new Promise<void>((r) => { timer = setTimeout(r, RESUME_TIMEOUT_MS); }),
+      ]);
+      if (timer) clearTimeout(timer);
+    }
+    return (ctx.state as string) === "running";
   }
 
   private nearest(m: number): { key: number; distance: number } | null {
@@ -382,7 +451,7 @@ export class AudioEngine {
     oscillator.type = "triangle";
     oscillator.frequency.value = 440 * Math.pow(2, (m - 69) / 12);
     gain.gain.setValueAtTime(0.0001, when);
-    gain.gain.exponentialRampToValueAtTime(Math.max(0.02, vel * 0.2), when + 0.006);
+    gain.gain.exponentialRampToValueAtTime(Math.max(0.03, vel * 0.32), when + 0.006);
     gain.gain.exponentialRampToValueAtTime(0.0001, end);
     oscillator.connect(gain);
     gain.connect(this.master);
@@ -419,6 +488,7 @@ export class AudioEngine {
   async preview(midis: number[], spread = 0.055, velocity = 0.7): Promise<boolean> {
     const request = ++this.previewId;
     await this.init("/audio/salamander", midis);
+    await this.samplesFor(midis, PREVIEW_SAMPLE_WAIT_MS);
     if (request !== this.previewId || !this.ctx) return false;
     if (this.master) {
       const now = this.ctx.currentTime;
@@ -436,6 +506,7 @@ export class AudioEngine {
   async previewChords(chords: number[][], gap = 0.9, velocity = 0.62): Promise<boolean> {
     const request = ++this.previewId;
     await this.init("/audio/salamander", chords.flat());
+    await this.samplesFor(chords.flat(), PREVIEW_SAMPLE_WAIT_MS);
     if (request !== this.previewId || !this.ctx) return false;
     if (this.master) {
       const now = this.ctx.currentTime;
@@ -477,7 +548,11 @@ export class AudioEngine {
     this.stopPlayback(true);
 
     const first = compileDrill(opts);
-    await this.init("/audio/salamander", first.steps.flatMap((s) => s ?? []));
+    const needed = first.steps.flatMap((s) => s ?? []);
+    await this.init("/audio/salamander", needed);
+    // With no count-in to cover the download, give the first notes a moment to
+    // be the piano rather than the stand-in synth. Never more than a moment.
+    if (opts.countInBeats * opts.beatDur < 1) await this.samplesFor(needed, DRILL_SAMPLE_WAIT_MS);
     if (request !== this.requestId || !this.ctx || !first.steps.length) return false;
 
     // stopPlayback deliberately faded the previous run. Restore before the
@@ -733,6 +808,12 @@ export class AudioEngine {
 
 let singleton: AudioEngine | null = null;
 export const getAudio = (): AudioEngine => (singleton ??= new AudioEngine());
+
+// iPad and iPhone: the first tap anywhere starts the audio, the Silent switch
+// is worked round, and a context interrupted by a call or a tab switch comes
+// back. Installed once per page, in the browser only.
+if (typeof window !== "undefined")
+  installAudioUnlock({ wake: () => getAudio().warm(), context: () => getAudio().context });
 
 /** Fire-and-forget UI preview with no unhandled rejection in click handlers. */
 export async function previewAudio(
