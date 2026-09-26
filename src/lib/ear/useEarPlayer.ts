@@ -26,6 +26,8 @@ export interface EarPlayer {
   error: string | null;
   /** what is lit right now (row + chips), from the audio clock */
   lit: Mark | null;
+  /** the MIDI notes of the lit event, for the keyboard and the ring */
+  sounding: number[];
   /** the current phase label ("Setting the key", "Listen", "Your pick: …") */
   phase: string | null;
   /** a melody note is sounding right now */
@@ -41,6 +43,7 @@ const TAIL = 1.1;
 
 export function useEarPlayer(): EarPlayer {
   const [lit, setLit] = useState<Mark | null>(null);
+  const [sounding, setSounding] = useState<number[]>([]);
   const [phase, setPhase] = useState<string | null>(null);
   const [pulse, setPulse] = useState(0);
   const [tag, setTag] = useState<string | null>(null);
@@ -54,6 +57,7 @@ export function useEarPlayer(): EarPlayer {
     raf.current = null;
     shown.current = "";
     setLit(null);
+    setSounding([]);
     setPhase(null);
     setTag(null);
   }, []);
@@ -85,6 +89,10 @@ export function useEarPlayer(): EarPlayer {
       const ctx = a.context;
       if (!guard() || !ctx) return false;
       const t0 = ctx.currentTime + 0.12;
+      /* For headless checks only: a page that defines window.__hxEarLog gets
+         every scheduled note. Nothing is logged otherwise. */
+      const log = (window as any).__hxEarLog;
+      if (Array.isArray(log)) log.push({ tag: id, at: t0, events: program.events, phases: program.phases });
       for (const e of program.events)
         e.midis.forEach((m, j) => a.note(m, t0 + e.at + j * (e.spread ?? 0), e.dur, e.vel));
 
@@ -94,10 +102,11 @@ export function useEarPlayer(): EarPlayer {
         if (!guard()) return;
         const now = ctx.currentTime - t0;
         let m: Mark | null = null;
+        let notes: number[] = [];
         for (const e of marked) {
           if (e.at > now) break;
           const len = e.dur + (e.spread ?? 0) * (e.midis.length - 1);
-          if (now < e.at + Math.min(len, 0.9)) m = e.mark!;
+          if (now < e.at + Math.min(len, 0.9)) { m = e.mark!; notes = e.midis; }
         }
         let p = 0;
         for (let i = 0; i < melody.length; i++) {
@@ -110,6 +119,7 @@ export function useEarPlayer(): EarPlayer {
         if (key !== shown.current) {
           shown.current = key;
           setLit(m);
+          setSounding(notes);
           setPulse(p);
           setPhase(ph);
         }
@@ -123,5 +133,5 @@ export function useEarPlayer(): EarPlayer {
 
   useEffect(() => () => { if (raf.current) cancelAnimationFrame(raf.current); }, []);
 
-  return { playing, loading, error, lit, phase, pulse, tag, play, stop: end };
+  return { playing, loading, error, lit, sounding, phase, pulse, tag, play, stop: end };
 }

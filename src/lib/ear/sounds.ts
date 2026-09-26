@@ -24,7 +24,8 @@ export interface SoundDef {
   hint: string;
   /** family id in src/lib/theory/scales.ts */
   family: string;
-  /** semitones above the tonic, ascending, starting at 0 */
+  /** semitones above the tonic, ascending, starting at 0 (six notes, or five
+   *  for the two world scales) */
   semis: number[];
   /** what gives this sound its colour; {n} is replaced by the degree and note */
   tell: string;
@@ -44,7 +45,7 @@ export const SOUNDS: SoundDef[] = [
     tellSemis: [4, 11], quality: "major",
   },
   {
-    id: "folk", label: "Folk major (no 7)", hint: "plain, sunny",
+    id: "folk", label: "Sunday Scale (no 7)", hint: "warm, singable",
     family: "diatonic", semis: [0, 2, 4, 5, 7, 9],
     tell: "The {4} makes it major. There is no 7th, so nothing leans up into the tonic.",
     tellSemis: [4], quality: "major",
@@ -110,6 +111,20 @@ export const SOUNDS: SoundDef[] = [
     family: "prometheus", semis: [0, 2, 4, 6, 9, 10],
     tell: "Whole steps up to the {6}, then the {9} and {10} a half step apart. No 5th above the tonic.",
     tellSemis: [6, 9, 10], quality: null,
+  },
+
+  /* two five-note world scales, for the hardest family level */
+  {
+    id: "hirajoshi", label: "Hirajoshi", hint: "koto",
+    family: "hirajoshi", semis: [0, 2, 3, 7, 8],
+    tell: "Five notes, two half steps: the {2} to the {3}, and the 5 to the {8}, each followed by a leap.",
+    tellSemis: [3, 8], quality: null,
+  },
+  {
+    id: "insen", label: "In sen", hint: "sombre",
+    family: "insen", semis: [0, 1, 5, 7, 10],
+    tell: "Five notes. The {1} sits a half step above the tonic, and there is no 3rd at all.",
+    tellSemis: [1], quality: null,
   },
 ];
 
@@ -227,11 +242,15 @@ export function spellSound(key: string, def: SoundDef): Spelled {
   const tries = [key, ENHARMONIC[key]].filter(Boolean) as string[];
   let best: Spelled | null = null;
   let bestCost = Infinity;
-  const consider = (k: string, notes: Note[] | null) => {
+  /* The key's name is read off the spelled tonic, never assumed from the
+     request: buildScale may hand back D♭ as C♯, and the game must then say
+     "C♯", not "D♭" over C♯ E F♯. */
+  const consider = (_k: string, notes: Note[] | null) => {
     if (!notes || notes.length !== def.semis.length) return;
     if (notes.map((n) => rel(notes[0], n)).join() !== def.semis.join()) return;
-    const cost = readingCost(notes, k !== key);
-    if (cost < bestCost) { bestCost = cost; best = { key: k, notes, midis: normalise(notes.map(midi)) }; }
+    const name = tonicName(notes[0]);
+    const cost = readingCost(notes, name !== key);
+    if (cost < bestCost) { bestCost = cost; best = { key: name, notes, midis: normalise(notes.map(midi)) }; }
   };
   for (const k of tries) {
     const own = spellFamily(k, def);
@@ -243,6 +262,9 @@ export function spellSound(key: string, def: SoundDef): Spelled {
   if (best) return best;
   throw new Error(`${def.id} cannot be spelled on ${key}`);
 }
+
+/** "C#", "Db", "G": the key name of a spelled tonic, in the app's ASCII form. */
+const tonicName = (n: Note) => `${n.letter}${n.alt > 0 ? "#".repeat(n.alt) : "b".repeat(-n.alt)}`;
 
 /** Seven-note parent scales for the missing-note game. */
 export const PARENTS = {
