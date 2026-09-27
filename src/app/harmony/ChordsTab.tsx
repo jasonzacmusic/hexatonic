@@ -589,7 +589,7 @@ function ChordTrees({ under, sound, lit, fnOf, bySymbol }: {
           <div className="absolute left-1/2 top-1/2 grid h-[24%] w-[24%] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-2 border-cream bg-surface2">
             <span className="text-center">
               <span className="block text-[28px] font-black leading-none text-cream">{melody}</span>
-              <span className="mt-1 block font-mono text-[11px] uppercase tracking-[0.08em] text-muted">melody</span>
+              <span className="mt-1 block font-mono text-[12px] uppercase tracking-[0.08em] text-muted">melody</span>
             </span>
           </div>
           {branches.map((u, i) => {
@@ -606,7 +606,7 @@ function ChordTrees({ under, sound, lit, fnOf, bySymbol }: {
                       className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-lg border border-t-2 px-2 py-1 text-center transition-colors ${
                         on ? "border-gold bg-gold text-[#17130a]" : "bg-surface text-cream"}`}>
                 <span className="block whitespace-nowrap text-[15px] font-bold leading-tight">{chordName(rename(u.symbol).split(" = ")[0])}</span>
-                <span className={`block whitespace-nowrap font-mono text-[11px] ${on ? "text-[#2A2208]" : "text-muted"}`}>
+                <span className={`block whitespace-nowrap font-mono text-[12px] ${on ? "text-[#2A2208]" : "text-muted"}`}>
                   {melody} = {role(u)}
                 </span>
               </button>
