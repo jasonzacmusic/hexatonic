@@ -91,7 +91,13 @@ export default function PracticeClient() {
       const t = e.target as HTMLElement;
       if (["INPUT", "SELECT", "TEXTAREA"].includes(t.tagName)) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
-      if (e.code === "Space") { e.preventDefault(); toggle(); }
+      if (e.code === "Space") {
+        /* A focused control is activated by its own Space press; the global
+           toggle only fires when focus rests on noninteractive page space. */
+        if (t.closest?.('button, a[href], summary, [role="button"], [tabindex]:not([tabindex="-1"])')) return;
+        e.preventDefault();
+        toggle();
+      }
       if (e.key === "l") set("loop", !state.loop);
       if (e.key === "c") set("click", !state.click);
       if (e.key === "d") set("drone", !state.drone);
@@ -571,7 +577,14 @@ function Transport({
         <div className="flex min-w-0 flex-col gap-1.5">
           <span className="whitespace-nowrap font-mono text-[13px] uppercase tracking-[0.06em] text-muted">
             {counting ? "Count in" : (
-              <>Bar <span className="text-[16px] font-bold text-cream">{pos ? pos.bar : "–"}</span> of {bars}</>
+              <>
+                Bar <span className="text-[16px] font-bold text-cream">{pos ? pos.bar : "–"}</span>
+                {/* phones get the compact "3/12" so the tempo buttons never collide;
+                    screen readers keep the full wording at every size */}
+                <span aria-hidden className="sm:hidden">/{bars}</span>
+                <span aria-hidden className="hidden sm:inline"> of {bars}</span>
+                <span className="sr-only"> of {bars}</span>
+              </>
             )}
             {pos?.pending && (
               <span className="ml-2 hidden normal-case tracking-normal text-cream/80 sm:inline lg:hidden">· new setting next bar</span>
