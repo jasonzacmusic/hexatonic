@@ -13,6 +13,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import MovementLab from "@/components/MovementLab";
+import PairBoard from "@/components/PairBoard";
 import { useSharedScale } from "@/lib/sharedScale";
 import { SHAPE_TONES } from "@/components/PairKeyboard";
 import { Seg } from "@/components/Panels";
@@ -132,6 +133,7 @@ export default function PairAtlas({ onOpenSixth }: { onOpenSixth?: () => void })
         </p>
       </section>
 
+      {lab && <PairBoard pair={lab.pair} />}
       {lab && <MovementLab pair={lab.pair} source={lab.source} />}
     </div>
   );

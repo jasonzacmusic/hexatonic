@@ -18,6 +18,7 @@ import { FUNCTION_LABEL, HarmonicFunction, harmonicFunction, romanNumeral, triad
 import { previewAudio } from "@/lib/audio/engine";
 import CustomBuilder from "@/components/CustomBuilder";
 import MidiPanel from "@/components/MidiPanel";
+import SplashToggle from "@/components/SplashToggle";
 import Fretboard from "@/components/Fretboard";
 import KeyChips, { prettyKey, stepKey } from "./KeyChips";
 import { ROUTINES, SPEEDS, stepState } from "./routines";
@@ -201,7 +202,7 @@ export default function PracticeClient() {
       <Keyboard scale={scale.notes} removed={scale.removed}
                 activeMidi={d.activeMidi} startMidi={range.start} octaves={range.octaves}
                 height={big ? (narrow ? 130 : 150) : sideBySide ? 104 : narrow ? 104 : 120} showLabels keyWidth={keyWidth(big)}
-                onNote={(m) => { void previewAudio([m]); }} />
+                onNote={(m) => { void previewAudio([m]); }} splash />
     </div>
   ) : (
     <div className="overflow-x-auto">
@@ -660,6 +661,7 @@ function Legend() {
       <span><i className="mr-1.5 inline-block h-2.5 w-2.5 rounded-sm bg-red align-middle" />missing note</span>
       <span><i className="mr-1.5 inline-block h-1 w-3 rounded-full bg-[#79C2A5] align-middle" />root</span>
       <span>&gt; accent</span>
+      <SplashToggle className="!py-0.5" />
     </div>
   );
 }
@@ -748,7 +750,7 @@ function MoreAbout({ d }: { d: Drill }) {
         </div>
         <div className="hidden justify-center lg:flex">
           <ScaleRing notes={scale.notes} removed={scale.removed}
-                     activePc={d.activeNote ? pc(d.activeNote) : null} size={200} />
+                     activePc={d.activeNote ? pc(d.activeNote) : null} size={200} splash />
         </div>
       </div>
     </details>

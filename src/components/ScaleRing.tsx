@@ -27,7 +27,19 @@
  */
 
 import { Note, pc, notePretty } from "@/lib/theory/note";
+import { augTriangles, fifthsSlot } from "@/lib/theory/board";
+import { useSplashes } from "@/lib/splash";
+import SplashMark from "@/components/SplashMark";
 import { ReactNode, useEffect, useId, useRef, useState } from "react";
+
+/** Chromatic: one semitone per step. Fifths: one perfect fifth per step. */
+export type RingLayout = "chromatic" | "fifths";
+
+/** The four augmented triangles' own colours (C E G♯, G B D♯, D F♯ A♯, A C♯ E♯).
+ *  None is gold, red or the root green. */
+export const TRIANGLE_INK = ["#E0894F", "#A58CF2", "#D97BC0", "#62B0E0"] as const;
+/** Triad A of a pair is circled, triad B is pointed at: the pair colours. */
+export const PAIR_INK = { a: "#8DBDEB", b: "#79CFAC" } as const;
 
 export const RING_SIZES = { sm: 112, md: 220, lg: 340 } as const;
 export type RingSize = keyof typeof RING_SIZES;
@@ -47,6 +59,16 @@ export interface ScaleRingProps {
   className?: string;
   /** Drawn in the centre of the ring. */
   children?: ReactNode;
+  /** Chromatic clock (default) or the circle of fifths. Changing it glides. */
+  layout?: RingLayout;
+  /** On the circle of fifths, draw the four augmented triangles (the star)
+   *  and light the ones inside this scale. */
+  augStar?: boolean;
+  /** The board marks for a triad pair: pitch classes of triad A (circled)
+   *  and triad B (pointed at with an arrow). */
+  marks?: { a: number[]; b: number[] } | null;
+  /** Splash a played note that is outside the scale. */
+  splash?: boolean;
 }
 
 /** Everything is drawn in a 200-unit box and scaled. */
@@ -76,6 +98,7 @@ export function ringPositions(notes: Note[]): number[] {
 export function ScaleRing({
   notes, removed, activePc = null, size = "md",
   showLabels, spin = false, morph = true, className = "", children,
+  layout = "chromatic", augStar = false, marks = null, splash = false,
 }: ScaleRingProps) {
   const uid = useId().replace(/:/g, "");
   const px = typeof size === "number" ? size : RING_SIZES[size];
@@ -89,7 +112,8 @@ export function ScaleRing({
   const dotR = Math.max(V * 0.03, 3.2 * unit);
 
   const rootPc = notes.length ? pc(notes[0]) : 0;
-  const target = ringPositions(notes);
+  const slotOf = (rel: number) => (layout === "fifths" ? fifthsSlot(rel) : rel);
+  const target = ringPositions(notes).map(slotOf);
   const targetKey = target.join(",");
 
   /* ── the morph ────────────────────────────────────────────────────── */
@@ -104,17 +128,20 @@ export function ScaleRing({
     const to = targetKey ? targetKey.split(",").map(Number) : [];
     const reduce = typeof window !== "undefined" &&
       window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    const same = from.length === to.length && from.every((v, i) => Math.abs(v - to[i]) < 1e-3);
+    const same = from.length === to.length && from.every((v, i) => Math.abs(((v - to[i]) % 12 + 12) % 12) < 1e-3);
     if (same) { shown.current = to; setDrawn(to); setMoving(false); return; }
     if (!morph || reduce || from.length !== to.length) {
       shown.current = to; setDrawn(to); setMoving(false); return;
     }
     const t0 = performance.now();
     setMoving(true);
+    /* each corner goes the short way round the circle */
+    const delta = to.map((v, i) => { let d = (((v - from[i]) % 12) + 12) % 12; if (d > 6) d -= 12; return d; });
+    const span = MORPH_MS * (Math.max(...delta.map(Math.abs)) > 3 ? 1.6 : 1);
     const tick = (now: number) => {
-      const t = Math.min(1, (now - t0) / MORPH_MS);
+      const t = Math.min(1, (now - t0) / span);
       const k = ease(t);
-      const cur = to.map((v, i) => from[i] + (v - from[i]) * k);
+      const cur = t < 1 ? from.map((v, i) => v + delta[i] * k) : to;
       shown.current = cur;
       setDrawn(cur);
       if (t < 1) raf.current = requestAnimationFrame(tick);
@@ -138,12 +165,18 @@ export function ScaleRing({
 
   const scalePcs = notes.map(pc);
   const removedPc = removed ? pc(removed) : -1;
-  const poly = rels.map((r) => at(r)).map(({ x, y }) => `${x},${y}`).join(" ");
+  /* joined round the circle, so on the circle of fifths the shape is the
+     arc of fifths the scale covers, not a tangle */
+  const m12 = (v: number) => ((v % 12) + 12) % 12;
+  const poly = [...rels].sort((a, b) => m12(a) - m12(b)).map((r) => at(r)).map(({ x, y }) => `${x},${y}`).join(" ");
+  const splashes = useSplashes(splash, scalePcs, removedPc);
+  const tris = layout === "fifths" && augStar && notes.length ? augTriangles(notes) : [];
+  const markSet = marks ? { a: new Set(marks.a), b: new Set(marks.b) } : null;
 
   /* the two notes either side of the gap, going clockwise */
   const gap = (() => {
     if (removedPc < 0 || !notes.length) return null;
-    const g = relOf(removedPc, rootPc);
+    const g = slotOf(relOf(removedPc, rootPc));
     const sorted = [...target].sort((a, b) => a - b);
     const before = [...sorted].reverse().find((r) => r < g) ?? sorted[sorted.length - 1];
     const after = sorted.find((r) => r > g) ?? sorted[0];
@@ -192,8 +225,66 @@ export function ScaleRing({
         {rels.length > 2 && (
           <polygon points={poly} fill={`url(#fill${uid})`}
                    stroke={`url(#edge${uid})`} strokeWidth={Math.max(1.5, 1.6 * unit)}
-                   strokeLinejoin="round" />
+                   strokeLinejoin="round" opacity={tris.length ? 0.55 : 1} />
         )}
+
+        {/* THE STAR: four augmented triads, each an equilateral triangle on the
+            circle of fifths. The ones inside the scale are drawn strong, one
+            after another; the rest stay faint so the whole star still shows. */}
+        {!moving && tris.map((t, k) => {
+          const pts = t.pcs.map((p) => at(slotOf(relOf(p, rootPc)), R));
+          const order = tris.filter((x) => x.inScale).indexOf(t);
+          return (
+            <polygon key={`${targetKey}-${t.index}`} pathLength={1}
+                     points={pts.map(({ x, y }) => `${x},${y}`).join(" ")}
+                     fill={TRIANGLE_INK[t.index]} fillOpacity={t.inScale ? 0.1 : 0}
+                     stroke={TRIANGLE_INK[t.index]} strokeOpacity={t.inScale ? 0.95 : 0.28}
+                     strokeWidth={Math.max(1, (t.inScale ? 1.7 : 1) * unit)} strokeLinejoin="round"
+                     className="hx-draw"
+                     style={{ animationDelay: `${(t.inScale ? order : 2 + k) * 150}ms` }}>
+              <title>{`${t.name}: an augmented triad${t.inScale ? ", inside this scale" : ""}`}</title>
+            </polygon>
+          );
+        })}
+
+        {/* THE BOARD MARKS for a triad pair: triad A circled, triad B pointed at */}
+        {markSet && !moving && notes.map((n, i) => {
+          const p = pc(n);
+          const rel = rels[i] ?? 0;
+          const deg = (rel / 12) * 360 - 90;
+          if (markSet.a.has(p)) {
+            const span = labels ? dotR + font * 0.95 : 0;
+            const c = at(rel, R + span * 0.5);
+            const rx = span * 0.5 + (labels ? font * 0.95 : dotR * 2);
+            const ry = labels ? font * 0.92 : dotR * 2;
+            return (
+              <g key={`oa${i}`} className="hx-mark" style={{ animationDelay: `${i * 40}ms` }}>
+                {/* the rotation sits on the ellipse, the CSS entrance on the group:
+                    a CSS transform would override the SVG one */}
+                <ellipse cx={c.x} cy={c.y} rx={rx} ry={ry}
+                         transform={`rotate(${round(deg)} ${c.x} ${c.y})`}
+                         fill={PAIR_INK.a} fillOpacity={0.14} stroke={PAIR_INK.a} strokeOpacity={0.85}
+                         strokeWidth={Math.max(1, 1.3 * unit)} />
+              </g>
+            );
+          }
+          if (markSet.b.has(p)) {
+            const tip = at(rel, R - dotR * 1.9);
+            const tail = at(rel, R - dotR * 5.4);
+            const a = (rel / 12) * Math.PI * 2 - Math.PI / 2;
+            const h = dotR * 1.05;
+            const l = { x: round(tip.x - h * Math.cos(a) + h * 0.8 * Math.cos(a + Math.PI / 2)), y: round(tip.y - h * Math.sin(a) + h * 0.8 * Math.sin(a + Math.PI / 2)) };
+            const r2 = { x: round(tip.x - h * Math.cos(a) - h * 0.8 * Math.cos(a + Math.PI / 2)), y: round(tip.y - h * Math.sin(a) - h * 0.8 * Math.sin(a + Math.PI / 2)) };
+            return (
+              <g key={`ab${i}`} className="hx-mark" style={{ animationDelay: `${i * 40}ms` }}
+                 stroke={PAIR_INK.b} strokeWidth={Math.max(1.2, 1.5 * unit)} strokeLinecap="round" fill="none">
+                <line x1={tail.x} y1={tail.y} x2={tip.x} y2={tip.y} />
+                <polyline points={`${l.x},${l.y} ${tip.x},${tip.y} ${r2.x},${r2.y}`} strokeLinejoin="round" />
+              </g>
+            );
+          }
+          return null;
+        })}
 
         {/* THE NOTE THAT WAS TAKEN OUT: the route the scale does not take, and
             the empty seat it would have used. Hidden while the shape glides, so
@@ -245,6 +336,10 @@ export function ScaleRing({
               )}
             </g>
           );
+        })}
+        {splashes.map((sp) => {
+          const P = at(slotOf(relOf(sp.pc, rootPc)));
+          return <SplashMark key={sp.id} x={P.x} y={P.y} r={dotR * 2.3} kind={sp.kind} />;
         })}
       </svg>
       {children && (

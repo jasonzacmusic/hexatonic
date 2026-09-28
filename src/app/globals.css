@@ -406,3 +406,36 @@ body {
 .hx-sheen:active { transform: scale(0.97); }
 @keyframes hx-sweep { 0%, 70% { left: -60%; } 100% { left: 130%; } }
 @media (prefers-reduced-motion: reduce) { .hx-sheen::after { animation: none; display: none; } }
+
+/* ── the board layer: splash, drawn triangles, ovals ───────────────────────
+   Wrong-note splash: two ripples and droplets, ~0.6 s. Reduced motion keeps
+   only the flash. */
+.hx-splash-flash { opacity: 0; animation: hx-sflash 560ms ease-out both; }
+@keyframes hx-sflash { 0% { opacity: 0.6; } 100% { opacity: 0; } }
+.hx-ripple {
+  transform-box: fill-box; transform-origin: center;
+  animation: hx-ripple 600ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+.hx-ripple-2 { animation-delay: 80ms; }
+@keyframes hx-ripple {
+  0% { transform: scale(0.3); opacity: 0.95; }
+  100% { transform: scale(1.9); opacity: 0; }
+}
+.hx-drop { animation: hx-drop 560ms cubic-bezier(0.15, 0.8, 0.3, 1) both; }
+@keyframes hx-drop {
+  0% { transform: translate(0, 0); opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)); opacity: 0; }
+}
+/* a line that draws itself (set pathLength="1" on the shape) */
+.hx-draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: hx-draw 520ms cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+@keyframes hx-draw { to { stroke-dashoffset: 0; } }
+/* a mark that lands: ovals and arrows on the board */
+.hx-mark { transform-box: fill-box; transform-origin: center; animation: hx-mark 380ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+@keyframes hx-mark { from { opacity: 0; transform: scale(0.82); } to { opacity: 1; transform: none; } }
+.hx-fade { animation: hx-fade 420ms ease-out both; }
+@keyframes hx-fade { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .hx-ripple, .hx-drop { display: none; }
+  .hx-draw { animation: none; stroke-dashoffset: 0; }
+  .hx-mark, .hx-fade { animation: none; }
+}

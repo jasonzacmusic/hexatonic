@@ -17,6 +17,7 @@
  */
 
 import { Note, midi, pc, noteName } from "./theory/note";
+import { emitNote } from "./splash";
 
 /** Name a played pitch class with no scale context — flat-leaning, plain names. */
 const PC_NAMES = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
@@ -179,6 +180,7 @@ export class MidiInput {
       if ((status & 0xf0) === 0x90 && vel > 0) {
         this.buffer.push({ midi: note, velocity: vel, at: this.nowFn() });
         this.onNote?.(note, vel);
+        emitNote(note);
       }
     };
   }

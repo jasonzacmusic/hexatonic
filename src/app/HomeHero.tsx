@@ -14,16 +14,21 @@
  */
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSharedScale } from "@/lib/sharedScale";
 import { notePretty, pc } from "@/lib/theory/note";
 import { stripSounds, StripSound } from "@/lib/theory/strip";
-import ScaleRing from "@/components/ScaleRing";
+import SymmetryRing from "@/components/SymmetryRing";
+import { PAIR_INK, RingLayout } from "@/components/ScaleRing";
+import SixEquation from "@/components/SixEquation";
+import { sixNoteScales } from "@/lib/theory/pairAtlas";
 import KeyPicker, { prettyKey } from "@/components/KeyPicker";
 import { PlayGlyph, litIndex, usePreviewRun } from "@/components/ScalePreview";
 
 const DEFAULT_KEY = "G";
 const SPREAD = 0.27;
+/** How long the hero ring rests on each sound while nobody is playing. */
+const CYCLE_MS = 3200;
 
 export default function HomeHero() {
   const [key, setKey] = useState(DEFAULT_KEY);
@@ -36,7 +41,43 @@ export default function HomeHero() {
   const K = prettyKey(key);
 
   const sounding = lit?.id ?? pending;
+  const [layout, setLayout] = useState<RingLayout>("chromatic");
+
+  /* The pair that makes each sound, for the board marks: a major/minor pair
+     where there is one. Blues and major blues have none, and show no marks. */
+  const pairs = useMemo(() => {
+    const all = sixNoteScales(key);
+    const out: Record<string, (typeof all)[number]["pairs"][number] | null> = {};
+    for (const s of sounds) {
+      const six = all.find((x) => x.id === `${s.fam}-${s.mode}`);
+      out[s.id] = six ? six.pairs.find((p) => p.plain) ?? six.pairs[0] ?? null : null;
+    }
+    return out;
+  }, [key, sounds]);
+  const pair = pairs[cur.id];
+  const marks = pair ? { a: pair.shapes[0].notes.map(pc), b: pair.shapes[1].notes.map(pc) } : null;
+
+  /* The hero ring glides through the eight sounds on its own until someone
+     plays one, hovers it or asks for less motion. */
+  const [held, setHeld] = useState(false);
+  const [touched, setTouched] = useState(false);
+  const order = useRef(sounds.map((s) => s.id));
+  order.current = sounds.map((s) => s.id);
+  useEffect(() => {
+    if (touched || held || sounding) return;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    const t = setInterval(() => {
+      if (document.hidden) return;
+      setShown((id) => {
+        const ids = order.current;
+        return ids[(ids.indexOf(id) + 1) % ids.length];
+      });
+    }, CYCLE_MS);
+    return () => clearInterval(t);
+  }, [touched, held, sounding]);
+
   const tap = (s: StripSound) => {
+    setTouched(true);
     if (sounding === s.id) { stop(); return; }
     setShown(s.id);
     void play(s.id, s.midis, SPREAD);
@@ -50,12 +91,12 @@ export default function HomeHero() {
 
   return (
     <>
-      <section className="grid gap-5 pb-7 pt-1 sm:pb-9 lg:grid-cols-[1.3fr_1fr] lg:items-center lg:gap-12 lg:pb-10 lg:pt-4">
-        <h1 className="display hx-rise text-[13vw] sm:text-[64px] lg:text-[66px] xl:text-[80px]">
-          Six notes.<br />A world of sounds.
-        </h1>
+      <section className="grid items-center gap-6 pb-7 pt-1 sm:pb-9 lg:grid-cols-[1.25fr_1fr] lg:gap-10 lg:pb-10 lg:pt-4">
         <div>
-          <p className="pull hx-rise hx-d1 max-w-[34ch] text-[22px] sm:text-[24px]">
+          <h1 className="display hx-rise text-[13vw] sm:text-[64px] lg:text-[66px] xl:text-[80px]">
+            Six notes.<br />A world of sounds.
+          </h1>
+          <p className="pull hx-rise hx-d1 mt-5 max-w-[34ch] text-[22px] sm:text-[24px]">
             Bright, dark, bluesy, floating, strange — each one built from just six notes.
           </p>
           <p className="lede hx-rise hx-d2 mt-3 max-w-[48ch] text-[16px] sm:text-[17px]">
@@ -72,6 +113,35 @@ export default function HomeHero() {
             <span className="micro ml-1">Free · no account · works offline</span>
           </div>
         </div>
+
+        {/* THE HERO RING: the shape of each sound, the note it leaves out (red,
+            hollow) and the two triads that make it, circled and arrowed as on
+            the class board. */}
+        <figure className="hx-rise hx-d2 flex flex-col items-center"
+                onMouseEnter={() => setHeld(true)} onMouseLeave={() => setHeld(false)}
+                onFocus={() => setHeld(true)} onBlur={() => setHeld(false)}>
+          <SymmetryRing notes={cur.scale.notes} removed={cur.scale.removed} size={300}
+                        activePc={ringLit === null ? null : pc(cur.scale.notes[ringLit])}
+                        layout={layout} onLayout={(l) => { setLayout(l); setTouched(true); }} marks={marks}
+                        ringClassName="sm:!w-[340px] xl:!w-[380px]">
+            <span className="font-serif text-[24px] italic leading-none text-cream/90 xl:text-[28px]">
+              {cur.character}
+            </span>
+            <span className="mt-1.5 max-w-[60%] font-mono text-[13px] leading-snug text-muted">
+              {cur.name}
+            </span>
+          </SymmetryRing>
+          <figcaption className="mt-1 flex min-h-[1.5em] flex-wrap items-baseline justify-center gap-x-2 text-center text-[15px]">
+            {pair ? (
+              <>
+                <span className="font-bold" style={{ color: PAIR_INK.a }}>{pair.shapes[0].symbol}</span>
+                <span className="text-muted">+</span>
+                <span className="font-bold" style={{ color: PAIR_INK.b }}>{pair.shapes[1].symbol}</span>
+                <span className="text-cream/70">make these six notes</span>
+              </>
+            ) : <span className="text-cream/70">No two triads make this one</span>}
+          </figcaption>
+        </figure>
       </section>
 
       {/* ── the sound player ────────────────────────────────────────────── */}
@@ -83,26 +153,8 @@ export default function HomeHero() {
           <KeyPicker value={key} onChange={pickKey} size="sm" className="w-full sm:w-auto" />
         </div>
 
-        <div className="mt-4 grid items-center gap-4 md:grid-cols-[auto_1fr] md:gap-6 lg:gap-8">
-          <figure className="flex flex-col items-center gap-2">
-            <ScaleRing notes={cur.scale.notes} removed={cur.scale.removed}
-                       activePc={ringLit === null ? null : pc(cur.scale.notes[ringLit])}
-                       size={196} className="md:!w-[272px] lg:!w-[250px] xl:!w-[284px]">
-              <span className="font-serif text-[21px] italic leading-none text-cream/85 xl:text-[24px]">
-                {cur.character}
-              </span>
-              <span className="mt-1.5 max-w-[64%] font-mono text-[13px] leading-snug text-muted">
-                {cur.name}
-              </span>
-            </ScaleRing>
-            <figcaption>
-              <Link href={cur.practice} className="link-gold">
-                Practise it in {K} →
-              </Link>
-            </figcaption>
-          </figure>
-
-          <ul className="grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-2.5">
+        <div className="mt-4">
+          <ul className="grid grid-cols-2 gap-2 md:grid-cols-4 lg:gap-2.5">
             {sounds.map((s) => {
               const on = sounding === s.id;
               const idx = litIndex(lit, s.id, s.scale.notes.length);
@@ -138,13 +190,19 @@ export default function HomeHero() {
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-t border-line pt-3.5">
           <p className="micro max-w-none">
-            Same shape in every key; only the letters change. <span className="text-red">Red</span> marks the note taken out.
+            The ring above shows the one you tapped. Same shape in every key; only the letters change.{" "}
+            <span className="text-red">Red</span> marks the note taken out.
           </p>
-          <Link href={key === DEFAULT_KEY ? "/sounds" : `/sounds?k=${encodeURIComponent(key)}`} className="link-gold">
-            Every sound in {K} →
-          </Link>
+          <span className="flex flex-wrap gap-x-5 gap-y-1">
+            <Link href={cur.practice} className="link-gold">Practise {cur.name} in {K} →</Link>
+            <Link href={key === DEFAULT_KEY ? "/sounds" : `/sounds?k=${encodeURIComponent(key)}`} className="link-gold">
+              Every sound in {K} →
+            </Link>
+          </span>
         </div>
       </section>
+
+      <SixEquation keyName={key} />
     </>
   );
 }
