@@ -223,6 +223,8 @@ export interface TwoChordPair {
   tonic: Note;
   /** the six notes, ascending from the tonic (or the first note above it) */
   notes: Note[];
+  /** the six notes as the SCALE spells them (Jason's board), when that differs from the chords' spelling */
+  scaleNotes?: Note[];
   degrees: string[];
   /** the parent note left out — the one red note */
   removed: Note | null;
@@ -485,6 +487,7 @@ export function sixNoteScales(key = "G"): SixNoteScale[] {
           roman: `${a.roman} + ${b.roman}`,
           tonic: six[0],
           notes: placeAscending(six, midi(tonic)),
+          scaleNotes: placeAscending([...s.notes].sort((x, y) => mod12(pc(x) - pc(tonic)) - mod12(pc(y) - pc(tonic))), midi(tonic)),
           degrees: s.degrees.map((d) => d.replace(/b/g, "♭").replace(/#/g, "♯")),
           removed: s.removed,
           removedDegree: null,

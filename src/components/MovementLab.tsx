@@ -197,7 +197,7 @@ export default function MovementLab({ pair, source, keySignature = null, initial
             <p className="mt-2 text-[22px] text-cream/85">
               <span className="font-semibold text-cream">{source}</span>
               <span className="ml-3 font-mono text-[18px]">
-                {pair.notes.map((n, i) => {
+                {(pair.scaleNotes ?? pair.notes).map((n, i) => {
                   const lit = litNote === i || (litNote === 6 && i === 0);
                   return <span key={i} className={`mr-2 ${lit ? "text-gold" : ""}`}
                                style={lit ? undefined : { color: SHAPE_TONES[shapeOfPc(pc(n))].ink }}>{notePretty(n)}</span>;
