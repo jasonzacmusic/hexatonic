@@ -35,7 +35,8 @@ import {
 } from "@/lib/theory/barrySystem";
 import { midi, Note, noteName, notePretty, pc } from "@/lib/theory/note";
 import { buildScale } from "@/lib/theory/scales";
-import { optionById, PROSE, ScalePicker } from "./scaleOptions";
+import { optionById, optionToShared, PROSE, ScalePicker, sharedToOption } from "./scaleOptions";
+import { useSharedScale } from "@/lib/sharedScale";
 
 type StepId = "scale" | "harmonised" | "voicings" | "inversions" | "borrowing" | "family";
 type Direction = "updown" | "up";
@@ -143,6 +144,7 @@ export default function SixthDimTab() {
   const [bpm, setBpm] = useState(80);
 
   const setRoot = (r: string) => setRootRaw(sameRoot(r, family));
+  useSharedScale({ key: root }, (s) => setRootRaw(sameRoot(s.key, family)));
   const chooseFamily = (f: SixthFamily) => { setFamily(f); setRootRaw((r) => sameRoot(r, f)); };
   const roots = barryRoots(family);
   const fourths = rootsByFourths(root, family);
@@ -556,6 +558,11 @@ function TwoChords({ root, family, onPick }: { root: string; family: SixthFamily
 function HexatonicBridge({ onUse }: { onUse: (f: SixthFamily, root: string) => void }) {
   const [key, setKey] = useState("G");
   const [optionId, setOptionId] = useState("d0");
+  useSharedScale({ key, ...optionToShared(optionId) }, (s) => {
+    setKey(s.key);
+    const id = sharedToOption(s.family, s.mode);
+    if (id) setOptionId(id);
+  });
   const option = optionById(optionId);
   const scale = useMemo(() => option.build(key), [option, key]);
   const fits = useMemo(() => (scale.error ? [] : fitSixthDim(scale.notes)), [scale]);

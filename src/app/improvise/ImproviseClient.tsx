@@ -13,6 +13,7 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSharedScale } from "@/lib/sharedScale";
 import Keyboard from "@/components/Keyboard";
 import Fretboard from "@/components/Fretboard";
 import BluesLane from "@/components/BluesLane";
@@ -69,6 +70,11 @@ export default function ImproviseClient() {
   const [quickChange, setQuickChange] = useState(false);
 
   const [famId, modeStr] = scaleId.split(":");
+  useSharedScale({ key, family: famId, mode: Number(modeStr) || 0 }, (s) => {
+    setKey(s.key);
+    const id = `${s.family}:${s.mode}`;
+    if (SCALE_MENU.some((g) => g.options.some((o) => o.value === id))) setScaleId(id);
+  }, () => new URLSearchParams(window.location.search).has("scale"));
   const menuScale = useMemo(() => buildScale(key, famId, Number(modeStr) || 0), [key, famId, modeStr]);
   const isBlues = bedId === "blues";
   const scale = useMemo(() => (isBlues ? buildScale(key, bluesScale) : menuScale), [isBlues, key, bluesScale, menuScale]);

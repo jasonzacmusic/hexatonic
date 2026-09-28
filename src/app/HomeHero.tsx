@@ -15,6 +15,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { useSharedScale } from "@/lib/sharedScale";
 import { notePretty, pc } from "@/lib/theory/note";
 import { stripSounds, StripSound } from "@/lib/theory/strip";
 import ScaleRing from "@/components/ScaleRing";
@@ -26,6 +27,7 @@ const SPREAD = 0.27;
 
 export default function HomeHero() {
   const [key, setKey] = useState(DEFAULT_KEY);
+  useSharedScale({ key }, (s) => setKey(s.key));
   const sounds = useMemo(() => stripSounds(key), [key]);
   const { lit, pending, play, stop } = usePreviewRun();
   const [shown, setShown] = useState(sounds[0].id);

@@ -93,6 +93,18 @@ export const SCALE_OPTIONS: ScaleOption[] = MENU_GROUPS.flatMap(familyOptions);
 
 export const optionById = (id: string) => SCALE_OPTIONS.find((o) => o.id === id) ?? SCALE_OPTIONS[0];
 
+/** A menu option as the family + mode every page shares ("d2" is diatonic mode 2). */
+export function optionToShared(id: string): { family: string; mode: number } {
+  const m = /^d(\d+)$/.exec(id);
+  return m ? { family: "diatonic", mode: Number(m[1]) } : { family: id, mode: 0 };
+}
+
+/** The menu option for a shared family + mode, or null if this menu lacks it. */
+export function sharedToOption(family: string, mode: number, options = SCALE_OPTIONS): string | null {
+  const id = family === "diatonic" ? `d${mode}` : family;
+  return options.some((o) => o.id === id) ? id : null;
+}
+
 export function ScalePicker({
   idPrefix, keyName, setKey, optionId, setOption, options = SCALE_OPTIONS,
 }: {

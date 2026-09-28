@@ -19,6 +19,7 @@ import { meterById, METERS, allTalaMeters } from "./theory/meters";
 import { decodeCustom } from "./theory/custom";
 import { DrillPlan, getAudio } from "./audio/engine";
 import { useLiveDrill } from "./audio/useLive";
+import { isLibraryScale, useSharedScale } from "./sharedScale";
 
 export interface DrillState {
   key: string;
@@ -221,6 +222,17 @@ export function useDrill(initial?: Partial<DrillState>) {
     const qs = window.location.search.slice(1);
     if (qs) setState((s) => ({ ...s, ...decodeState(qs) }));
   }, []);
+
+  // the key and scale carry over from the other pages, unless the link names them
+  useSharedScale(
+    state.family === "custom" ? { key: state.key } : { key: state.key, family: state.family, mode: state.mode },
+    (sh) => setState((s) => ({
+      ...s,
+      key: sh.key,
+      ...(isLibraryScale(sh.family, sh.mode) ? { family: sh.family, mode: sh.mode } : {}),
+    })),
+    () => { const q = new URLSearchParams(window.location.search); return q.has(SHORT.key) || q.has(SHORT.family); },
+  );
 
   // keep the URL in step without adding history entries
   useEffect(() => {

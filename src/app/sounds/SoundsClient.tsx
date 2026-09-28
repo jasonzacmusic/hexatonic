@@ -18,6 +18,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSharedScale } from "@/lib/sharedScale";
 import {
   KEYS, DIATONIC_MODES, FAMILY_GROUPS, buildScale, familyById, familiesIn, prettyDegree,
   ScaleInstance,
@@ -96,6 +97,7 @@ export default function SoundsClient() {
     const k = new URLSearchParams(window.location.search).get("k");
     if (k && KEYS.includes(k)) setKey(k);
   }, []);
+  useSharedScale({ key }, (s) => setKey(s.key), () => new URLSearchParams(window.location.search).has("k"));
   const pickKey = (k: string) => {
     replay.current = sounding;
     setKey(k);

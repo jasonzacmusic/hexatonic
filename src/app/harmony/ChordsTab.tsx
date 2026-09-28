@@ -23,7 +23,8 @@ import { letterIndex, midi, note, Note, notePretty, pc } from "@/lib/theory/note
 import { prettyChordSymbol } from "@/lib/theory/movement";
 import { previewAudio } from "@/lib/audio/engine";
 import { playableStack } from "@/lib/audio/voicing";
-import { cap, chordRole, count, list, optionById, ownSpellingFirst, PROSE, ScalePicker, stackLine } from "./scaleOptions";
+import { cap, chordRole, count, list, optionById, optionToShared, ownSpellingFirst, PROSE, ScalePicker, sharedToOption, stackLine } from "./scaleOptions";
+import { useSharedScale } from "@/lib/sharedScale";
 import {
   FUNCTION_LABEL, FUNCTION_LINE, HarmonicFunction, harmonicFunction, romanNumeral, triadQuality,
 } from "@/lib/theory/functions";
@@ -77,6 +78,11 @@ type Sound = (label: string, midis: number[], spread?: number) => void;
 export default function ChordsTab() {
   const [key, setKey] = useState("G");
   const [optionId, setOptionId] = useState("d0");
+  useSharedScale({ key, ...optionToShared(optionId) }, (s) => {
+    setKey(s.key);
+    const id = sharedToOption(s.family, s.mode);
+    if (id) setOptionId(id);
+  });
   const scale = useMemo(() => optionById(optionId).build(key), [optionId, key]);
   const notes = scale.notes;
 

@@ -13,6 +13,12 @@ Read this first, every session.
   from the repo, then check hexatonic.nathanielschool.com. A pushed branch or
   an open PR is **not** live.
 
+- **Standing rule (Jason, 28 Sep 2026): every request is fixed AND deployed in
+  the same turn** — never stop at a pushed commit or a plan.
+- The chosen key and scale follow the player across pages
+  (`src/lib/sharedScale.ts`). Any new page with a key or scale picker must use
+  `useSharedScale`.
+
 ## Design standard
 - The brand lives in `docs/DESIGN-BRIEF-CLAUDE-DESIGN.md`. Near-black #0A0908,
   surface #14120F, cream #F4EFE4. **Gold #C9A227 means "sounding now". Red means

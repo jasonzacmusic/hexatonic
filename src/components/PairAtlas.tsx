@@ -13,6 +13,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import MovementLab from "@/components/MovementLab";
+import { useSharedScale } from "@/lib/sharedScale";
 import { SHAPE_TONES } from "@/components/PairKeyboard";
 import { Seg } from "@/components/Panels";
 import { notePretty, pc } from "@/lib/theory/note";
@@ -31,6 +32,12 @@ export default function PairAtlas({ onOpenSixth }: { onOpenSixth?: () => void })
   const [parentId, setParentId] = useState<ParentId>("ionian");
   const [sixId, setSixId] = useState("diatonic-3");
   const [pick, setPick] = useState<string | null>(null);
+  const [sixFam, sixMode] = (() => { const i = sixId.lastIndexOf("-"); return [sixId.slice(0, i), Number(sixId.slice(i + 1)) || 0] as const; })();
+  useSharedScale(source === "six" ? { key, family: sixFam, mode: sixMode } : { key }, (s) => {
+    setKey(s.key);
+    const id = `${s.family}-${s.mode}`;
+    if (sixNoteScales(s.key).some((x) => x.id === id)) { setSixId(id); setSource("six"); }
+  });
 
   const ps = useMemo(() => buildParent(key, parentId), [key, parentId]);
   const fromParent = useMemo(() => parentPairs(ps), [ps]);
