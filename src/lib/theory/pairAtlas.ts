@@ -314,10 +314,10 @@ function spellTriad(rootLetter: Letter, rootPc: number, q: TriadQuality): Note[]
  * as the scale names it (E♭m in a scale with E♭, never D♯m), the scale's own
  * letters where they already stack, fewest accidentals otherwise. An
  * augmented triad has three equal roots; the tonic wins if it is one of them
- * (G+ is G B D♯, never E♭ G B). In the augmented scale the other one is
- * named from the note just above the tonic, spelled as a triad: B♭+ =
- * B♭ D F♯ in G A♯ B D E♭ F♯ (A♯+ would need C𝄪). Elsewhere (whole tone) it
- * takes the root whose triad is the scale's own notes: F+ = F A C♯.
+ * (G+ is G B D♯, never E♭ G B). In the augmented and whole-tone scales the
+ * other one is named from the note just above the tonic, spelled as a triad:
+ * B♭+ = B♭ D F♯ in G A♯ B D E♭ F♯ (A♯+ would need C𝄪), and A+ = A C♯ E♯
+ * in G whole tone (the E♯ is written F in the scale).
  */
 function chordFromPcs(
   rootPc: number, q: TriadQuality, scale: Note[], tonic: Note,
@@ -330,10 +330,11 @@ function chordFromPcs(
       const ns = spellTriad(L, r, q);
       if (!ns) continue;
       const cost = ns.reduce((a, n) => a + Math.abs(n.alt) + (scaleLetter(pc(n)) === n.letter ? 0 : 0.5), 0) +
-        (q === "aug" && r === pc(tonic) ? -4
-          : q === "aug" && isAugmentedScale(scale)
-            ? 3 * [...roots].sort((x, y) => mod12(x - pc(tonic)) - mod12(y - pc(tonic))).indexOf(r)
-            : (scaleLetter(r) === L ? 0 : 2));
+        (q !== "aug" ? (scaleLetter(r) === L ? 0 : 2)
+          : (ODD_ROOT(ns[0]) ? 5 : 0) + (r === pc(tonic) && L === tonic.letter ? -4
+            : roots.includes(pc(tonic)) ? (scaleLetter(r) === L ? 0 : 2)
+            : namesAugFromBelow(scale)
+              ? 3 * [...roots].sort((x, y) => mod12(x - pc(tonic)) - mod12(y - pc(tonic))).indexOf(r) : 0));
       if (!best || cost < best.cost) best = { notes: ns, cost };
     }
   }
@@ -345,11 +346,23 @@ function chordFromPcs(
   };
 }
 
-/** The augmented scale (6-20), in any key: two augmented triads a half step apart. */
-export function isAugmentedScale(scale: Note[]): boolean {
+/** C♭, F♭, E♯, B♯: never the name of a chord's root when another will do. */
+const ODD_ROOT = (n: Note) =>
+  (n.alt === -1 && (n.letter === "C" || n.letter === "F")) || (n.alt === 1 && (n.letter === "E" || n.letter === "B"));
+
+/** A triad spelled for this scale, the way Pairs and Chords name it. */
+export const spellTriadIn = (rootPc: number, q: TriadQuality, scale: Note[]) =>
+  chordFromPcs(rootPc, q, scale, scale[0]);
+
+/** The augmented scale (two augmented triads a half step apart) or whole
+ *  tone (a whole step apart), in any key: the two scales made of two
+ *  augmented triads, whose second triad is named from the note just above
+ *  the tonic (B♭+ in G augmented, A+ in G whole tone). */
+export function namesAugFromBelow(scale: Note[]): boolean {
   const s = new Set(scale.map(pc));
   if (s.size !== 6) return false;
-  return [...s].some((r) => [0, 3, 4, 7, 8, 11].every((i) => s.has(mod12(r + i))));
+  return [[0, 3, 4, 7, 8, 11], [0, 2, 4, 6, 8, 10]].some((shape) =>
+    [...s].some((r) => shape.every((i) => s.has(mod12(r + i)))));
 }
 
 /** Roman numeral by LETTER distance, so C + F♯ is I + ♯IV and C + G♭ is I + ♭V. */
@@ -517,7 +530,7 @@ export interface LadderStep {
  *
  * `lowest` places shape A's root in the octave from that MIDI note up.
  */
-export function pairLadder(pair: TwoChordPair, lowest = 53): LadderStep[] {
+export function pairLadder(pair: Pick<TwoChordPair, "shapes">, lowest = 53): LadderStep[] {
   const [A, B] = pair.shapes;
   const r = pc(A.root);
   const ordered = [...A.notes.map((n) => ({ n, s: 0 as const })), ...B.notes.map((n) => ({ n, s: 1 as const }))]

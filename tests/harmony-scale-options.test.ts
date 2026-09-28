@@ -115,11 +115,24 @@ describe("Chords in the scale works for five, six and seven notes", () => {
 });
 
 describe("chord names and roles on the Chords tab", () => {
-  it("a symmetric chord leads with the name in the scale's own notes", () => {
+  it("an augmented chord leads with the tonic's name, or the note just above the tonic (whole tone and augmented)", () => {
     const s = optionById("whole").build("G");
+    const { chords } = ownSpellingFirst(findChords(s.notes, [3]), s.notes);
+    expect(chords.map((c) => `${c.names[0].symbol} ${c.names[0].notes.join(" ")}`).sort())
+      .toEqual(["Aaug A C# E#", "Gaug G B D#"]);
+    const a = optionById("aug").build("G");
+    const aug = ownSpellingFirst(findChords(a.notes, [3]), a.notes).chords.filter((c) => c.names[0].symbol.endsWith("aug"));
+    expect(aug.map((c) => `${c.names[0].symbol} ${c.names[0].notes.join(" ")}`).sort())
+      .toEqual(["Bbaug Bb D F#", "Gaug G B D#"]);
+  });
+
+  it("in any other scale an augmented chord leads with the name in the scale's own notes: Prometheus in G has F+ = F A C♯", () => {
+    const s = optionById("prometheus").build("G");
+    expect(s.family.id).toBe("prometheus");
     const own = new Set(s.notes.map(noteName));
     const { chords } = ownSpellingFirst(findChords(s.notes, [3]), s.notes);
-    expect(chords.map((c) => c.names[0].symbol)).toContain("Gaug");
+    const aug = chords.filter((c) => c.names.some((n) => n.symbol.endsWith("aug")));
+    expect(aug.map((c) => `${c.names[0].symbol} ${c.names[0].notes.join(" ")}`)).toEqual(["Faug F A C#"]);
     for (const c of chords)
       if (c.names.some((n) => n.notes.every((x) => own.has(x))))
         expect(c.names[0].notes.every((x) => own.has(x)), c.names[0].symbol).toBe(true);

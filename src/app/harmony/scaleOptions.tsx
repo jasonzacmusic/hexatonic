@@ -17,7 +17,7 @@ import {
 } from "../../lib/theory/scales";
 import { letterIndex, Letter, Note, noteName, notePretty, pc } from "../../lib/theory/note";
 import type { ChordSet, ThirdsStack } from "../../lib/theory/chords";
-import { isAugmentedScale } from "../../lib/theory/pairAtlas";
+import { namesAugFromBelow, spellTriadIn } from "../../lib/theory/pairAtlas";
 
 export interface ScaleOption {
   id: string;
@@ -183,18 +183,18 @@ export function stackLine(stack: ThirdsStack, notes: Note[], removed: Note | nul
 export function ownSpellingFirst(found: ChordSet[], scale: Note[]) {
   const own = new Set(scale.map(noteName));
   const tonic = scale[0] ? noteName(scale[0]) : "";
-  const pcOfTonic = scale[0] ? pc(scale[0]) : 0;
-  const augScale = isAugmentedScale(scale);
+  const augScale = namesAugFromBelow(scale);
   const bySymbol = new Map<string, ChordSet>();
   const chords = found.map((c) => {
     /* An augmented triad is named from the tonic when the tonic is in it,
        spelled as a triad: G+ is G B D♯ even when the scale writes E♭ (never
-       E♭ G B). In the augmented scale the other one is named from the note
-       just above the tonic: B♭+ = B♭ D F♯ in G A♯ B D E♭ F♯. */
+       E♭ G B). In the augmented and whole-tone scales the other one is named
+       from the note just above the tonic: B♭+ = B♭ D F♯ in G A♯ B D E♭ F♯,
+       A+ = A C♯ E♯ in G whole tone. */
     const augs = c.names.filter((n) => n.symbol.endsWith("aug"));
-    const above = (n: (typeof augs)[number]) => (((pc(n.voicing[0]) - pcOfTonic) % 12) + 12) % 12;
+    const wanted = augs.length && augScale ? spellTriadIn(c.pcs[0], "aug", scale)?.notes.map(noteName).join(" ") : null;
     const onTonic = augs.find((n) => n.root === tonic) ??
-      (augs.length && augScale ? [...augs].sort((a, b) => above(a) - above(b))[0] : undefined);
+      (wanted ? augs.find((n) => n.notes.join(" ") === wanted) : undefined);
     const lead = onTonic ?? c.names.find((n) => n.family === c.names[0].family && n.notes.every((x) => own.has(x)));
     const out = !lead || lead === c.names[0] ? c
       : { ...c, names: [lead, ...c.names.filter((n) => n !== lead)], notes: lead.voicing, noteNames: lead.notes };

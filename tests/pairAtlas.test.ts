@@ -158,10 +158,12 @@ describe("every six-note scale the app has, split into two triads", () => {
     const p = byName("Whole tone").pairs;
     expect(p).toHaveLength(1);
     expect(p[0].shapes.map((s) => s.quality)).toEqual(["aug", "aug"]);
-    /* A whole step either way: F+ (F A C♯) reads better than A+ (A C♯ E♯). */
-    expect([2, 10]).toContain((pc(p[0].shapes[1].root) - pc(p[0].shapes[0].root) + 12) % 12);
-    expect(p[0].symbol).toBe("G+ + F+");
-    expect(names(p[0].notes)).toBe("G A B C♯ D♯ F");
+    /* The second triad is named from the note just above the tonic and
+       spelled as a triad: A+ = A C♯ E♯ (the scale writes the E♯ as F). */
+    expect((pc(p[0].shapes[1].root) - pc(p[0].shapes[0].root) + 12) % 12).toBe(2);
+    expect(p[0].symbol).toBe("G+ + A+");
+    expect(names(p[0].shapes[1].notes)).toBe("A C♯ E♯");
+    expect(names(p[0].notes)).toBe("G A B C♯ D♯ E♯");
   });
 
   it("augmented scale: two augmented triads a semitone apart, and three major + minor splits", () => {
@@ -251,6 +253,6 @@ describe("the ladder, as Jason plays it", () => {
 
   it("walks the symmetric pairs too", () => {
     const whole = sixNoteScales("G").find((s) => s.name === "Whole tone")!.pairs[0];
-    expect(pairLadder(whole).map((s) => s.label)).toEqual(["G+", "F+/A", "G+/B", "F+/C♯", "G+/D♯", "F+", "G+"]);
+    expect(pairLadder(whole).map((s) => s.label)).toEqual(["G+", "A+", "G+/B", "A+/C♯", "G+/D♯", "A+/E♯", "G+"]);
   });
 });

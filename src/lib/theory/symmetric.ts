@@ -17,6 +17,7 @@
  */
 
 import { findChords, tertianOnly } from "./chords";
+import { spellTriadIn } from "./pairAtlas";
 import { Note, noteName, pc } from "./note";
 import { familiesIn } from "./scales";
 
@@ -85,7 +86,6 @@ export function symmetricTriadLine(familyId: string, notes: Note[]): string | nu
   if (!notes.length || (familyId !== "aug" && familyId !== "whole")) return null;
   const triads = tertianOnly(findChords(notes, [3]));
   const aug = triads.filter((c) => c.names.some((n) => n.symbol.endsWith("aug")));
-  const tonic = noteName(notes[0]);
   const scaleName = (p: number) => { const n = notes.find((x) => pc(x) === p); return n ? noteName(n) : "?"; };
   const order = (ps: number[]) => [...ps].sort((a, b) => mod12(a - pc(notes[0])) - mod12(b - pc(notes[0])));
   if (familyId === "aug") {
@@ -102,26 +102,27 @@ export function symmetricTriadLine(familyId: string, notes: Note[]): string | nu
     return `The augmented scale holds ${aug.length === 2 ? "two" : aug.length} augmented chords, plus ${where}.`;
   }
   /* Whole tone: every triad is augmented, and each is three roots of one
-     chord. The tonic's chord first, each named from a root whose triad is the
-     scale's own notes where one exists (F+ = F A C♯ in G), else spelled as a
-     triad with the scale's own letter noted (E♯ is written F). */
+     chord. The tonic's chord first, then the one on the note just above the
+     tonic, each spelled as a triad from its root (A C♯ E♯), with the scale's
+     own letter noted ("E♯ written F in the scale"). */
   const own = new Set(notes.map(noteName));
   const sets = [...aug].sort((a, b) => Number(b.pcs.includes(pc(notes[0]))) - Number(a.pcs.includes(pc(notes[0]))));
   const named = sets.map((c) => {
     const roots = order(c.pcs);
-    const lead = c.names.find((n) => n.root === tonic) ??
-      c.names.find((n) => n.notes.every((x) => own.has(x))) ??
-      roots.map((p) => c.names.find((n) => n.root === scaleName(p))).find(Boolean) ?? c.names[0];
-    const start = roots.findIndex((p) => scaleName(p) === lead.root);
+    const spelled = spellTriadIn(c.pcs[0], "aug", notes);
+    const lead = spelled
+      ? { root: noteName(spelled.notes[0]), notes: spelled.notes.map(noteName), rootPc: pc(spelled.notes[0]) }
+      : { root: c.names[0].root, notes: c.names[0].notes, rootPc: pc(c.names[0].voicing[0]) };
+    const start = roots.indexOf(lead.rootPc);
     const rotated = start > 0 ? [...roots.slice(start), ...roots.slice(0, start)] : roots;
     const foreign = lead.notes.filter((x) => !own.has(x));
     const written = foreign.map((x) => {
       const p = pc({ letter: x[0] as Note["letter"], alt: (x.length - 1) * (x.includes("#") ? 1 : -1) as Note["alt"], octave: 4 });
-      return `${pretty(x)} is written ${pretty(scaleName(p))}`;
+      return `${pretty(x)} written ${pretty(scaleName(p))} in the scale`;
     });
     return {
-      head: `${pretty(lead.root)}+ (${lead.notes.map(pretty).join(" ")}${written.length ? `; in the scale ${list(written)}` : ""})`,
-      same: rotated.map((p) => `${pretty(scaleName(p))}+`).join(" = "),
+      head: `${pretty(lead.root)}+ (${lead.notes.map(pretty).join(" ")}${written.length ? `, ${list(written)}` : ""})`,
+      same: rotated.map((p, i) => `${pretty(i === 0 ? lead.root : scaleName(p))}+`).join(" = "),
     };
   });
   const count = triads.length === aug.length && aug.length === 2 ? "only two three-note chords, both augmented" : `${aug.length} augmented chords`;

@@ -126,15 +126,15 @@ describe("augmented = two augmented triads", () => {
 });
 
 describe("whole tone: only two augmented triads, each from three roots", () => {
-  it("in G: G B D♯ and F A C♯ (= A C♯ E♯), each from three roots", () => {
+  it("in G: G B D♯ and A C♯ E♯ (E♯ written F in the scale), each from three roots", () => {
     const s = buildScale("G", "whole", 0);
     const tri = tertianOnly(findChords(s.notes, [3]));
     expect(tri.length).toBe(2);
     expect(tri.every((c) => c.names.every((n) => n.symbol.endsWith("aug")))).toBe(true);
     expect(tri.every((c) => c.names.length >= 2)).toBe(true);
     expect(symmetricTriadLine("whole", s.notes)).toBe(
-      "Whole tone holds only two three-note chords, both augmented: G+ (G B D♯) and F+ (F A C♯). " +
-      "Each is one chord seen from three roots: G+ = B+ = D♯+ and F+ = A+ = C♯+.");
+      "Whole tone holds only two three-note chords, both augmented: G+ (G B D♯) and A+ (A C♯ E♯, E♯ written F in the scale). " +
+      "Each is one chord seen from three roots: G+ = B+ = D♯+ and A+ = C♯+ = F+.");
   });
 
   it("every key: exactly two triads, both augmented, and the line says so", () => {
