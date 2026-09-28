@@ -458,3 +458,7 @@ html[data-stage] .stage-only { display: revert; }
   .hx-draw { animation: none; stroke-dashoffset: 0; }
   .hx-mark, .hx-fade { animation: none; }
 }
+/* stage mode is a 1920×1080 filming frame; on a phone it falls back to normal size so nothing collides */
+@media (max-width: 767px) {
+  html[data-stage] main { zoom: 1; padding: 16px !important; }
+}

@@ -14,6 +14,7 @@ import { SUBDIVISIONS, gatiFor } from "@/lib/theory/resolution";
 import { METERS, saptaTalaMeters } from "@/lib/theory/meters";
 import { midi, notePretty, pc } from "@/lib/theory/note";
 import { findChords, tertianOnly } from "@/lib/theory/chords";
+import { ownSpellingFirst } from "@/app/harmony/scaleOptions";
 import { FUNCTION_LABEL, HarmonicFunction, harmonicFunction, romanNumeral, triadQuality } from "@/lib/theory/functions";
 import { previewAudio } from "@/lib/audio/engine";
 import CustomBuilder from "@/components/CustomBuilder";
@@ -464,7 +465,7 @@ function ChordStrip({ scale, activePc, big = false }: {
 }) {
   const [size, setSize] = useState<3 | 4>(3);
   const chords = useMemo(
-    () => (scale.error ? [] : tertianOnly(findChords(scale.notes, [size]))),
+    () => (scale.error ? [] : tertianOnly(ownSpellingFirst(findChords(scale.notes, [size]), scale.notes).chords)),
     [scale, size],
   );
   if (scale.error) return null;
@@ -507,7 +508,8 @@ function ChordStrip({ scale, activePc, big = false }: {
                                 fits ? "border-cream bg-cream text-bg" : "border-line bg-surface2 text-cream hover:border-[#4A4240]"}`}>
                         <span className={`flex items-baseline gap-1.5 font-bold ${big ? "text-[20px]" : "text-[16px]"}`}>
                           {roman && <span className={`font-serif font-normal italic ${fits ? "text-bg/70" : "text-cream/70"}`}>{roman}</span>}
-                          {c.names.map((x) => prettyChord(x.symbol)).join(" = ")}
+                          {/* a symmetric chord shows only its lead name (G+, spelled G B D♯), never its aliases */}
+                          {(name.symbol.endsWith("aug") ? [name] : c.names).map((x) => prettyChord(x.symbol)).join(" = ")}
                         </span>
                         <span className={`block font-mono text-[13px] ${fits ? "text-bg/75" : "text-muted"}`}>
                           {name.notes.map((n) => n.replace("#", "♯").replace(/b$/, "♭")).join(" ")}
@@ -528,7 +530,7 @@ function ChordStrip({ scale, activePc, big = false }: {
 /** G#m7b5 → G♯m7♭5, Ebdim → E♭°. */
 function prettyChord(sym: string): string {
   return sym.replace(/^([A-G])#/, "$1♯").replace(/^([A-G])b/, "$1♭")
-    .replace("dim7", "°7").replace("dim", "°").replace("m7b5", "m7♭5").replace("#5", "♯5");
+    .replace("dim7", "°7").replace("dim", "°").replace(/aug$/, "+").replace("m7b5", "m7♭5").replace("#5", "♯5");
 }
 
 /* ── how the page is organised: one line, open it for the detail ──────── */
