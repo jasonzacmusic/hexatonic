@@ -14,6 +14,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { linkKey, useSharedScale } from "@/lib/sharedScale";
+import SplashToggle from "@/components/SplashToggle";
 import Keyboard from "@/components/Keyboard";
 import Fretboard from "@/components/Fretboard";
 import BluesLane from "@/components/BluesLane";
@@ -28,6 +29,7 @@ import { twelveBar, bluesTip } from "@/lib/theory/blues";
 import { notePretty } from "@/lib/theory/note";
 import { previewAudio, VampPlan } from "@/lib/audio/engine";
 import { useLiveVamp } from "@/lib/audio/useLive";
+import PageMark from "@/components/PageMark";
 
 const pretty = (s: string) => s
   .replace(/([A-G])b/g, "$1♭").replace(/#/g, "♯").replace(/b5$/, "♭5")
@@ -188,9 +190,10 @@ export default function ImproviseClient() {
     : `${pretty(scale.tonic)} ${menuScale.family.kind === "rotation" ? menuScale.family.modes![menuScale.modeIndex].name : menuScale.family.short}`;
 
   return (
-    <div className="space-y-4 pb-10">
+    <div className="relative space-y-4 pb-10">
       {/* ── what this is ─────────────────────────────────────────────── */}
       <header className="pt-1">
+        <PageMark kind="improvise" className="hidden xl:block" />
         <h1 className="display text-4xl sm:text-5xl">Improvise</h1>
         <p className="lede mt-3">
           A backing band plays chords made only from your scale. Play any of its notes over it:
@@ -348,7 +351,7 @@ export default function ImproviseClient() {
                           octaves={octaves} startMidi={octaves === 2 ? 60 : 48} keyWidth={keyWidth}
                           height={Math.round(Math.min(keyWidth, 44) * 3.4)}
                           chordTonePcs={big?.tones} activeMidi={exampleMidi}
-                          onNote={(m) => previewAudio([m])} />
+                          onNote={(m) => previewAudio([m])} splash />
               ) : (
                 <Fretboard scale={scale.notes} removed={isBlues ? null : scale.removed}
                            chordTonePcs={big?.tones} activePc={exampleMidi === null ? null : exampleMidi % 12}
@@ -360,6 +363,7 @@ export default function ImproviseClient() {
                 <span><i className="mr-1.5 inline-block h-3 w-3 rounded-sm bg-[#F0E4B8] align-middle" />in the chord now</span>
                 <span><i className="mr-1.5 inline-block h-3 w-3 rounded-sm bg-cream/60 align-middle" />in the scale</span>
                 {example && <span><i className="mr-1.5 inline-block h-3 w-3 rounded-sm bg-gold align-middle" />the example, sounding</span>}
+                <SplashToggle className="!py-0.5" />
                 {!isBlues && scale.removed && (
                   <span><i className="mr-1.5 inline-block h-3 w-3 rounded-sm border-2 border-red align-middle" />removed</span>
                 )}

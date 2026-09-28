@@ -17,6 +17,8 @@
 
 import { Note, pc, midi, notePretty } from "@/lib/theory/note";
 import { useId } from "react";
+import { emitNote, useSplashes } from "@/lib/splash";
+import SplashMark from "@/components/SplashMark";
 
 interface Props {
   scale: Note[];
@@ -33,6 +35,8 @@ interface Props {
   showLabels?: boolean;
   /** width of one white key, px */
   keyWidth?: number;
+  /** Splash a played note that is outside the scale (MIDI or a tap). */
+  splash?: boolean;
 }
 
 /** The root's green: the Tonic colour on Harmony, darker where it sits on a cream key. */
@@ -53,7 +57,7 @@ const BLACK: { semi: number; after: number; offset: number }[] = [
 
 export default function Keyboard({
   scale, removed, activeMidi = null, chordTonePcs, markMidi, startMidi = 60,
-  octaves = 2, onNote, height = 132, showLabels = false, keyWidth = 40,
+  octaves = 2, onNote, height = 132, showLabels = false, keyWidth = 40, splash = false,
 }: Props) {
   const uid = useId().replace(/:/g, "");
   const inScale = new Set(scale.map(pc));
@@ -61,6 +65,8 @@ export default function Keyboard({
   const removedPc = removed ? pc(removed) : -1;
   const rootPc = scale.length ? pc(scale[0]) : -1;
   const isRoot = (m: number) => ((m % 12) + 12) % 12 === rootPc;
+  const splashes = useSplashes(splash, scale.map(pc), removedPc);
+  const tap = (m: number) => { if (!onNote) return; emitNote(m); onNote(m); };
 
   const W = keyWidth;
   const BW = W * 0.62;
@@ -145,7 +151,7 @@ export default function Keyboard({
             st === "scale"  ? `url(#w${uid})` :
             `url(#wo${uid})`;
           return (
-            <g key={`w${m}`} onClick={() => onNote?.(m)}
+            <g key={`w${m}`} onClick={() => tap(m)}
                style={{ cursor: onNote ? "pointer" : "default" }}>
               <rect x={x + 0.5} y={felt} width={W - 1} height={height}
                     rx={3} fill={fill}
@@ -189,7 +195,7 @@ export default function Keyboard({
             st === "scale"  ? `url(#s${uid})` :
             `url(#b${uid})`;
           return (
-            <g key={`b${m}`} onClick={() => onNote?.(m)}
+            <g key={`b${m}`} onClick={() => tap(m)}
                style={{ cursor: onNote ? "pointer" : "default" }}>
               <rect x={x} y={felt} width={BW} height={BH} rx={2.5} fill={fill}
                     stroke={st === "removed" ? "#C4353C" : "#000"}
@@ -215,6 +221,16 @@ export default function Keyboard({
               )}
             </g>
           );
+        })}
+
+        {/* wrong-note splashes, on the key played (or the same note in range) */}
+        {splashes.map((sp) => {
+          const all = [...whites.map((k) => ({ ...k, black: false })), ...blacks.map((k) => ({ ...k, black: true }))];
+          const hit = all.find((k) => k.m === sp.midi) ?? all.find((k) => ((k.m % 12) + 12) % 12 === sp.pc);
+          if (!hit) return null;
+          const cx = hit.x + (hit.black ? BW : W) / 2;
+          const cy = felt + (hit.black ? BH * 0.5 : height * 0.55);
+          return <SplashMark key={sp.id} x={cx} y={cy} r={W * 0.42} kind={sp.kind} />;
         })}
       </svg>
     </div>

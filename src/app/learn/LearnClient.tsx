@@ -31,6 +31,7 @@ import { useLiveDrill, LiveDrill } from "@/lib/audio/useLive";
 import Keyboard from "@/components/Keyboard";
 import ScaleRing from "@/components/ScaleRing";
 import BeatCounter from "@/components/BeatCounter";
+import PageMark from "@/components/PageMark";
 
 /* ── the facts, computed once ─────────────────────────────────────────── */
 
@@ -626,8 +627,9 @@ const CONTENTS: [string, string][] = [
 
 export default function LearnClient() {
   return (
-    <div className="space-y-5 pb-12">
+    <div className="relative space-y-5 pb-12">
       <header className="max-w-3xl pt-2">
+        <PageMark kind="learn" className="hidden xl:block" />
         <p className="eyebrow">Learn</p>
         <h1 className="display mt-3 text-[42px] sm:text-[58px]">Why six notes</h1>
         <p className="pull mt-4 max-w-xl">

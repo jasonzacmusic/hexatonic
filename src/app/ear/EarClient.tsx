@@ -28,6 +28,7 @@ import LevelBar from "@/components/ear/LevelBar";
 import Musical from "@/components/ear/Musical";
 import RevealVisual from "@/components/ear/RevealVisual";
 import SessionSummary from "@/components/ear/SessionSummary";
+import PageMark from "@/components/PageMark";
 
 const TEMPOS = [
   { id: 84, label: "Slow" },
@@ -218,8 +219,9 @@ export default function EarClient() {
   const questionNo = Math.min(attempts.length + (q && !picked ? 1 : 0), SESSION_LENGTH);
 
   return (
-    <div className="space-y-5 pb-12">
+    <div className="relative space-y-5 pb-12">
       <header className="max-w-2xl pt-2">
+        <PageMark kind="ear" className="hidden lg:block" />
         <p className="eyebrow">Ear training</p>
         <h1 className="display mt-2 text-[34px] sm:mt-3 sm:text-5xl">Train your ear</h1>
         {/* On a phone the cards say what each game is; the question comes first. */}

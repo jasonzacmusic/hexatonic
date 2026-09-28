@@ -2,7 +2,7 @@
 
 /**
  * A keyboard for a two-triad pair: shape A's notes in blue, shape B's in
- * green, the parent note left out in red, and the chord sounding now in gold.
+ * violet (green is kept for the root only), the parent note left out in red, and the chord sounding now in gold.
  * Gold and red keep their one meaning each; the two shape colours are only
  * ever used for "which of the two chords this note belongs to".
  *
@@ -18,7 +18,7 @@ import { Note, notePretty, pc } from "@/lib/theory/note";
  *  lightness on the keys, so they stay apart for colour-blind players too. */
 export const SHAPE_TONES = [
   { name: "blue", ink: "#8DBDEB", white: "#A7CBEE", black: "#3F78B2", text: "#0E2238" },
-  { name: "green", ink: "#79CFAC", white: "#B5E6D0", black: "#2F8A68", text: "#0C271C" },
+  { name: "violet", ink: "#BBA6F7", white: "#D9CEFB", black: "#6A55B8", text: "#1E1538" },
 ] as const;
 
 const WHITE = new Set([0, 2, 4, 5, 7, 9, 11]);
@@ -92,7 +92,7 @@ export default function PairKeyboard({
   const on = new Set(active);
 
   const aria = `Keyboard. ${notePretty(shapes[0][0])} chord in blue: ${shapes[0].map(notePretty).join(" ")}. ` +
-    `${notePretty(shapes[1][0])} chord in green: ${shapes[1].map(notePretty).join(" ")}.` +
+    `${notePretty(shapes[1][0])} chord in violet: ${shapes[1].map(notePretty).join(" ")}.` +
     (removed ? ` ${notePretty(removed)} left out.` : "");
 
   return (
