@@ -837,11 +837,14 @@ export const PAIR_LEVELS: { ids: string[]; chords: boolean }[] = [
 const TRIAD: Record<"maj" | "min", number[]> = { maj: [0, 4, 7], min: [0, 3, 7] };
 
 /** A triad on a root pitch, spelled a third apart from the preferred letter,
- *  or from whichever letter needs the fewest accidentals (never a double). */
+ *  or from whichever letter needs the fewest accidentals (never a double, and
+ *  never a C♭, F♭, E♯ or B♯ root: F + B, not F + C♭). */
 function spellPairTriad(rootPc: number, prefer: Letter, q: "maj" | "min"): Note[] {
+  const odd = (n: Note) =>
+    (n.alt === -1 && (n.letter === "C" || n.letter === "F")) || (n.alt === 1 && (n.letter === "E" || n.letter === "B"));
   const tryLetter = (L: Letter) => {
     const ns = TRIAD[q].map((iv, i) => spell(stepLetter(L, i * 2), (rootPc + iv) % 12));
-    return ns.every((n) => n && Math.abs(n.alt) < 2) ? (ns as Note[]) : null;
+    return ns.every((n) => n && Math.abs(n.alt) < 2) && !odd(ns[0]!) ? (ns as Note[]) : null;
   };
   const own = tryLetter(prefer);
   if (own) return own;

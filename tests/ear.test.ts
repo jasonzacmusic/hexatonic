@@ -645,10 +645,13 @@ describe("the new levels", () => {
         expect(pcsA.some((x) => pcsB.includes(x)), `${key} ${p.label} share a note`).toBe(false);
         const t = ({ C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[tonic.letter]! + tonic.alt + 12) % 12;
         expect([...pcsA, ...pcsB].map((x) => (x - t + 12) % 12).sort((x, y) => x - y)).toEqual(expected[d.id]);
-        expect(p.label).not.toMatch(/undefined|𝄪|𝄫/);
+        expect(p.label).not.toMatch(/undefined|𝄪|𝄫|C♭|F♭|E♯|B♯/);
       }
     }
     expect(PAIR_LEVELS.map((l) => l.ids.length)).toEqual([3, 5, 5]);
+    expect(pairOn(spellParent("F", "major").notes[0], "bV").label).toBe("F + B");
+    expect(pairOn(spellParent("G", "major").notes[0], "bV").label).toBe("G + D♭");
+    expect(pairOn(spellParent("G", "major").notes[0], "ii").label).toBe("G + Am");
   });
 
   it("which two triads: the ladder plays exactly the pair's six notes, in seven chords, for every answer in all 12 keys", () => {

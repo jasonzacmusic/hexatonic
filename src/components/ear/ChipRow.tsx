@@ -14,7 +14,8 @@ export default function ChipRow({ row, lit }: { row: Row; lit: number[] | null }
   const rhythm = row.kind === "rhythm";
   return (
     <div>
-      <p className="font-mono text-[13px] uppercase tracking-[0.08em] text-cream/70">{row.title}</p>
+      {/* Not uppercase: "F + Gm" in caps reads as "F + GM", a major chord. */}
+      <p className="font-mono text-[13px] tracking-[0.02em] text-cream/70">{row.title}</p>
       {/* Note rows: one line on a phone too, as equal columns; rhythm rows wrap
           between groups. */}
       <div className={rhythm ? "mt-2.5 flex flex-wrap gap-x-3 gap-y-1.5" : "mt-2.5 grid gap-1.5 sm:flex sm:gap-2"}

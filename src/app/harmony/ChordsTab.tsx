@@ -55,7 +55,7 @@ const tint = (hex: string, a: number) => hex + Math.round(a * 255).toString(16).
 /** Chord symbols for display: ♭ ♯ °, and the fourth stacks named in words. */
 const chordName = (symbol: string) =>
   prettyChordSymbol(symbol).replace(/#(\d)/g, "♯$1").replace(/b(\d)/g, "♭$1")
-    .replace(/dim$/, "°").replace(/quartal4$/, " in 4ths").replace(/quartal$/, " in 4ths");
+    .replace(/dim$/, "°").replace(/aug$/, "+").replace(/quartal4$/, " in 4ths").replace(/quartal$/, " in 4ths");
 const pn = (name: string) => notePretty(noteOf(name));
 
 const INVERSIONS = ["Root position", "1st inversion", "2nd inversion", "3rd inversion"];
