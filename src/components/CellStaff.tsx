@@ -109,7 +109,7 @@ export default function CellStaff({
             if (!part) continue;
             if (part === "♯" || part === "♭") {
               const sp = document.createElementNS(NS, "tspan");
-              sp.setAttribute("style", "font-family: var(--font-plex-mono), ui-monospace, monospace; font-weight: 700");
+              sp.setAttribute("style", "font-family: var(--font-plex-mono), ui-monospace, monospace; font-weight: 500");
               sp.textContent = part;
               t.appendChild(sp);
             } else t.appendChild(document.createTextNode(part));

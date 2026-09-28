@@ -200,7 +200,16 @@ export default function ChordStaff({
             txt.setAttribute("text-anchor", "middle");
             txt.setAttribute("fill", LABEL);
             txt.setAttribute("style", `font-family: ${pageFont}; font-weight: 700; font-size: ${fontPx.toFixed(1)}px`);
-            txt.textContent = c.label;
+            /* ♯ and ♭ from the mono face at a weight it ships (500): the display face has no sharp, and a faked bold smears it */
+            for (const part of c.label.split(/([♯♭])/)) {
+              if (!part) continue;
+              if (part === "♯" || part === "♭") {
+                const sp = document.createElementNS(NS, "tspan");
+                sp.setAttribute("style", "font-family: var(--font-plex-mono), ui-monospace, monospace; font-weight: 500");
+                sp.textContent = part;
+                txt.appendChild(sp);
+              } else txt.appendChild(document.createTextNode(part));
+            }
             svg.appendChild(txt);
             out[i].label = txt;
           });
