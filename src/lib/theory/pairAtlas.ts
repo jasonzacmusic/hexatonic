@@ -310,9 +310,12 @@ function spellTriad(rootLetter: Letter, rootPc: number, q: TriadQuality): Note[]
 }
 
 /**
- * The spelling that reads as the chord: letters a third apart, the scale's own
- * letters where they already do that, fewest accidentals otherwise. An
- * augmented triad has three equal roots; the tonic wins if it is one of them.
+ * The spelling that reads as the chord: letters a third apart, the root named
+ * as the scale names it (E♭m in a scale with E♭, never D♯m), the scale's own
+ * letters where they already stack, fewest accidentals otherwise. An
+ * augmented triad has three equal roots; the tonic wins if it is one of them
+ * (G+ is G B D♯, never E♭ G B), and otherwise the root the scale spells so
+ * the whole chord is its own notes (D F♯ A♯ in G A♯ B D E♭ F♯).
  */
 function chordFromPcs(
   rootPc: number, q: TriadQuality, scale: Note[], tonic: Note,
@@ -325,7 +328,7 @@ function chordFromPcs(
       const ns = spellTriad(L, r, q);
       if (!ns) continue;
       const cost = ns.reduce((a, n) => a + Math.abs(n.alt) + (scaleLetter(pc(n)) === n.letter ? 0 : 0.5), 0) +
-        (q === "aug" && r === pc(tonic) ? -2 : 0);
+        (scaleLetter(r) === L ? 0 : 2) + (q === "aug" && r === pc(tonic) ? -4 : 0);
       if (!best || cost < best.cost) best = { notes: ns, cost };
     }
   }

@@ -11,8 +11,9 @@
  * Sharp's folk-song classification. The modal name lists the two modes that
  * share all six notes, which is exactly the ambiguity the missing note leaves.
  * Never "gospel scale" for these (that name means 1 2 b3 3 5 6, the major blues
- * scale), and never a bare "major hexatonic". "Sunday Scale" is Peter
- * Martin/Open Studio's teaching name for the no-7 rotation only: 1 2 3 4 5 6.
+ * scale), and never a bare "major hexatonic". "Sunday Scale" is a name made
+ * popular by Peter Martin (Open Studio), for the no-7 rotation only:
+ * 1 2 3 4 5 6. Jason did not coin it; never say he did.
  */
 
 import {
@@ -161,7 +162,9 @@ export type FamilyKind = "rotation" | "omit" | "omitMulti" | "fixed" | "symmetri
  * How a family reaches its notes. Practice and Sounds group by this.
  *   remove      — a seven-note scale with one note taken out
  *   pentatonic  — a pentatonic scale with one note added
- *   symmetric   — built from two identical halves (whole tone, augmented)
+ *   symmetric   — repeats evenly inside the octave: the five six-note
+ *                 scales that do (whole tone, augmented, Petrushka, Messiaen
+ *                 mode 5 and one with no common name)
  *   custom      — whatever the player builds
  *   beyond      — reference only: not a six-note scale, or a one-composer sound
  *   compare     — the five- and seven-note parents, for comparison
@@ -190,10 +193,10 @@ export const FAMILY_GROUPS: { id: FamilyGroup; label: string; blurb: string }[] 
     blurb: "Take a seven-note scale and leave one note out." },
   { id: "pentatonic", label: "Pentatonic plus one",
     blurb: "Take a five-note scale and add one note." },
-  { id: "symmetric", label: "Symmetric",
-    blurb: "Two identical halves. The pattern repeats inside the octave." },
+  { id: "symmetric", label: "Symmetrical",
+    blurb: "The pattern repeats evenly inside the octave. Exactly five six-note scales do this." },
   { id: "colour", label: "Colour scales",
-    blurb: "Six-note sounds from composers: mystic, clashing, eerie." },
+    blurb: "Scriabin's mystic sound: six notes, no perfect 5th above the tonic." },
   { id: "custom", label: "Custom", blurb: "Pick any notes you like." },
   { id: "beyond", label: "World scales (5 and 7 notes)",
     blurb: "Japanese pentatonics and Hijaz: not six notes, but close relatives worth playing." },
@@ -269,11 +272,14 @@ export const FAMILIES: Family[] = [
   {
     id: "aug", short: "Augmented",
     label: "Augmented (in jazz, often just 'the hexatonic scale')", kind: "fixed", size: 6,
-    group: "symmetric", character: "shimmer", mixOk: true,
-    /* Spelled by degree, 1 ♭3 3 5 ♭6 7, so every key reads the same way:
-       C E♭ E G A♭ B, G B♭ B D E♭ F♯. */
-    semis: [0, 3, 4, 7, 8, 11], letters: [0, 2, 2, 4, 5, 6],
-    note: "Two augmented triads a semitone apart. It holds three major and three minor triads, and no dominant 7th at all, which is why it behaves as a tonic-major colour.",
+    group: "symmetric", character: "shimmer", mixOk: true, plainWhite: true,
+    /* Spelled 1 ♯2 3 5 ♭6 7, one letter per note, as Jason writes it in
+       class and as it is usually printed: G A♯ B D E♭ F♯, C D♯ E G A♭ B.
+       Where the ♯2 would be E♯ or B♯ (or a double sharp), the plain white key
+       is written instead: D F F♯ A B♭ C♯. The chords inside are spelled as
+       chords, each on its own letters (MUSICAL_AUDIT.md). */
+    semis: [0, 3, 4, 7, 8, 11], letters: [0, 1, 2, 4, 5, 6],
+    note: "Two augmented triads a semitone apart. It holds three major and three minor triads, and no dominant 7th at all, which is why it behaves as a tonic-major colour. It repeats every major third, so only four different ones exist.",
   },
   {
     id: "prometheus", short: "Prometheus",
@@ -285,27 +291,38 @@ export const FAMILIES: Family[] = [
   {
     id: "petrushka", short: "Petrushka (tritone pair)",
     label: "Petrushka: two major triads a tritone apart", kind: "fixed", size: 6,
-    group: "colour", character: "clash", mixOk: true,
+    group: "symmetric", character: "clash", mixOk: true,
     semis: [0, 1, 4, 6, 7, 10],
     /* Spelled so the second triad reads as a triad: on C that is C + F♯
        (C C♯ E F♯ G A♯) or C + G♭ (C D♭ E G♭ G B♭). Never C D♭ E F♯ G B♭,
        where D♭ and B♭ do not belong to an F♯ chord. */
     letters: [0, 0, 2, 3, 4, 5], letterAlts: [[0, 1, 2, 4, 4, 6]],
-    note: "Two major triads a tritone apart, stacked: the Petrushka chord. Two major triads share no note only a semitone, a whole step or a tritone apart. The semitone pair gives 1 ♭2 3 4 5 ♭6, the whole-step pair gives 1 2 3 ♯4 5 6, and the tritone pair gives this one.",
+    note: "From Stravinsky's ballet Petrushka (1911): C major against F♯ major, two major triads a tritone apart. It repeats every tritone, so only six different ones exist. Two major triads share no note only a semitone, a whole step or a tritone apart. The semitone pair gives 1 ♭2 3 4 5 ♭6, the whole-step pair gives 1 2 3 ♯4 5 6, and the tritone pair gives this one.",
   },
   {
     id: "messiaen5", short: "Messiaen mode 5",
     label: "Messiaen mode 5 (a mode of limited transposition)", kind: "fixed", size: 6,
-    group: "colour", character: "eerie", mixOk: true,
-    semis: [0, 1, 5, 6, 7, 11], letters: [0, 1, 3, 4, 4, 6],
-    note: "One of Messiaen's two six-note modes of limited transposition; the other is the whole-tone scale. Two semitone-and-fourth cells a tritone apart, so it has only six transpositions.",
+    group: "symmetric", character: "eerie", mixOk: true, plainWhite: true,
+    /* Each half spelled alike, the second a tritone above the first:
+       G A♭ C, then C♯ D F♯ (letters 0 1 3, then 3 4 6). */
+    semis: [0, 1, 5, 6, 7, 11], letters: [0, 1, 3, 3, 4, 6],
+    note: "One of Olivier Messiaen's modes of limited transposition; it repeats every tritone. Each half is a half step and a 4th (G A♭ C, then C♯ D F♯), so only six different ones exist.",
+  },
+  {
+    id: "tritone-minor", short: "No common name",
+    label: "No common name: two minor triads a tritone apart", kind: "fixed", size: 6,
+    group: "symmetric", character: "shadow", mixOk: true, plainWhite: true,
+    /* G A♭ B♭ C♯ D E: G minor (G B♭ D) with C♯ minor (C♯ E G♯, the G♯
+       written A♭ so each note has its own letter). Petrushka upside down. */
+    semis: [0, 1, 3, 6, 7, 9], letters: [0, 1, 2, 3, 4, 5],
+    note: "Two minor triads a tritone apart: Petrushka turned upside down. It repeats every tritone, so only six different ones exist. It has no common name.",
   },
   {
     id: "dim-wh", short: "Octatonic (whole–half)",
     label: "Octatonic — whole–half diminished", kind: "symmetric8", size: 8,
     group: "reference", character: "tense",
     semis: [0, 2, 3, 5, 6, 8, 9, 11],
-    note: "Repeats every minor third, so only three distinct transpositions exist. Not one of Barry Harris's scales: those have eight notes but are not symmetric.",
+    note: "One of several symmetrical scales: it repeats every minor third, so only three distinct transpositions exist. Not one of Barry Harris's scales: those have eight notes but are not symmetric.",
   },
   {
     id: "dim-hw", short: "Octatonic (half–whole)",
@@ -620,7 +637,7 @@ export function buildScale(
 
   const pcs = notes.map(pc);
   const iv = intervalVector(pcs);
-  if (!degrees.length) degrees = degreesFromSemis(notes);
+  if (!degrees.length) degrees = degreesFromSpelling(notes, family);
 
   return {
     notes, removed, keySignature, label, aka, teaching, degrees, family, modeIndex,
@@ -629,14 +646,47 @@ export function buildScale(
   };
 }
 
-const SEMI_DEG: Record<number, string> = {
-  0: "1", 1: "b2", 2: "2", 3: "b3", 4: "3", 5: "4",
-  6: "b5", 7: "5", 8: "b6", 9: "6", 10: "b7", 11: "7",
-};
-function degreesFromSemis(notes: Note[]): string[] {
+const MAJOR_STEPS = [0, 2, 4, 5, 7, 9, 11];
+
+/** "b3", "#4", "5": the degree of a note on `step` letters above the tonic,
+ *  `semis` semitones up, measured against the major scale. */
+function degreeOn(step: number, semis: number): string {
+  const d = ((semis - MAJOR_STEPS[step] + 18) % 12) - 6;
+  /* The tonic's letter flattened, at the top of an eight-note scale
+     (A B C D E♭ F G♭ A♭), is the octave lowered: ♭8, never "♭1". */
+  const number = step === 0 && d < 0 ? 8 : step + 1;
+  return (d < 0 ? "b".repeat(-d) : "#".repeat(d)) + number;
+}
+
+/**
+ * Degree labels read from the SPELLING, never from semitones alone: the letter
+ * gives the number, the distance from the tonic gives the ♭ or ♯. So G whole
+ * tone, G A B C♯ D♯ F, reads 1 2 3 ♯4 ♯5 ♭7, and a sharped note can never
+ * wear a flat label (or a flatted one a sharp label).
+ *
+ * One exception, for fixed families only: a plain white key written in place
+ * of an awkward flat on the family's template (C♭ written B, E𝄫 written D)
+ * keeps the template's flat degree. That is how A♭ blues, A♭ B D♭ D E♭ G♭,
+ * still reads 1 ♭3 4 ♭5 5 ♭7: the blues keeps its ♭5 in every key.
+ */
+export function degreesFromSpelling(notes: Note[], family?: Family): string[] {
   if (!notes.length) return [];
-  const root = pc(notes[0]);
-  return notes.map((n) => SEMI_DEG[(((pc(n) - root) % 12) + 12) % 12]);
+  const t = notes[0];
+  const stepOf = (n: Note) => (((letterIndex(n.letter) - letterIndex(t.letter)) % 7) + 7) % 7;
+  const semisOf = (n: Note) => (((pc(n) - pc(t)) % 12) + 12) % 12;
+  const templates = family?.kind === "fixed" && family.letters && family.semis
+    && family.letters.length === notes.length ? [family.letters, ...(family.letterAlts ?? [])] : [];
+  /* the template this spelling follows most closely */
+  const tpl = templates.length
+    ? templates.reduce((best, tp) =>
+        tp.filter((o, i) => o !== stepOf(notes[i])).length < best.filter((o, i) => o !== stepOf(notes[i])).length ? tp : best)
+    : null;
+  return notes.map((n, i) => {
+    const own = degreeOn(stepOf(n), semisOf(n));
+    if (!tpl || n.alt !== 0 || tpl[i] === stepOf(n)) return own;
+    const formula = degreeOn(tpl[i] % 7, semisOf(n));
+    return formula.startsWith("b") && !formula.startsWith("bb") ? formula : own;
+  });
 }
 
 /** Degree labels for display: "b3" → "♭3", "#4" → "♯4". */

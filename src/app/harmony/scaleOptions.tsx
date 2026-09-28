@@ -181,9 +181,13 @@ export function stackLine(stack: ThirdsStack, notes: Note[], removed: Note | nul
  */
 export function ownSpellingFirst(found: ChordSet[], scale: Note[]) {
   const own = new Set(scale.map(noteName));
+  const tonic = scale[0] ? noteName(scale[0]) : "";
   const bySymbol = new Map<string, ChordSet>();
   const chords = found.map((c) => {
-    const lead = c.names.find((n) => n.family === c.names[0].family && n.notes.every((x) => own.has(x)));
+    /* An augmented triad on the tonic is named from the tonic, spelled as a
+       triad: G+ is G B D♯ even when the scale writes E♭ (never E♭ G B). */
+    const onTonic = c.names.find((n) => n.symbol.endsWith("aug") && n.root === tonic);
+    const lead = onTonic ?? c.names.find((n) => n.family === c.names[0].family && n.notes.every((x) => own.has(x)));
     const out = !lead || lead === c.names[0] ? c
       : { ...c, names: [lead, ...c.names.filter((n) => n !== lead)], notes: lead.voicing, noteNames: lead.notes };
     bySymbol.set(c.names.map((x) => x.symbol).join(" = "), out);

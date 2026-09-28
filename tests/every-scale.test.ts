@@ -11,9 +11,16 @@ import { describe, test, expect } from "vitest";
 import { FAMILIES, KEYS, buildScale, DIATONIC_MODES, buildDiatonic, MAJOR, minLetters } from "../src/lib/theory/scales";
 import { pc, midi, noteName, LETTERS, letterIndex, enharmonicTonic } from "../src/lib/theory/note";
 
-const DEG_SEMI: Record<string, number> = {
-  "1": 0, b2: 1, "2": 2, b3: 3, "3": 4, "4": 5, b5: 6, "5": 7, b6: 8, "6": 9, b7: 10, "7": 11,
-};
+/** Semitones for a degree name: "b3" 3, "#4" 6, "bb7" 9, "b8" 11. */
+const DEG_SEMI = new Proxy({} as Record<string, number | undefined>, {
+  get: (_, d: string) => {
+    const m = /^(b*|#*)([1-8])$/.exec(d);
+    if (!m) return undefined;
+    const base = [0, 2, 4, 5, 7, 9, 11, 12][Number(m[2]) - 1];
+    const shift = m[1].startsWith("b") ? -m[1].length : m[1].length;
+    return (((base + shift) % 12) + 12) % 12;
+  },
+});
 
 /** Every (family, mode) pair the interface can reach. */
 const COMBOS = FAMILIES.flatMap((family) =>

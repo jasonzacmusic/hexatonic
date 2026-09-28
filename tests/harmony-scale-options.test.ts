@@ -33,10 +33,11 @@ describe("Harmony scale menu", () => {
     expect(label("blues")).toBe("Blues · 1 ♭3 4 ♭5 5 ♭7");
     expect(label("blues-major")).toBe("Major blues · 1 2 ♭3 3 5 6");
     expect(label("whole")).toBe("Whole tone · 1 2 3 ♯4 ♯5 ♭7");
-    expect(label("aug")).toBe("Augmented · 1 ♭3 3 5 ♭6 7");
+    expect(label("aug")).toBe("Augmented · 1 ♯2 3 5 ♭6 7");
     expect(label("prometheus")).toBe("Prometheus · 1 2 3 ♯4 6 ♭7");
     expect(label("petrushka")).toBe("Petrushka (tritone pair) · 1 ♭2 3 ♭5 5 ♭7");
-    expect(label("messiaen5")).toBe("Messiaen mode 5 · 1 ♭2 4 ♭5 5 7");
+    expect(label("messiaen5")).toBe("Messiaen mode 5 · 1 ♭2 4 ♯4 5 7");
+    expect(label("tritone-minor")).toBe("No common name · 1 ♭2 ♭3 ♯4 5 6");
     expect(label("hirajoshi")).toBe("Hirajoshi · 1 2 ♭3 5 ♭6");
     expect(label("hijaz")).toBe("Hijaz · 1 ♭2 3 4 5 ♭6 ♭7");
     expect(label("d3")).toBe("Sunday Scale (no 7) · 1 2 3 4 5 6");
@@ -68,7 +69,7 @@ describe("Harmony scale menu", () => {
   it("groups the menu: remove one, pentatonic plus one, symmetric, colour, world", () => {
     const groups = [...new Set(SCALE_OPTIONS.map((o) => o.group))];
     expect(groups).toEqual([
-      "Six notes · Remove one note", "Six notes · Pentatonic plus one", "Six notes · Symmetric", "Six notes · Colour scales", "Not six notes · World scales (5 and 7)",
+      "Six notes · Remove one note", "Six notes · Pentatonic plus one", "Six notes · Symmetrical", "Six notes · Colour scales", "Not six notes · World scales (5 and 7)",
     ]);
     const ids = new Set(SCALE_OPTIONS.map((o) => o.id));
     for (const f of FAMILIES.filter((x) => ["remove", "pentatonic", "symmetric", "colour", "beyond"].includes(x.group)))

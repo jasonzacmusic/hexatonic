@@ -124,7 +124,7 @@ describe("the sentences in the scale data are true", () => {
   it("#7: Messiaen mode 5 is back, six notes, with a true note", () => {
     const m = FAMILIES.find((f) => f.id === "messiaen5")!;
     expect(m.size).toBe(6);
-    expect(m.note).toMatch(/other is the whole-tone scale/);
+    expect(m.note).toMatch(/Olivier Messiaen's modes of limited transposition; it repeats every tritone/);
     expect(buildScale("C", "messiaen5", 0).pcs).toEqual([0, 1, 5, 6, 7, 11]);
   });
 
@@ -169,8 +169,9 @@ describe("#14, #15: spellings in flat keys", () => {
     expect(buildScale("Db", "diatonic", 5).respelledFrom).toBe("Db");
   });
 
-  it("spells augmented by degree: C E♭ E G A♭ B", () => {
-    expect(names("C", "aug")).toBe("C Eb E G Ab B");
+  it("spells augmented the way Jason writes it, 1 ♯2 3 5 ♭6 7: C D♯ E G A♭ B, G A♯ B D E♭ F♯", () => {
+    expect(names("C", "aug")).toBe("C D# E G Ab B");
+    expect(names("G", "aug")).toBe("G A# B D Eb F#");
   });
 });
 
@@ -272,8 +273,9 @@ describe("groups", () => {
       for (const f of familiesIn(g)) expect(f.size, f.id).toBe(6);
   });
 
-  it("Prometheus, Petrushka and Messiaen 5 are 'Colour scales'; the Japanese scales and Hijaz are 'World scales'", () => {
-    expect(familiesIn("colour").map((f) => f.id)).toEqual(["prometheus", "petrushka", "messiaen5"]);
+  it("the five symmetrical scales are 'Symmetrical', Prometheus is a 'Colour scale'; the Japanese scales and Hijaz are 'World scales'", () => {
+    expect(familiesIn("symmetric").map((f) => f.id)).toEqual(["whole", "aug", "petrushka", "messiaen5", "tritone-minor"]);
+    expect(familiesIn("colour").map((f) => f.id)).toEqual(["prometheus"]);
     expect(familiesIn("beyond").map((f) => f.id)).toEqual(["hirajoshi", "insen", "iwato", "kumoi", "yo", "hijaz"]);
   });
 });

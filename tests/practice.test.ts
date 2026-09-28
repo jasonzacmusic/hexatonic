@@ -154,7 +154,7 @@ describe("the family menu", () => {
   it("lists every scale group by name, in order, and hides compare and reference", () => {
     const groups = groupFamilies(FAMILIES);
     expect(groups.map((g) => g.group)).toEqual([
-      "Six notes · Remove one note", "Six notes · Pentatonic plus one", "Six notes · Symmetric", "Six notes · Colour scales",
+      "Six notes · Remove one note", "Six notes · Pentatonic plus one", "Six notes · Symmetrical", "Six notes · Colour scales",
       "Not six notes · World scales (5 and 7)", "Your own · Custom",
     ]);
     const ids = groups.flatMap((g) => g.families.map((f) => f.id));

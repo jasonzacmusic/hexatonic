@@ -232,6 +232,12 @@ export const PROGRESSIONS: Record<string, Plan> = {
       swing: "It holds no major or minor chord at all, only suspended ones: use the open pad.",
     },
   },
+  /* No common name: two minor 6th chords a tritone apart (Gm6, C♯m6). */
+  "tritone-minor": {
+    two: [[0, "m6"], [6, "m6"]],
+    swing: [[0, "m6"], [6, "m6"]],
+    why: { four: TWO_ONLY },
+  },
   /* Octatonic whole–half: the home chord is diminished. */
   "dim-wh": {
     two: [[0, "dim7"], [2, "dim7"]],

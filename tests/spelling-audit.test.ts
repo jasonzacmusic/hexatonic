@@ -93,8 +93,9 @@ describe("audit: no scale asks for a double accidental", () => {
     expect(buildScale("C", "blues-major", 0).notes.map(noteName)).toEqual(
       ["C", "D", "Eb", "E", "G", "A"],
     );
+    // Jason's spelling, one letter per note: 1 ♯2 3 5 ♭6 7
     expect(buildScale("C", "aug", 0).notes.map(noteName)).toEqual(
-      ["C", "Eb", "E", "G", "Ab", "B"],
+      ["C", "D#", "E", "G", "Ab", "B"],
     );
   });
 });
