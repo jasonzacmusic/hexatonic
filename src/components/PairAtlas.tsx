@@ -11,15 +11,18 @@
  * you change pairs, so the music never stops for a selection.
  */
 
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import MovementLab from "@/components/MovementLab";
+import { LAB_DEFAULTS, labFromLink, LabSettings, RH_OUT } from "@/lib/theory/pairLab";
+import { keepStage, useStage } from "@/lib/stage";
 import { useSharedScale } from "@/lib/sharedScale";
 import { SHAPE_TONES } from "@/components/PairKeyboard";
 import { Seg } from "@/components/Panels";
 import { notePretty, pc } from "@/lib/theory/note";
-import { FAMILY_GROUPS, KEYS } from "@/lib/theory/scales";
+import { buildScale, FAMILY_GROUPS, KEYS } from "@/lib/theory/scales";
 import {
-  buildParent, ParentId, parentInKey, parentPairs, PARENTS, SixNoteScale, sixNoteScales, TwoChordPair,
+  buildParent, findPair, ParentId, parentInKey, parentKeySignature, pairKeySignature, parentPairs, PARENTS, pairSlug,
+  SixNoteScale, sixNoteScales, TwoChordPair,
 } from "@/lib/theory/pairAtlas";
 
 type Source = "parent" | "six";
@@ -32,12 +35,42 @@ export default function PairAtlas({ onOpenSixth }: { onOpenSixth?: () => void })
   const [parentId, setParentId] = useState<ParentId>("ionian");
   const [sixId, setSixId] = useState("diatonic-3");
   const [pick, setPick] = useState<string | null>(null);
+  const stage = useStage();
+  /* The link is read once, on arrival; until then the lab waits, so it opens
+     on the linked settings rather than switching to them. */
+  const [linked, setLinked] = useState<Partial<LabSettings> | null>(null);
+  const [lab0, setLab0] = useState<LabSettings>(LAB_DEFAULTS);
+  const onSettings = useCallback((s: LabSettings) => setLab0(s), []);
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    const k = q.get("k") && KEYS.includes(q.get("k")!) ? q.get("k")! : null;
+    const kk = k ?? key;
+    if (k) setKey(k);
+    const src = q.get("src") === "parent" ? "parent" : q.get("src") === "six" ? "six" : null;
+    const sid = q.get("s");
+    let list: TwoChordPair[] | null = null;
+    if (src === "parent" || (!src && sid && PARENTS.some((x) => x.id === sid))) {
+      setSource("parent");
+      const pid = PARENTS.some((x) => x.id === sid) ? (sid as ParentId) : "ionian";
+      setParentId(pid);
+      list = parentPairs(buildParent(kk, pid));
+    } else if (src === "six" || sid) {
+      const hit = sixNoteScales(kk).find((x) => x.id === sid);
+      setSource("six");
+      if (hit) { setSixId(hit.id); list = hit.pairs; }
+    }
+    const want = list && findPair(list, q.get("pair"));
+    if (want) setPick(want.id);
+    setLinked(labFromLink(q));
+    // once, on arrival
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [sixFam, sixMode] = (() => { const i = sixId.lastIndexOf("-"); return [sixId.slice(0, i), Number(sixId.slice(i + 1)) || 0] as const; })();
   useSharedScale(source === "six" ? { key, family: sixFam, mode: sixMode } : { key }, (s) => {
     setKey(s.key);
     const id = `${s.family}-${s.mode}`;
     if (sixNoteScales(s.key).some((x) => x.id === id)) { setSixId(id); setSource("six"); }
-  });
+  }, () => { const q = new URLSearchParams(window.location.search); return q.has("k") || q.has("s"); });
 
   const ps = useMemo(() => buildParent(key, parentId), [key, parentId]);
   const fromParent = useMemo(() => parentPairs(ps), [ps]);
@@ -53,8 +86,39 @@ export default function PairAtlas({ onOpenSixth }: { onOpenSixth?: () => void })
   if (chosen) last.current = { pair: chosen, source: sourceName };
   const lab = last.current;
 
+  const keySignature = source === "parent"
+    ? parentKeySignature(ps)
+    : lab ? pairKeySignature(lab.pair, buildScale(key, sixFam, sixMode).keySignature) : null;
+
+  /* Keep the link in step with what is on screen, without history entries. */
+  useEffect(() => {
+    if (!linked) return;
+    try {
+      const u = new URL(window.location.href);
+      const q = new URLSearchParams();
+      q.set("tab", "pairs");
+      q.set("src", source);
+      q.set("k", key);
+      q.set("s", source === "parent" ? parentId : sixId);
+      if (chosen) q.set("pair", pairSlug(chosen));
+      q.set("bpm", String(lab0.bpm));
+      q.set("v", lab0.voicing);
+      q.set("dir", lab0.dir === "up" ? "up" : "both");
+      q.set("m", lab0.material);
+      q.set("rh", RH_OUT[lab0.rhythm]);
+      if (lab0.lh) q.set("lh", "1");
+      keepStage(q);
+      window.history.replaceState(null, "", `${u.pathname}?${q.toString()}${u.hash}`);
+    } catch { /* the page still works without the link */ }
+  }, [linked, source, key, parentId, sixId, chosen, lab0]);
+
   const plain = list.filter((p) => p.plain);
   const colour = list.filter((p) => !p.plain);
+
+  if (!linked) return null;
+  if (stage && lab)
+    return <MovementLab pair={lab.pair} source={lab.source} keySignature={keySignature}
+                        initial={linked} onSettings={onSettings} stage />;
 
   return (
     <div className="space-y-5">
@@ -132,7 +196,8 @@ export default function PairAtlas({ onOpenSixth }: { onOpenSixth?: () => void })
         </p>
       </section>
 
-      {lab && <MovementLab pair={lab.pair} source={lab.source} />}
+      {lab && <MovementLab pair={lab.pair} source={lab.source} keySignature={keySignature}
+                           initial={linked} onSettings={onSettings} />}
     </div>
   );
 }

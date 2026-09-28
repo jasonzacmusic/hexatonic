@@ -30,7 +30,7 @@ export default function Home() {
     <div className="-mb-16">
       <HomeHero />
 
-      <section aria-label="Where to start" className="mt-8 grid gap-2.5 sm:mt-10 sm:grid-cols-2 lg:grid-cols-4">
+      <section aria-label="Where to start" className="stage-hide mt-8 grid gap-2.5 sm:mt-10 sm:grid-cols-2 lg:grid-cols-4">
         {DOORS.map((d) => (
           <Link key={d.href} href={d.href} className="door group p-4 sm:p-5">
             <h2 className="text-[20px] font-extrabold leading-tight tracking-[-0.015em]">{d.title}</h2>
@@ -43,7 +43,7 @@ export default function Home() {
         ))}
       </section>
 
-      <section className="mt-10 grid gap-4 border-t border-line pt-8 lg:grid-cols-[1fr_1.4fr] lg:gap-16">
+      <section className="stage-hide mt-10 grid gap-4 border-t border-line pt-8 lg:grid-cols-[1fr_1.4fr] lg:gap-16">
         <h2 className="display text-3xl sm:text-4xl">Built to be played.</h2>
         <div>
           <p className="lede text-[17px]">

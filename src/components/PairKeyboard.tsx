@@ -28,7 +28,7 @@ const BLACK_AT: Record<number, number> = { 1: 0.68, 3: 0.82, 6: 0.64, 8: 0.76, 1
 const isWhite = (m: number) => WHITE.has(((m % 12) + 12) % 12);
 
 export default function PairKeyboard({
-  shapes, removed, used, active,
+  shapes, removed, used, active, height, labelSize = 13,
 }: {
   /** the notes of shape A and shape B */
   shapes: [Note[], Note[]];
@@ -37,6 +37,10 @@ export default function PairKeyboard({
   used: number[];
   /** the keys sounding now */
   active: number[];
+  /** fixed key height in px (stage view); by default it follows the width */
+  height?: number;
+  /** note-name size on the keys */
+  labelSize?: number;
 }) {
   const host = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
@@ -64,13 +68,13 @@ export default function PairKeyboard({
   }
 
   const W = width ? width / whites.length : 28;
-  const H = Math.round(Math.min(150, Math.max(104, W * 3.9)));
+  const H = height ?? Math.round(Math.min(150, Math.max(104, W * 3.9)));
   const BW = W * 0.6;
   const BH = H * 0.62;
   const felt = 6;
   /* Names only where a 13px label fits inside the key. */
-  const labels = W >= 19;
-  const blackLabels = BW >= 21;
+  const labels = W >= labelSize + 6;
+  const blackLabels = BW >= labelSize + 8;
 
   const shapeOf = (m: number): 0 | 1 | null => {
     const p = ((m % 12) + 12) % 12;
@@ -113,7 +117,7 @@ export default function PairKeyboard({
                   </g>
                 )}
                 {labels && name && (
-                  <text x={x + W / 2} y={felt + H - 11} textAnchor="middle" fontSize={13} fontWeight={700}
+                  <text x={x + W / 2} y={felt + H - labelSize + 2} textAnchor="middle" fontSize={labelSize} fontWeight={700}
                         fontFamily="var(--font-plex-mono), ui-monospace, monospace"
                         fill={lit ? "#231B05" : SHAPE_TONES[s!].text}>{name}</text>
                 )}
@@ -135,7 +139,7 @@ export default function PairKeyboard({
                         stroke="#E8666C" strokeWidth={2.5} strokeLinecap="round" />
                 )}
                 {blackLabels && name && (
-                  <text x={x + BW / 2} y={felt + BH - 9} textAnchor="middle" fontSize={13} fontWeight={700}
+                  <text x={x + BW / 2} y={felt + BH - labelSize + 4} textAnchor="middle" fontSize={labelSize} fontWeight={700}
                         fontFamily="var(--font-plex-mono), ui-monospace, monospace"
                         fill={lit ? "#231B05" : "#F4EFE4"}>{name}</text>
                 )}

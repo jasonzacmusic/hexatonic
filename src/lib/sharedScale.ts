@@ -50,6 +50,14 @@ export function writeShared(part: Partial<SharedScale>) {
   } catch {}
 }
 
+/** The key the page's own link names (?k=G), if it is a real key. */
+export function linkKey(): string | null {
+  try {
+    const k = new URLSearchParams(window.location.search).get("k");
+    return k && KEYS.includes(k) ? k : null;
+  } catch { return null; }
+}
+
 /** True if `family` + `mode` is a scale the library can build. */
 export function isLibraryScale(family: string, mode: number): boolean {
   const f = FAMILIES.find((x) => x.id === family);
@@ -71,7 +79,10 @@ export function useSharedScale(
   useEffect(() => {
     if (!skip?.()) {
       const s = readShared();
-      if (s) apply(s);
+      /* A key named in the link (?k=G) always beats the remembered one. */
+      const k = linkKey();
+      if (k) apply({ ...(s ?? { family: "diatonic", mode: 0 }), key: k });
+      else if (s) apply(s);
     }
     setReady(true);
     // once, on arrival

@@ -13,7 +13,7 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useSharedScale } from "@/lib/sharedScale";
+import { linkKey, useSharedScale } from "@/lib/sharedScale";
 import Keyboard from "@/components/Keyboard";
 import Fretboard from "@/components/Fretboard";
 import BluesLane from "@/components/BluesLane";
@@ -58,6 +58,8 @@ export default function ImproviseClient() {
     if (bed && VAMPS.some((v) => v.id === bed)) setBedId(bed as BedId);
     const sc = q.get("scale");
     if (sc && SCALE_MENU.some((g) => g.options.some((o) => o.value === sc))) setScaleId(sc);
+    const k = linkKey();
+    if (k) setKey(k);
   }, []);
   const [instrument, setInstrument] = useState<"keys" | "guitar">("keys");
   const [key, setKey] = useState("G");

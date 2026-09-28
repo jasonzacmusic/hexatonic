@@ -42,7 +42,7 @@ export default function HarmonyClient() {
 
   return (
     <div className="space-y-5 pb-10">
-      <header className="max-w-2xl">
+      <header className="stage-hide max-w-2xl">
         <h1 className="display text-[40px] leading-none tracking-[-0.03em] sm:text-5xl">Harmony</h1>
         <p className="mt-3 max-w-[62ch] text-[17px] leading-[1.5] text-cream/85 sm:text-[18px]">
           The chords hiding in any six-note scale, the triad pairs that make one, and a way to put
@@ -50,7 +50,7 @@ export default function HarmonyClient() {
         </p>
       </header>
 
-      <div>
+      <div className="stage-hide">
         {/* The picked tab is cream with a bright rule, never gold: gold on this
             page means only "sounding now". */}
         <div className="grid grid-cols-3 gap-1 rounded-2xl border border-line bg-surface p-1"

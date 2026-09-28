@@ -16,6 +16,7 @@
  * and after the change the sounding id is played again from its new notes.
  */
 
+import { keepStage } from "@/lib/stage";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSharedScale } from "@/lib/sharedScale";
@@ -101,7 +102,8 @@ export default function SoundsClient() {
   const pickKey = (k: string) => {
     replay.current = sounding;
     setKey(k);
-    const q = k === DEFAULT_KEY ? "" : `?k=${encodeURIComponent(k)}`;
+    const sp = keepStage(new URLSearchParams(k === DEFAULT_KEY ? "" : `k=${encodeURIComponent(k)}`));
+    const q = sp.toString() ? `?${sp}` : "";
     window.history.replaceState(null, "", `${window.location.pathname}${q}${window.location.hash}`);
   };
   const setParent = (p: string) => { replay.current = sounding; setParentRaw(p); };
