@@ -50,6 +50,26 @@ export function writeShared(part: Partial<SharedScale>) {
   } catch {}
 }
 
+/** Link parameters that name a scale or a pair on some page. */
+const SCALE_PARAMS = ["s", "f", "scale", "pair"];
+
+/**
+ * What a page should open on: a key in the link (?k=G) beats the remembered
+ * key; a scale in the link beats the remembered scale. When the link names a
+ * scale, the remembered family is NOT handed over (family "" matches nothing),
+ * so the page's own reading of its link wins.
+ */
+export function arrivalScale(search: string, remembered: SharedScale | null): SharedScale | null {
+  const q = new URLSearchParams(search);
+  const raw = q.get("k");
+  const k = raw && KEYS.includes(raw) ? raw : null;
+  const namesScale = SCALE_PARAMS.some((p) => q.has(p));
+  if (!k && !remembered) return null;
+  const key = k ?? remembered!.key;
+  if (namesScale) return { key, family: "", mode: 0 };
+  return { ...(remembered ?? { family: "diatonic", mode: 0 }), key };
+}
+
 /** The key the page's own link names (?k=G), if it is a real key. */
 export function linkKey(): string | null {
   try {
@@ -78,11 +98,10 @@ export function useSharedScale(
   const [ready, setReady] = useState(false);
   useEffect(() => {
     if (!skip?.()) {
-      const s = readShared();
-      /* A key named in the link (?k=G) always beats the remembered one. */
-      const k = linkKey();
-      if (k) apply({ ...(s ?? { family: "diatonic", mode: 0 }), key: k });
-      else if (s) apply(s);
+      let search = "";
+      try { search = window.location.search; } catch {}
+      const s = arrivalScale(search, readShared());
+      if (s) apply(s);
     }
     setReady(true);
     // once, on arrival

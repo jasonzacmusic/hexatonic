@@ -127,3 +127,18 @@ describe("links and signatures", () => {
     expect(layOnCell(line, "cell1").bars).toBe(2);
   });
 });
+
+import { arrivalScale } from "../src/lib/sharedScale";
+
+describe("a link beats what was remembered", () => {
+  const hirajoshi = { key: "Eb", family: "hirajoshi", mode: 0 };
+  it("a linked scale is never replaced by the remembered one", () => {
+    for (const q of ["?tab=pairs&src=six&k=G&s=diatonic-0&pair=Em-D", "?k=G&f=whole", "?k=G&scale=diatonic:0", "?pair=Em-D&k=G"])
+      expect(arrivalScale(q, hirajoshi)).toEqual({ key: "G", family: "", mode: 0 });
+  });
+  it("a key alone keeps the remembered scale", () => {
+    expect(arrivalScale("?k=G", hirajoshi)).toEqual({ key: "G", family: "hirajoshi", mode: 0 });
+    expect(arrivalScale("", hirajoshi)).toEqual(hirajoshi);
+    expect(arrivalScale("?k=Q", null)).toBeNull();
+  });
+});
