@@ -14,9 +14,15 @@
  * sound that is playing. The same sound carries on in the new key: every
  * playable registers its notes under a key-independent id while it renders,
  * and after the change the sounding id is played again from its new notes.
+ *
+ * Stage mode (?stage=1) is one screen, never a scroll: ?family=<id> (plus
+ * &m=<mode> for the diatonic rotations, or family=diatonic-3) shows that one
+ * sound large and centred, and the arrow keys step to the next; with no
+ * family it shows the list of sounds to pick from.
  */
 
-import { keepStage } from "@/lib/stage";
+import { isStage, keepStage } from "@/lib/stage";
+import StageFit, { useStageNav } from "@/components/StageFit";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSharedScale } from "@/lib/sharedScale";
@@ -32,6 +38,7 @@ import {
 } from "@/lib/theory/workout";
 import { PlayGlyph, litIndex, upToOctave, usePreviewRun, Lit } from "@/components/ScalePreview";
 import ScaleRing from "@/components/ScaleRing";
+import PageMark from "@/components/PageMark";
 import KeyPicker, { prettyKey as PRETTY_KEY } from "@/components/KeyPicker";
 import { symmetryLine } from "@/lib/theory/symmetric";
 
@@ -87,6 +94,8 @@ type Player = ReturnType<typeof usePreviewRun> & {
 export default function SoundsClient() {
   const [key, setKey] = useState(DEFAULT_KEY);
   const [parent, setParentRaw] = useState("major");
+  /* stage mode: null = the normal page; "" = the list; else an entry id */
+  const [focus, setFocus] = useState<string | null>(null);
   const run = usePreviewRun();
   const reg = useRef<Record<string, { midis: number[]; spread: number }>>({});
   const replay = useRef<string | null>(null);
@@ -99,14 +108,24 @@ export default function SoundsClient() {
 
   // the key lives in the URL so a link opens on the same page
   useEffect(() => {
-    const k = new URLSearchParams(window.location.search).get("k");
+    const sp = new URLSearchParams(window.location.search);
+    const k = sp.get("k");
     if (k && KEYS.includes(k)) setKey(k);
+    if (isStage()) setFocus(focusId(sp.get("family"), sp.get("m")));
   }, []);
   useSharedScale({ key }, (s) => setKey(s.key), () => new URLSearchParams(window.location.search).has("k"));
   const pickKey = (k: string) => {
     replay.current = sounding;
     setKey(k);
+    writeUrl(k, focus);
+  };
+  const writeUrl = (k: string, f: string | null) => {
     const sp = keepStage(new URLSearchParams(k === DEFAULT_KEY ? "" : `k=${encodeURIComponent(k)}`));
+    if (f) {
+      const [fam, m] = splitId(f);
+      sp.set("family", fam);
+      if (m) sp.set("m", String(m));
+    }
     const q = sp.toString() ? `?${sp}` : "";
     window.history.replaceState(null, "", `${window.location.pathname}${q}${window.location.hash}`);
   };
@@ -120,7 +139,7 @@ export default function SoundsClient() {
     replay.current = null;
     const r = id ? reg.current[id] : undefined;
     if (id && r) void play(id, r.midis, r.spread);
-  }, [key, parent, play]);
+  }, [key, parent, focus, play]);
 
   const remove = useMemo(() => [
     ...MODE_ORDER.map((m) => entryFor(key, "diatonic", m)),
@@ -133,6 +152,21 @@ export default function SoundsClient() {
   const rows = useMemo(() => knockOut(key, parent), [key, parent]);
   const parentDef = PARENTS.find((p) => p.id === parent)!;
 
+  /* every sound, in page order, for stage mode's one-at-a-time view */
+  const all = useMemo(() => [
+    ...remove.map((e) => ({ e, g: "remove" })), ...penta.map((e) => ({ e, g: "pentatonic" })),
+    ...colour.map((e) => ({ e, g: "colour" })), ...symmetric.map((e) => ({ e, g: "symmetric" })),
+    ...world.map((e) => ({ e, g: "beyond" })),
+  ], [remove, penta, colour, symmetric, world]);
+  const at = focus ? all.findIndex((x) => x.e.id === focus) : -1;
+  const goTo = (i: number) => {
+    const id = all[(i + all.length) % all.length].e.id;
+    replay.current = sounding ? id : null;
+    setFocus(id);
+    writeUrl(key, id);
+  };
+  useStageNav(focus !== null, () => goTo(at < 0 ? 0 : at - 1), () => goTo(at < 0 ? 0 : at + 1));
+
   const group = (id: string) => FAMILY_GROUPS.find((g) => g.id === id)!;
   const jump = (cls: string) => (
     <nav aria-label="Groups" className={cls}>
@@ -140,9 +174,54 @@ export default function SoundsClient() {
     </nav>
   );
 
+  if (focus !== null) {
+    const cur = at >= 0 ? all[at] : null;
+    return (
+      <StageFit>
+        {cur ? (
+          <div className="mx-auto w-full max-w-[1280px]">
+            <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
+              <p className="eyebrow">{group(cur.g).label}</p>
+              <KeyPicker value={key} onChange={pickKey} size="sm" hideLabel />
+            </div>
+            <StageCard e={cur.e} player={player} />
+            <div className="mt-4 flex items-center justify-end gap-1 font-mono text-[13px] tabular-nums text-muted">
+              <button type="button" onClick={() => goTo(at - 1)} className="px-2 py-1 hover:text-cream" aria-label="Previous sound">←</button>
+              {at + 1} / {all.length}
+              <button type="button" onClick={() => goTo(at + 1)} className="px-2 py-1 hover:text-cream" aria-label="Next sound">→</button>
+            </div>
+          </div>
+        ) : (
+          <div className="mx-auto w-full max-w-[1280px]">
+            <h1 className="display text-[44px]">Every six-note sound</h1>
+            <p className="quiet mt-2">Pick one. The arrow keys step through them.</p>
+            <div className="mt-6 grid grid-cols-2 gap-x-10 gap-y-5 sm:grid-cols-3 lg:grid-cols-5">
+              {["remove", "pentatonic", "colour", "symmetric", "beyond"].map((g) => (
+                <div key={g}>
+                  <p className="micro-caps">{group(g).label}</p>
+                  <ul className="mt-2 space-y-1">
+                    {all.filter((x) => x.g === g).map(({ e }) => (
+                      <li key={e.id}>
+                        <button type="button" onClick={() => goTo(all.findIndex((x) => x.e.id === e.id))}
+                                className="text-left text-[17px] text-cream/85 underline decoration-transparent underline-offset-4 hover:decoration-cream/50">
+                          {e.name}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </StageFit>
+    );
+  }
+
   return (
-    <div className="-mb-16">
-      <header className="flex flex-wrap items-end justify-between gap-x-10 gap-y-3 pt-1">
+    <div className="stage-swap -mb-16">
+      <header className="relative flex flex-wrap items-end justify-between gap-x-10 gap-y-3 pt-1 xl:pr-[172px]">
+        <PageMark kind="sounds" className="!-top-2 hidden xl:block" />
         <div>
           <p className="eyebrow">Sounds</p>
           <h1 className="display mt-2 text-[40px] sm:text-5xl lg:text-[56px]">
@@ -217,6 +296,64 @@ export default function SoundsClient() {
         </div>
       </Group>
     </div>
+  );
+}
+
+/* ── stage mode ───────────────────────────────────────────────────────── */
+
+/** "diatonic-3" → ["diatonic", 3]; "whole-0" → ["whole", 0]. */
+function splitId(id: string): [string, number] {
+  const m = /^(.*)-(\d+)$/.exec(id);
+  return m ? [m[1], Number(m[2])] : [id, 0];
+}
+
+/** The entry id a stage link asks for: family=whole, family=diatonic&m=3 or
+ *  family=diatonic-3. "" (the list) when none is given. */
+function focusId(family: string | null, m: string | null): string {
+  if (!family) return "";
+  const [fam, mode] = /-\d+$/.test(family) ? splitId(family) : [family, Number(m) || 0];
+  return `${fam}-${mode}`;
+}
+
+/** One sound, large, for filming: the ring beside its name, notes and degrees. */
+function StageCard({ e, player }: { e: Entry; player: Player }) {
+  const on = isOn(player, e.id);
+  const s = e.scale;
+  const tap = runOf(player, e.id, s.notes);
+  const idx = litIndex(player.lit, e.id, s.notes.length);
+  const selfName = `${PRETTY_KEY(s.tonic)} ${e.name}`;
+  const count = s.notes.length;
+  return (
+    <article className={`card grid items-center gap-8 !p-6 md:grid-cols-[minmax(0,1fr)_auto] md:gap-12 md:!p-12 ${on ? "border-gold/60" : ""}`}>
+      <div className="min-w-0">
+        <p className="font-serif text-[26px] italic leading-none text-cream/75 md:text-[34px]">
+          {e.character}
+          {count !== 6 && <span className="ml-3 font-mono text-[16px] not-italic text-muted">{count} notes</span>}
+        </p>
+        <h1 className="display mt-3 text-[44px] leading-[1.02] md:text-[72px]">
+          <span className="text-muted">{PRETTY_KEY(s.tonic)}</span> {e.name}
+        </h1>
+        <p className="mt-4 font-mono text-[18px] tracking-[0.04em] text-muted md:text-[24px]">
+          {s.degrees.map(prettyDegree).join("  ")}
+        </p>
+        <span className="mt-4 flex flex-wrap gap-2">
+          {s.notes.map((n, i) => (
+            <span key={i} className={`note-dot !rounded-lg !px-3 !py-1.5 !text-[20px] md:!text-[28px] ${idx === i ? "is-lit" : ""}`}>{notePretty(n)}</span>
+          ))}
+        </span>
+        {s.respelledFrom && (
+          <p className="micro mt-3">Written from {PRETTY_KEY(s.tonic)}: in {PRETTY_KEY(s.respelledFrom)} it would need double flats.</p>
+        )}
+        {e.repeats && <p className="mt-4 font-mono text-[16px] text-cream/80 md:text-[18px]">{e.repeats}</p>}
+        <p className="mt-4 max-w-[56ch] text-[17px] leading-relaxed text-cream/80 md:text-[20px]">{e.colour}</p>
+      </div>
+      <ScaleRing notes={s.notes} removed={s.removed} size={380} className="mx-auto !w-[260px] md:!w-[380px]"
+                 activePc={idx === null ? null : pc(s.notes[idx])}>
+        <span className="pointer-events-auto">
+          <PlayButton on={on} label={`${on ? "Stop" : "Play"} ${selfName}`} onClick={tap} big />
+        </span>
+      </ScaleRing>
+    </article>
   );
 }
 

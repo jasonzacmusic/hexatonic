@@ -65,11 +65,15 @@ describe("the four augmented triangles", () => {
     expect(inside.map((t) => t.name)).toEqual(["G B D♯", "A C♯ E♯"]);
     expect(inside[1].written.map((w) => `${notePretty(w.chord)}=${notePretty(w.scale)}`)).toEqual(["E♯=F"]);
   });
-  it("the tonic's triangle always comes first and starts on the tonic, in every key", () => {
+  it("the tonic's triangle always comes first, named on the tonic unless that needs a double sharp", () => {
     for (const k of KEYS) for (const fam of ["aug", "whole"]) {
       const s = buildScale(k, fam);
       const first = augTriangles(s.notes).find((t) => t.order === 0)!;
-      expect(pc(first.notes[0]), `${k} ${fam}`).toBe(pc(s.notes[0]));
+      expect(first.pcs, `${k} ${fam}`).toContain(pc(s.notes[0]));
+      const onTonic = augTriad(s.notes[0])!;
+      /* B+ would be B D♯ F𝄪: the ring then says G+ = G B D♯, as Chords and
+         Pairs do (tests/aug-names-agree.test.ts), never C♭+. */
+      if (!onTonic.some((n) => Math.abs(n.alt) === 2)) expect(pc(first.notes[0]), `${k} ${fam}`).toBe(pc(s.notes[0]));
       expect(first.notes.some((n) => Math.abs(n.alt) === 2), `${k} ${fam}`).toBe(false);
     }
   });

@@ -17,7 +17,7 @@
  */
 
 import {
-  Note, pc, spell, stepLetter, letterIndex, noteName,
+  Note, pc, midi, spell, stepLetter, letterIndex, noteName,
   primeForm, intervalVector, forteName, parseNoteName, MAJOR_KEYS, enharmonicTonic,
 } from "./note";
 import { spellSet } from "./custom";
@@ -296,7 +296,8 @@ export const FAMILIES: Family[] = [
     semis: [0, 1, 4, 6, 7, 10],
     /* Spelled so the second triad reads as a triad: on C that is C + F♯
        (C C♯ E F♯ G A♯) or C + G♭ (C D♭ E G♭ G B♭). Never C D♭ E F♯ G B♭,
-       where D♭ and B♭ do not belong to an F♯ chord. */
+       where D♭ and B♭ do not belong to an F♯ chord. Of the two, the one with
+       no "♯1" wins: C + G♭, F + C♭; on D♭ the D stands in for E𝄫 and reads ♭2. */
     letters: [0, 0, 2, 3, 4, 5], letterAlts: [[0, 1, 2, 4, 4, 6]],
     note: "From Stravinsky's ballet Petrushka (1911): two major chords a tritone apart (in G: G major and D♭ major). Two major triads share no note only a semitone, a whole step or a tritone apart. The semitone pair gives 1 ♭2 3 4 5 ♭6, the whole-step pair gives 1 2 3 ♯4 5 6, and the tritone pair gives this one.",
   },
@@ -495,7 +496,11 @@ function spellFixed(tonicName: string, fam: Family): Note[] | null {
       const singles = cand.filter((x) => Math.abs(x.alt) === 1).length;
       const white = cand.filter(isWhiteAccidental).length;
       const wrongDir = cand.filter((x) => x.alt !== 0 && (x.alt > 0) === flat).length;
-      const cost = doubles * 1e6 + (fam.mixOk ? 0 : (mixes(cand) ? 5000 : 0)) +
+      /* C C♯ reads "♯1": the note a semitone up is the ♭2 (C D♭). Weighed
+         below a template change, so Petrushka keeps its two triads spelled
+         as triads: C + G♭ (C D♭ E G♭ G B♭), F + C♭ (F G♭ A C♭ C E♭). */
+      const unison = cand.filter((x, k) => k > 0 && offs[k] === 0 && x.alt !== 0).length;
+      const cost = doubles * 1e6 + unison * 1200 + (fam.mixOk ? 0 : (mixes(cand) ? 5000 : 0)) +
         (fam.plainWhite ? white * 3000 : 0) + singles * 1000 + dev * 1500 + wrongDir * 10;
       if (cost < bestCost) { bestCost = cost; best = cand; }
       return;
@@ -591,9 +596,16 @@ export function buildScale(
     /* Eight notes will not fit in seven letters, so exactly one letter must
        repeat — and WHICH one cannot be fixed globally. A template that spells C
        cleanly gives Eb a double flat. So: try every position for the doubled
-       letter, score by sum(alt squared) to punish double accidentals hard, and
-       tie-break toward the key's own accidental direction. Ported from the
-       Python reference, where 0 of 24 root/kind pairs needed a double. */
+       letter and score, in order of weight:
+         a double accidental         — never, if there is any way round it
+         a degree reading ♯1 or ♭1   — C C♯ … ; the note a semitone up is the ♭2
+         a letter used twice that is not a chromatic pair (D♭ D♯)
+         an odd degree label         — ♭4, ♯3, 𝄫6: not how an octatonic is read
+         C♭, F♭, E♯, B♯ as spellings, then sum(alt²), mixing, and the key's
+         own accidental direction.
+       So C half–whole is C D♭ E♭ E F♯ G A B♭ (1 ♭2 ♭3 3 ♯4 5 6 ♭7), and D♭
+       half–whole is D♭ D E F G A♭ B♭ C♭: the D stands in for E𝄫 and reads
+       ♭2, as the blues' D stands in for E𝄫 (MUSICAL_AUDIT.md). */
     const t = parseNoteName(tonicName);
     const flatKey = leansFlat(tonicName);
     let best: Note[] | null = null;
@@ -616,8 +628,15 @@ export function buildScale(
         cand.push(n);
       }
       if (!ok) continue;
+      const labels = degreesFromSpelling(cand);
+      const doubles = cand.filter((n) => Math.abs(n.alt) === 2).length;
+      /* the letter used twice must be a chromatic pair (E♭ E), never D♭ D♯ */
+      const splitPair = dbl < 7 && Math.abs(midi(cand[dbl + 1]) - midi(cand[dbl])) !== 1 ? 1 : 0;
+      const unison = labels.filter(isUnisonLabel).length;
+      const odd = labels.filter((d) => !OCTATONIC_DEGREES.has(d)).length;
+      const white = cand.filter(isWhiteAccidental).length;
       const wrongDir = cand.filter((n) => n.alt !== 0 && (n.alt > 0) === flatKey).length;
-      const cost =
+      const cost = doubles * 1e7 + unison * 1e6 + splitPair * 1e5 + odd * 5000 + white * 1500 +
         cand.reduce((a, n) => a + n.alt * n.alt, 0) * 1000 + (mixes(cand) ? 100 : 0) + wrongDir;
       if (cost < bestCost) { bestCost = cost; best = cand; }
     }
@@ -649,6 +668,16 @@ export function buildScale(
 
 const MAJOR_STEPS = [0, 2, 4, 5, 7, 9, 11];
 
+/** "♯1" or "♭1" below the octave: never a degree anyone reads. */
+export const isUnisonLabel = (d: string) => /^[b#]+1$/.test(d);
+
+/** The degree labels an octatonic is read by: the dominant side (1 ♭2 ♯2 3 ♯4
+ *  5 6 ♭7) and the diminished side (1 2 ♭3 4 ♭5 ♭6 𝄫7 7, ♭8 at the top).
+ *  Anything else — ♯1, ♭4, ♯3, 𝄫6 — is an odd label the spelling avoids. */
+const OCTATONIC_DEGREES = new Set([
+  "1", "b2", "2", "#2", "b3", "3", "4", "#4", "b5", "5", "#5", "b6", "6", "bb7", "b7", "7", "b8",
+]);
+
 /** "b3", "#4", "5": the degree of a note on `step` letters above the tonic,
  *  `semis` semitones up, measured against the major scale. */
 function degreeOn(step: number, semis: number): string {
@@ -668,7 +697,9 @@ function degreeOn(step: number, semis: number): string {
  * One exception, for fixed families only: a plain white key written in place
  * of an awkward flat on the family's template (C♭ written B, E𝄫 written D)
  * keeps the template's flat degree. That is how A♭ blues, A♭ B D♭ D E♭ G♭,
- * still reads 1 ♭3 4 ♭5 5 ♭7: the blues keeps its ♭5 in every key.
+ * still reads 1 ♭3 4 ♭5 5 ♭7: the blues keeps its ♭5 in every key. By the
+ * same rule, in every family, a white key on a flat tonic's own letter a
+ * semitone up (D over D♭, A over A♭) reads ♭2, never "♯1".
  */
 export function degreesFromSpelling(notes: Note[], family?: Family): string[] {
   if (!notes.length) return [];
@@ -684,6 +715,9 @@ export function degreesFromSpelling(notes: Note[], family?: Family): string[] {
     : null;
   return notes.map((n, i) => {
     const own = degreeOn(stepOf(n), semisOf(n));
+    /* A white key on a flat tonic's letter, a semitone up (D over D♭), stands
+       in for the ♭2, whose own spelling (E𝄫) nobody reads. It is the ♭2. */
+    if (own === "#1" && n.alt === 0) return "b2";
     if (!tpl || n.alt !== 0 || tpl[i] === stepOf(n)) return own;
     const formula = degreeOn(tpl[i] % 7, semisOf(n));
     return formula.startsWith("b") && !formula.startsWith("bb") ? formula : own;

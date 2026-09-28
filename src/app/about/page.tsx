@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { pageMeta } from "@/lib/pageMeta";
 import Link from "next/link";
+import PageMark from "@/components/PageMark";
 import { DIATONIC_MODES } from "@/lib/theory/scales";
 
 export const metadata: Metadata = pageMeta("/about", "About",
@@ -10,6 +11,8 @@ const NO7 = DIATONIC_MODES[3];
 
 export default function Page() {
   return (
+    <div className="relative">
+    <PageMark kind="about" className="hidden lg:block" />
     <article className="max-w-2xl pb-10 pt-2">
       <p className="eyebrow">About</p>
       <h1 className="display mt-3 text-5xl sm:text-6xl">Six notes, played properly.</h1>
@@ -57,5 +60,6 @@ export default function Page() {
         <Link href="/practice" className="btn btn-primary">Start practising</Link>
       </p>
     </article>
+    </div>
   );
 }

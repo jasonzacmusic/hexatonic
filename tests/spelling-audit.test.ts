@@ -46,7 +46,7 @@ describe("audit: every chord the Pair Atlas prints is spelled as that chord", ()
     const d = parentPairs(buildParent("Db", "ionian")).flatMap((p) => p.shapes).find((s) => noteName(s.root) === "Gb")!;
     expect(d.notes.map(noteName)).toEqual(["Gb", "Bb", "Db"]);
     const petrushka = sixNoteScales("C").find((s) => s.familyId === "petrushka")!.pairs[0];
-    expect(petrushka.shapes.map((s) => s.notes.map(noteName).join(" "))).toEqual(["C E G", "F# A# C#"]);
+    expect(petrushka.shapes.map((s) => s.notes.map(noteName).join(" "))).toEqual(["C E G", "Gb Bb Db"]);
   });
 
   it("still spells the plain keys the obvious way", () => {

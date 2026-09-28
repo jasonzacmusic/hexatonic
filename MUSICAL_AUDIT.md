@@ -126,3 +126,38 @@ is now spelled with matching halves (G A♭ C, then C♯ D F♯).
   scale.
 - "It's used a lot in gospel music" (the Sunday Scale) is quoted as Jason's
   words from class, not stated as a bare fact.
+
+### No degree reads ♯1 or ♭1 (octatonics and Petrushka)
+The note a semitone above the tonic is the **♭2**, never "♯1". Checked in all
+twelve keys for every six- and eight-note scale by `tests/no-unison-degree.test.ts`.
+
+- **Half–whole octatonic** now reads the dominant formula in every key,
+  **1 ♭2 ♭3/♯2 3 ♯4 5 6 ♭7**: C = C D♭ E♭ E F♯ G A B♭, G = G A♭ B♭ B C♯ D E F
+  (it used to be C C♯ D♯ … and G G♯ A♯ …, reading ♯1).
+- **D♭ and A♭ half–whole keep their tonic.** Spelling the ♭2 on its own letter
+  would need E𝄫 (B𝄫 in A♭), which is correct on paper but not how anyone
+  reads a scale, so it is written as the white key: **D♭ D E F G A♭ B♭ C♭**
+  and **A♭ A B C D E♭ F G♭**, both 1 ♭2 ♯2 3 ♯4 5 6 ♭7. The D (the A) reads
+  **♭2**, by the same rule the blues already used: a white key standing in for
+  a double flat keeps the flat degree (A♭ blues writes E𝄫 as D and keeps its ♭5).
+- **Whole–half octatonic** reads 1 2 ♭3 4 ♭5/♯4 ♭6/♯5 6/𝄫7 7 in every key; D♭
+  and A♭ now take F♭ and C♭ as their minor 3rd (D♭ E♭ F♭ G♭ G A B♭ C) instead
+  of reading ♯2 and ♯3.
+- The octatonic speller also avoids odd labels (♭4, ♯3, 𝄫6) and a letter used
+  twice that is not a chromatic pair (never D♭ D♯). So B half–whole is
+  B C D D♯ E♯ F♯ G♯ A — the B7 chord B D♯ F♯ A in plain sight — not
+  B C D E♭ F G♭ A♭ A (♭4 𝄫6 𝄫7).
+- **Petrushka** in C is now written **C D♭ E G♭ G B♭** (C + G♭, 1 ♭2 3 ♭5 5 ♭7),
+  the same shape the app already used in G (G + D♭). Stravinsky wrote the chord
+  as C + F♯; it is the same six sounds, and C + F♯ would read C C♯ = "♯1".
+  F Petrushka is F + C♭ (F G♭ A C♭ C E♭) for the same reason. In D♭, A♭, E♭
+  and B♭ the second triad keeps its natural root (D♭ + G, …) and the white key
+  above the tonic reads ♭2.
+
+### One augmented chord, one name, everywhere
+The ring, the Pairs tab, the Chords tab and the Practice chord strip now name
+every augmented triad the same way (`tests/aug-names-agree.test.ts`, every
+six-note scale, mode and key). **E whole tone: E+ = E G♯ B♯ and G♭+ = G♭ B♭ D**
+on all four (F♯+ would need C𝄪). The ring used to disagree in a few keys —
+B whole tone showed C♭+ (C♭ E♭ G) where the others said G+ (G B D♯), F♯
+whole tone G♭+ where the others said D+ — and now follows the same rule.

@@ -7,7 +7,10 @@ import type { ReactElement } from "react";
  * reduced motion it is simply there.
  *
  * Musical content is real: Harmony shows G (G B D) circled and Am (A C E)
- * arrowed on the clock, the pair that makes the G Sunday Scale.
+ * arrowed on the clock, the pair that makes the G Sunday Scale. Sounds lays
+ * two six-note shapes on one clock from G: whole tone (G A B C♯ D♯ F, the
+ * even hexagon) and augmented (G A♯ B D E♭ F♯). About is the ring itself:
+ * G major with its C taken out, the red dashed seat where the C was.
  */
 
 const INK = {
@@ -15,7 +18,7 @@ const INK = {
   blue: "#8DBDEB", violet: "#BBA6F7", red: "#E8666C", gold: "#F3D765", water: "#7CC6EA", copper: "#E0894F",
 };
 
-export type MarkKind = "harmony" | "ear" | "learn" | "resolution" | "improvise";
+export type MarkKind = "harmony" | "ear" | "learn" | "resolution" | "improvise" | "sounds" | "about";
 
 const C = 80;
 const R = 58;
@@ -154,12 +157,60 @@ function Improvise() {
   );
 }
 
+function Sounds() {
+  const whole = [0, 2, 4, 6, 8, 10];      // G A B C♯ D♯ F
+  const aug = [0, 3, 4, 7, 8, 11];        // G A♯ B D E♭ F♯
+  return (
+    <svg viewBox="0 0 160 160" width="100%" height="100%">
+      <circle cx={C} cy={C} r={R} fill="none" stroke={INK.line} strokeWidth="1.2" />
+      {Array.from({ length: 12 }, (_, i) => i).map((i) => {
+        const p = at(i); return <circle key={i} cx={p.x} cy={p.y} r="1.6" fill={INK.faint} />;
+      })}
+      <polygon points={pts(whole)} pathLength={1} fill={INK.water} fillOpacity="0.07" stroke={INK.water} strokeWidth="1.5" strokeLinejoin="round" className="hx-draw" />
+      <polygon points={pts(aug)} pathLength={1} fill={INK.violet} fillOpacity="0.07" stroke={INK.violet} strokeWidth="1.5" strokeLinejoin="round" className="hx-draw" style={{ animationDelay: "200ms" }} />
+      {[...new Set([...whole, ...aug])].map((s, i) => {
+        const p = at(s);
+        const both = whole.includes(s) && aug.includes(s);
+        return <circle key={s} cx={p.x} cy={p.y} r={both ? 4 : 3.2} fill={both ? INK.cream : whole.includes(s) ? INK.water : INK.violet}
+                       className="hx-mark" style={{ animationDelay: `${380 + i * 40}ms` }} />;
+      })}
+      {(() => { const p = at(0, R + 13); return <text x={p.x} y={p.y + 4.2} textAnchor="middle" fontFamily="var(--font-plex-mono)" fontSize="12" fontWeight="700" fill={INK.cream}>G</text>; })()}
+    </svg>
+  );
+}
+
+function About() {
+  const kept = [0, 2, 4, 7, 9, 11];       // G A B D E F♯
+  const gone = 5;                          // C, the 4th, taken out
+  const name: Record<number, string> = { 0: "G", 2: "A", 4: "B", 5: "C", 7: "D", 9: "E", 11: "F♯" };
+  return (
+    <svg viewBox="0 0 160 160" width="100%" height="100%">
+      <circle cx={C} cy={C} r={R} fill="none" stroke={INK.line} strokeWidth="1.2" />
+      <polygon points={pts(kept)} pathLength={1} fill={INK.cream} fillOpacity="0.05" stroke={INK.cream} strokeOpacity="0.7" strokeWidth="1.5" strokeLinejoin="round" className="hx-draw" />
+      {kept.map((s, i) => {
+        const p = at(s);
+        return <circle key={s} cx={p.x} cy={p.y} r="3.4" fill={INK.cream} className="hx-mark" style={{ animationDelay: `${300 + i * 50}ms` }} />;
+      })}
+      {(() => { const p = at(gone); return (
+        <circle cx={p.x} cy={p.y} r="7" fill="none" stroke={INK.red} strokeWidth="1.5" strokeDasharray="3 2.5" className="hx-mark" style={{ animationDelay: "650ms" }} />
+      ); })()}
+      {Object.entries(name).map(([s, n]) => {
+        const p = at(+s, R + 13);
+        return <text key={s} x={p.x} y={p.y + 4.2} textAnchor="middle" fontFamily="var(--font-plex-mono)" fontSize="12" fontWeight="700"
+                     fill={+s === gone ? INK.red : INK.muted}>{n}</text>;
+      })}
+    </svg>
+  );
+}
+
 const MARKS: Record<MarkKind, { el: () => ReactElement; w: number; h: number }> = {
   harmony: { el: Harmony, w: 120, h: 120 },
   ear: { el: Ear, w: 168, h: 168 },
   learn: { el: Learn, w: 220, h: 132 },
   resolution: { el: Resolution, w: 240, h: 120 },
   improvise: { el: Improvise, w: 220, h: 121 },
+  sounds: { el: Sounds, w: 124, h: 124 },
+  about: { el: About, w: 150, h: 150 },
 };
 
 export default function PageMark({ kind, className = "" }: { kind: MarkKind; className?: string }) {

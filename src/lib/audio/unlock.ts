@@ -126,6 +126,27 @@ export class AudioUnlock {
     if (this.env.ios) this.scheduleHint();
   };
 
+  /**
+   * The first press anywhere (pointerdown, before the finger lifts). Opening
+   * the audio device takes a few hundred milliseconds on a Mac and blocks the
+   * page while it does, so it waits until the frame after the press has been
+   * drawn: the wrong-note splash a key shows on pointerdown paints first, and
+   * the audio is usually open before the tap ends. iPad and iPhone keep the
+   * start inside the tap itself (onGesture), which they require.
+   */
+  onPress = () => {
+    if (this.woke || this.pressQueued || this.env.ios) return;
+    this.pressQueued = true;
+    const later = (f: () => void) =>
+      typeof requestAnimationFrame === "function" ? requestAnimationFrame(() => setTimeout(f, 0)) : setTimeout(f, 16);
+    later(() => {
+      if (this.woke) return;
+      this.woke = true;
+      try { this.host.wake(); } catch {}
+    });
+  };
+  private pressQueued = false;
+
   /** The tab came back (or the page was restored from the back-forward cache). */
   onVisible = () => {
     const ctx = this.host.context();
@@ -249,6 +270,7 @@ export function installAudioUnlock(host: UnlockHost): AudioUnlock | null {
   const unlock = new AudioUnlock(host, { ios, nav, doc: document });
   for (const type of GESTURES)
     window.addEventListener(type, unlock.onGesture, { capture: true, passive: true });
+  window.addEventListener("pointerdown", unlock.onPress, { capture: true, passive: true });
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") unlock.onVisible();
     else unlock.onHidden();

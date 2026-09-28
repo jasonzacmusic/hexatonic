@@ -11,6 +11,7 @@
  */
 
 import { Note, pc, spell, stepLetter, intervalName, notePretty, parseNoteName } from "./note";
+import { namesAugFromBelow, spellTriadIn } from "./pairAtlas";
 
 const mod12 = (v: number) => ((v % 12) + 12) % 12;
 
@@ -69,8 +70,9 @@ export function augTriad(root: Note): Note[] | null {
  * A triangle in the scale is named as a chord on its lowest note above the
  * tonic, so the tonic's own triangle comes first and is named from the tonic
  * (G augmented: G B D♯ then B♭ D F♯; G whole tone: G B D♯ then A C♯ E♯).
- * When that root would need a double sharp or flat it is respelled (A♯+ is
- * written B♭+). Where the chord spells a note differently from the scale it
+ * The chord is spelled by `spellTriadIn`, the one namer Pairs, Chords and
+ * the Practice strip share (E whole tone: E G♯ B♯ then G♭ B♭ D; B whole
+ * tone: G B D♯, never C♭ E♭ G). Where the chord spells a note differently from the scale it
  * says so: in G whole tone, A C♯ E♯ has its E♯ written F in the scale.
  */
 export function augTriangles(scale: Note[]): AugTriangle[] {
@@ -87,7 +89,18 @@ export function augTriangles(scale: Note[]): AugTriangle[] {
     if (inScale) {
       const rootPc = t.pcs.find((p) => up(p) === lowest[index])!;
       const root = have.get(rootPc)!;
-      notes = augTriad(root);
+      /* Named exactly as Chords and the Practice strip lead with it, so the
+         ring never says C♭+ where the chord list says G+: on the tonic when
+         the tonic is in it; in the augmented and whole-tone scales from the
+         note just above the tonic (spellTriadIn, which Pairs uses too);
+         otherwise on the scale's own letters where they stack. */
+      const same = (a: Note, b: Note) => a.letter === b.letter && a.alt === b.alt;
+      const ownStack = t.pcs.map((p) => augTriad(have.get(p)!))
+        .find((ns) => ns && ns.every((n) => same(n, have.get(pc(n))!)));
+      const onTonic = t.pcs.includes(tonicPc) ? augTriad(scale[0]) : null;
+      notes = (onTonic && !hasDouble(onTonic) ? onTonic : null)
+        ?? (namesAugFromBelow(scale) ? spellTriadIn(rootPc, "aug", scale)?.notes : null)
+        ?? ownStack ?? spellTriadIn(rootPc, "aug", scale)?.notes ?? augTriad(root);
       if (!notes || hasDouble(notes)) {
         const alt = respell(root);
         const again = alt ? augTriad(alt) : null;

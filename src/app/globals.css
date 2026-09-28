@@ -426,6 +426,13 @@ html[data-stage] .stage-frame { zoom: 0.8; padding: 64px !important; gap: 16px; 
 html[data-stage] .stage-frame .stage-hide-big { display: none !important; }
 .stage-only { display: none; }
 html[data-stage] .stage-only { display: revert; }
+/* one screen at a time (Sounds ?family=, Learn ?step=): centred in the frame,
+   never taller than it. The frame is 1080 − 2×64px; vh is divided by the
+   1.25 zoom so it measures the real window. StageFit scales down anything taller. */
+/* the long page a stage view replaces: never flashed before the swap */
+html[data-stage] .stage-swap { display: none !important; }
+.stage-screen { display: flex; flex-direction: column; justify-content: center; }
+html[data-stage] .stage-screen { height: calc(100vh / 1.25 - 102.4px); overflow: hidden; }
 /* ── the board layer: splash, drawn triangles, ovals ───────────────────────
    Wrong-note splash: two ripples and droplets, ~0.6 s. Reduced motion keeps
    only the flash. */
@@ -461,4 +468,5 @@ html[data-stage] .stage-only { display: revert; }
 /* stage mode is a 1920×1080 filming frame; on a phone it falls back to normal size so nothing collides */
 @media (max-width: 767px) {
   html[data-stage] main { zoom: 1; padding: 16px !important; }
+  html[data-stage] .stage-screen { height: auto; overflow: visible; }
 }

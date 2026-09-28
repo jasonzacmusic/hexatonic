@@ -36,8 +36,8 @@ describe("degree labels follow the spelling", () => {
   });
 
   it("the octatonics read from their letters: G half–whole has C♯ as ♯4, never ♭5", () => {
-    expect(notes("G", "dim-hw")).toBe("G G# A# B C# D E F");
-    expect(row("G", "dim-hw")).toBe("1 ♯1 ♯2 3 ♯4 5 6 ♭7");
+    expect(notes("G", "dim-hw")).toBe("G Ab Bb B C# D E F");
+    expect(row("G", "dim-hw")).toBe("1 ♭2 ♭3 3 ♯4 5 6 ♭7");
     expect(notes("G", "dim-wh")).toBe("G A Bb C C# D# E F#");
     expect(row("G", "dim-wh")).toBe("1 2 ♭3 4 ♯4 ♯5 6 7");
   });

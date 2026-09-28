@@ -159,6 +159,42 @@ describe("the first tap", () => {
   });
 });
 
+describe("the first press (pointerdown), before the tap ends", () => {
+  /* Opening the audio device blocks the page for a few hundred ms on a Mac.
+     The press lets the splash paint first, then opens it on the next frame. */
+  it("does not open the audio inside the press itself, only after the next frame", () => {
+    vi.useFakeTimers();
+    try {
+      const r = rig({ ios: false });
+      r.unlock.onPress();
+      expect(r.wake).not.toHaveBeenCalled();
+      vi.advanceTimersByTime(40);
+      expect(r.wake).toHaveBeenCalledTimes(1);
+      r.unlock.onGesture();                    // the tap ends: only a resume, no second wake
+      expect(r.wake).toHaveBeenCalledTimes(1);
+    } finally { vi.useRealTimers(); }
+  });
+  it("a tap that ends first wakes the audio, and the queued press then does nothing", () => {
+    vi.useFakeTimers();
+    try {
+      const r = rig({ ios: false });
+      r.unlock.onPress();
+      r.unlock.onGesture();
+      vi.advanceTimersByTime(40);
+      expect(r.wake).toHaveBeenCalledTimes(1);
+    } finally { vi.useRealTimers(); }
+  });
+  it("leaves iPad and iPhone to the tap itself, which they require", () => {
+    vi.useFakeTimers();
+    try {
+      const r = rig({ ios: true, session: true });
+      r.unlock.onPress();
+      vi.advanceTimersByTime(40);
+      expect(r.wake).not.toHaveBeenCalled();
+    } finally { vi.useRealTimers(); }
+  });
+});
+
 describe("coming back after a tab switch or a call", () => {
   it("resumes a suspended context when the tab is visible again", () => {
     const r = rig({ ios: true, session: true });

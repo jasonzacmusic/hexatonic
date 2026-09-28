@@ -72,7 +72,7 @@ describe("ragas — ascent and descent can differ", () => {
 describe("symmetric diminished — spelled by search, not by template", () => {
   it("C whole-half and half-whole spell cleanly", () => {
     expect(names(buildScale("C", "dim-wh").notes)).toBe("C D Eb F Gb Ab A B");
-    expect(names(buildScale("C", "dim-hw").notes)).toBe("C C# D# E F# G A Bb");
+    expect(names(buildScale("C", "dim-hw").notes)).toBe("C Db Eb E F# G A Bb");
   });
   it("prefers consistent accidentals where consistency is possible", () => {
     // A symmetric scale cannot always be spelled with one accidental type in

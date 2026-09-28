@@ -16,7 +16,7 @@
  */
 
 import { Note, pc, midi, notePretty } from "@/lib/theory/note";
-import { useId } from "react";
+import { useId, useRef } from "react";
 import { emitNote, useSplashes } from "@/lib/splash";
 import SplashMark from "@/components/SplashMark";
 
@@ -66,7 +66,17 @@ export default function Keyboard({
   const rootPc = scale.length ? pc(scale[0]) : -1;
   const isRoot = (m: number) => ((m % 12) + 12) % 12 === rootPc;
   const splashes = useSplashes(splash, scale.map(pc), removedPc);
-  const tap = (m: number) => { if (!onNote) return; emitNote(m); onNote(m); };
+  /* The splash fires on the press itself (pointerdown), so it paints before
+     the first tap opens the audio device; the note sounds on the click. A key
+     pressed without a pointer (no pointerdown) splashes on the click. */
+  const pressed = useRef<number | null>(null);
+  const press = (m: number) => { if (!onNote) return; pressed.current = m; emitNote(m); };
+  const tap = (m: number) => {
+    if (!onNote) return;
+    if (pressed.current !== m) emitNote(m);
+    pressed.current = null;
+    onNote(m);
+  };
 
   const W = keyWidth;
   const BW = W * 0.62;
@@ -151,7 +161,7 @@ export default function Keyboard({
             st === "scale"  ? `url(#w${uid})` :
             `url(#wo${uid})`;
           return (
-            <g key={`w${m}`} onClick={() => tap(m)}
+            <g key={`w${m}`} onPointerDown={() => press(m)} onClick={() => tap(m)}
                style={{ cursor: onNote ? "pointer" : "default" }}>
               <rect x={x + 0.5} y={felt} width={W - 1} height={height}
                     rx={3} fill={fill}
@@ -195,7 +205,7 @@ export default function Keyboard({
             st === "scale"  ? `url(#s${uid})` :
             `url(#b${uid})`;
           return (
-            <g key={`b${m}`} onClick={() => tap(m)}
+            <g key={`b${m}`} onPointerDown={() => press(m)} onClick={() => tap(m)}
                style={{ cursor: onNote ? "pointer" : "default" }}>
               <rect x={x} y={felt} width={BW} height={BH} rx={2.5} fill={fill}
                     stroke={st === "removed" ? "#C4353C" : "#000"}

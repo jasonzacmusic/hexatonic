@@ -15,8 +15,10 @@ const spell = (key: string, id: string) =>
   buildScale(key, id, 0).notes.map(noteName).join(" ");
 
 describe("the two hexatonic gaps we filled", () => {
-  it("Petrushka is C major and F# major stacked, spelled so both read as triads", () => {
-    expect(spell("C", "petrushka")).toBe("C C# E F# G A#");
+  it("Petrushka is C major and G♭ (= F♯) major stacked, spelled so both read as triads", () => {
+    /* Stravinsky wrote C + F♯; the scale is written C + G♭ so no degree
+       reads ♯1 (C C♯). Same six sounds (MUSICAL_AUDIT.md, 28 Sep 2026). */
+    expect(spell("C", "petrushka")).toBe("C Db E Gb G Bb");
     const set = buildScale("C", "petrushka", 0)!.notes.map(pc).sort((a, b) => a - b);
     const cMaj = [0, 4, 7], fsMaj = [6, 10, 1];
     expect(cMaj.every((n) => set.includes(n))).toBe(true);

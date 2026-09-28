@@ -32,6 +32,8 @@ import Keyboard from "@/components/Keyboard";
 import ScaleRing from "@/components/ScaleRing";
 import BeatCounter from "@/components/BeatCounter";
 import PageMark from "@/components/PageMark";
+import StageFit, { useStageNav } from "@/components/StageFit";
+import { isStage, keepStage } from "@/lib/stage";
 
 /* ── the facts, computed once ─────────────────────────────────────────── */
 
@@ -625,9 +627,47 @@ const CONTENTS: [string, string][] = [
   ["minor", "Minor"], ["modes", "Modes"], ["rhythm", "Rhythm"], ["practise", "Practise"],
 ];
 
-export default function LearnClient() {
+const STEPS = [SweetSpotStep, TwoChordsStep, InversionStep, MinorStep, ModesStep, RhythmStep, PractiseStep];
+
+/** Stage mode (?stage=1): one step per screen, ?step=1…7, arrow keys to move. */
+function StageSteps({ first }: { first: number }) {
+  const [n, setN] = useState(first);
+  const go = (to: number) => {
+    const next = Math.min(STEPS.length, Math.max(1, to));
+    if (next === n) return;
+    setN(next);
+    const sp = keepStage(new URLSearchParams(window.location.search));
+    sp.set("step", String(next));
+    window.history.replaceState(null, "", `${window.location.pathname}?${sp}`);
+  };
+  useStageNav(true, () => go(n - 1), () => go(n + 1));
+  const Current = STEPS[n - 1];
   return (
-    <div className="relative space-y-5 pb-12">
+    <StageFit>
+      <div className="mx-auto w-full max-w-[1320px]">
+        <Current key={n} />
+        <div className="mt-4 flex items-center justify-end gap-1 font-mono text-[13px] tabular-nums text-muted">
+          <button type="button" onClick={() => go(n - 1)} disabled={n === 1} className="px-2 hover:text-cream disabled:opacity-30" aria-label="Previous step">←</button>
+          {CONTENTS[n - 1][1]} · {n} / {STEPS.length}
+          <button type="button" onClick={() => go(n + 1)} disabled={n === STEPS.length} className="px-2 hover:text-cream disabled:opacity-30" aria-label="Next step">→</button>
+        </div>
+      </div>
+    </StageFit>
+  );
+}
+
+export default function LearnClient() {
+  /* null until mounted; then the step to show on stage, or 0 for the full page */
+  const [stageStep, setStageStep] = useState<number | null>(null);
+  useEffect(() => {
+    if (!isStage()) { setStageStep(0); return; }
+    const raw = Number(new URLSearchParams(window.location.search).get("step"));
+    setStageStep(Number.isInteger(raw) && raw >= 1 && raw <= STEPS.length ? raw : 1);
+  }, []);
+  if (stageStep) return <StageSteps first={stageStep} />;
+
+  return (
+    <div className="stage-swap relative space-y-5 pb-12">
       <header className="max-w-3xl pt-2">
         <PageMark kind="learn" className="hidden xl:block" />
         <p className="eyebrow">Learn</p>
