@@ -11,6 +11,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { solveResolution, isLocked, GATIS, YATIS, SUBDIVISIONS } from "@/lib/theory/resolution";
 import TihaiLab from "@/components/TihaiLab";
+import PageMark from "@/components/PageMark";
 
 const SIZES = [
   { n: 5, label: "5 notes · pentatonic" },
@@ -58,8 +59,9 @@ export default function ResolutionClient() {
   const fives3 = solveResolution(patternLen, 3, beats, 5, mode).bars;
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="relative space-y-6 pb-12">
       <header className="max-w-3xl pb-2 pt-2">
+        <PageMark kind="resolution" className="hidden xl:block" />
         <p className="eyebrow">Rhythm reference</p>
         <h1 className="display mt-3 text-[40px] sm:text-[56px]">Which bar does it land on?</h1>
         <p className="mt-5 max-w-[62ch] text-[17px] leading-relaxed text-cream/85">

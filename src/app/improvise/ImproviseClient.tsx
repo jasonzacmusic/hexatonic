@@ -29,6 +29,7 @@ import { twelveBar, bluesTip } from "@/lib/theory/blues";
 import { notePretty } from "@/lib/theory/note";
 import { previewAudio, VampPlan } from "@/lib/audio/engine";
 import { useLiveVamp } from "@/lib/audio/useLive";
+import PageMark from "@/components/PageMark";
 
 const pretty = (s: string) => s
   .replace(/([A-G])b/g, "$1♭").replace(/#/g, "♯").replace(/b5$/, "♭5")
@@ -187,9 +188,10 @@ export default function ImproviseClient() {
     : `${pretty(scale.tonic)} ${menuScale.family.kind === "rotation" ? menuScale.family.modes![menuScale.modeIndex].name : menuScale.family.short}`;
 
   return (
-    <div className="space-y-4 pb-10">
+    <div className="relative space-y-4 pb-10">
       {/* ── what this is ─────────────────────────────────────────────── */}
       <header className="pt-1">
+        <PageMark kind="improvise" className="hidden xl:block" />
         <h1 className="display text-4xl sm:text-5xl">Improvise</h1>
         <p className="lede mt-3">
           A backing band plays chords made only from your scale. Play any of its notes over it:
