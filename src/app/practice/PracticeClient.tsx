@@ -658,6 +658,7 @@ function Legend() {
     <div className="flex flex-wrap gap-x-4 gap-y-1 font-mono text-[13px] text-muted">
       <span><i className="mr-1.5 inline-block h-2.5 w-2.5 rounded-sm bg-gold align-middle" />sounding now</span>
       <span><i className="mr-1.5 inline-block h-2.5 w-2.5 rounded-sm bg-red align-middle" />missing note</span>
+      <span><i className="mr-1.5 inline-block h-1 w-3 rounded-full bg-[#79C2A5] align-middle" />root</span>
       <span>&gt; accent</span>
     </div>
   );

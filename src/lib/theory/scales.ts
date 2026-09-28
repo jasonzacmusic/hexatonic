@@ -170,6 +170,21 @@ export type FamilyKind = "rotation" | "omit" | "omitMulti" | "fixed" | "symmetri
 export type FamilyGroup =
   | "remove" | "pentatonic" | "symmetric" | "colour" | "custom" | "beyond" | "compare" | "reference";
 
+/** The groups that are six-note scales: always first in every menu. */
+export const SIX_NOTE_GROUPS: FamilyGroup[] = ["remove", "pentatonic", "symmetric", "colour"];
+
+/**
+ * A group's name in a scale menu. Six-note groups say so; everything else is
+ * marked as the comparison it is, so the hexatonics are the obvious choice.
+ */
+export function menuGroupLabel(g: FamilyGroup): string {
+  const label = FAMILY_GROUPS.find((x) => x.id === g)?.label ?? g;
+  if (SIX_NOTE_GROUPS.includes(g)) return `Six notes · ${label}`;
+  if (g === "beyond") return "Not six notes · World scales (5 and 7)";
+  if (g === "custom") return "Your own · Custom";
+  return `Not six notes · ${label}`;
+}
+
 export const FAMILY_GROUPS: { id: FamilyGroup; label: string; blurb: string }[] = [
   { id: "remove", label: "Remove one note",
     blurb: "Take a seven-note scale and leave one note out." },

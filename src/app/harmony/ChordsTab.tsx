@@ -422,6 +422,7 @@ function Legend() {
       <span><i className="mr-1.5 inline-block h-2.5 w-2.5 rounded-sm bg-gold align-middle" />sounding now</span>
       <span><i className="mr-1.5 inline-block h-2.5 w-2.5 rounded-sm bg-[#8E7A2E] align-middle" />the chord you picked</span>
       <span><i className="mr-1.5 inline-block h-2.5 w-2.5 rounded-sm bg-cream align-middle" />in the scale</span>
+      <span><i className="mr-1.5 inline-block h-1 w-3 rounded-full bg-[#79C2A5] align-middle" />the root (home)</span>
       <span><i className="mr-1.5 inline-block h-2.5 w-2.5 rounded-sm bg-red align-middle" />the missing note</span>
     </div>
   );

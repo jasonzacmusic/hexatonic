@@ -63,6 +63,8 @@ const GOLD_HI = "#F3D765";
 const RED = "#C4353C";
 const RED_TEXT = "#F08A8F";
 const DOT = "#CFC6BA";
+/** The root: home. The Tonic green from Harmony. */
+const ROOT = "#79C2A5";
 
 /** Where each note of the scale sits, in semitones clockwise from the tonic. */
 export function ringPositions(notes: Note[]): number[] {
@@ -224,18 +226,19 @@ export function ScaleRing({
           return (
             <g key={i}>
               {on && <circle cx={x} cy={y} r={dotR * 2.6} fill={GOLD} opacity={0.45} filter={`url(#soft${uid})`} />}
-              {/* the tonic wears a thin outer ring: this is home */}
+              {/* the root is green and wears an outer ring: this is home
+                  (the same green as "Tonic" on Harmony) */}
               {i === 0 && (
-                <circle cx={x} cy={y} r={dotR + Math.max(V * 0.014, 2.4 * unit)} fill="none"
-                        stroke={on ? GOLD_HI : DOT} strokeOpacity={on ? 0.9 : 0.45}
-                        strokeWidth={Math.max(1, unit)} />
+                <circle cx={x} cy={y} r={dotR + Math.max(V * 0.018, 3 * unit)} fill="none"
+                        stroke={on ? GOLD_HI : ROOT} strokeOpacity={0.95}
+                        strokeWidth={Math.max(V * 0.008, 1.8 * unit)} />
               )}
-              <circle cx={x} cy={y} r={on ? dotR * 1.38 : dotR} fill={on ? GOLD_HI : DOT}
+              <circle cx={x} cy={y} r={on ? dotR * 1.38 : dotR} fill={on ? GOLD_HI : i === 0 ? ROOT : DOT}
                       style={{ transition: on ? "none" : "r 60ms ease-out, fill 60ms ease-out" }} />
               {labels && (
                 <text x={L.x} y={L.y} textAnchor="middle" className="font-mono"
-                      fill={on ? GOLD_HI : DOT}
-                      style={{ fontSize: font, fontWeight: on ? 700 : 500,
+                      fill={on ? GOLD_HI : i === 0 ? ROOT : DOT}
+                      style={{ fontSize: font, fontWeight: on || i === 0 ? 700 : 500,
                                transition: on ? "none" : "fill 60ms ease-out" }}>
                   {notePretty(n)}
                 </text>

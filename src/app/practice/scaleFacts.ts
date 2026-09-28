@@ -8,7 +8,7 @@ import type { Note } from "../../lib/theory/note";
 import { pc } from "../../lib/theory/note";
 import { RAGAS, buildRaga, type Raga } from "../../lib/theory/ragas";
 import { solveResolution, type ResolveMode } from "../../lib/theory/resolution";
-import { FAMILY_GROUPS, type Family, type FamilyGroup } from "../../lib/theory/scales";
+import { FAMILY_GROUPS, menuGroupLabel, type Family, type FamilyGroup } from "../../lib/theory/scales";
 
 /** Carnatic ragas that use exactly these notes, the same way up and down. */
 export function ragasForScale(tonic: string, notes: Note[]): Raga[] {
@@ -67,7 +67,7 @@ export const familyGroup = (f: Family): string =>
 export function groupFamilies(families: Family[]): { group: string; families: Family[] }[] {
   return MENU_GROUPS
     .map((id) => ({
-      group: FAMILY_GROUPS.find((g) => g.id === id)?.label ?? id,
+      group: menuGroupLabel(id),
       families: families.filter((f) => f.group === id),
     }))
     .filter((g) => g.families.length > 0);

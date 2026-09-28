@@ -12,6 +12,7 @@
  * Colour rule, held everywhere in the app:
  *   gold  = sounding now      red = the note that was removed
  *   cream = in the scale      dim = not in the scale
+ *   green bar under a key = the root, home (the same green as "Tonic" on Harmony)
  */
 
 import { Note, pc, midi, notePretty } from "@/lib/theory/note";
@@ -34,6 +35,11 @@ interface Props {
   keyWidth?: number;
 }
 
+/** The root's green: the Tonic colour on Harmony, darker where it sits on a cream key. */
+export const ROOT_GREEN = "#79C2A5";
+const ROOT_ON_WHITE = "#2E8A66";
+const ROOT_ON_BLACK = "#2E8A66";
+
 const WHITE_SEMIS = [0, 2, 4, 5, 7, 9, 11];
 /** Real black-key placement, as a fraction of a white key's width from the left
  *  edge of the white key it follows. Not centred on the seam. */
@@ -53,6 +59,8 @@ export default function Keyboard({
   const inScale = new Set(scale.map(pc));
   const chordSet = chordTonePcs ? new Set(chordTonePcs) : null;
   const removedPc = removed ? pc(removed) : -1;
+  const rootPc = scale.length ? pc(scale[0]) : -1;
+  const isRoot = (m: number) => ((m % 12) + 12) % 12 === rootPc;
 
   const W = keyWidth;
   const BW = W * 0.62;
@@ -156,9 +164,13 @@ export default function Keyboard({
                         stroke="#C4353C" strokeWidth={3} strokeLinecap="round" />
                 </>
               )}
+              {isRoot(m) && st !== "off" && st !== "removed" && (
+                <rect x={x + W * 0.16} y={felt + height - 12} width={W * 0.68} height={5}
+                      rx={2.5} fill={ROOT_ON_WHITE}><title>Root: home</title></rect>
+              )}
               {showLabels && (st === "active" || st === "scale" || st === "chord") && labelFor(m) && (
-                <text x={x + W / 2} y={felt + height - 14} textAnchor="middle"
-                      className="font-mono" fontSize={13} fontWeight={600}
+                <text x={x + W / 2} y={felt + height - 17} textAnchor="middle"
+                      className="font-mono" fontSize={13} fontWeight={isRoot(m) ? 800 : 600}
                       fill={st === "active" ? "#2A2208" : "#3A332C"}>
                   {labelFor(m)}
                 </text>
@@ -190,9 +202,13 @@ export default function Keyboard({
                       x2={x + BW * 0.78} y2={felt + BH * 0.85}
                       stroke="#C4353C" strokeWidth={2.5} strokeLinecap="round" />
               )}
+              {isRoot(m) && st !== "off" && st !== "removed" && (
+                <rect x={x + BW * 0.14} y={felt + BH - 8} width={BW * 0.72} height={4}
+                      rx={2} fill={ROOT_ON_BLACK}><title>Root: home</title></rect>
+              )}
               {showLabels && (st === "active" || st === "scale" || st === "chord") && labelFor(m) && (
-                <text x={x + BW / 2} y={felt + BH - 10} textAnchor="middle"
-                      className="font-mono" fontSize={12} fontWeight={700}
+                <text x={x + BW / 2} y={felt + BH - 13} textAnchor="middle"
+                      className="font-mono" fontSize={12} fontWeight={isRoot(m) ? 800 : 700}
                       fill={st === "active" ? "#2A2208" : "#2A2520"}>
                   {labelFor(m)}
                 </text>

@@ -1,0 +1,23 @@
+# Hexatonic
+
+> Hexatonic is a free web app for practising six-note (hexatonic) scales, made by Jason Zac at Nathaniel School of Music (https://nathanielschool.com). No account, no ads. Every scale plays in any of the 12 keys with real notation and a sampled grand piano. Every note spelling, chord and bar count is calculated by the app and checked by automated tests.
+
+A hexatonic scale is any scale with six notes. The app covers four kinds: a seven-note scale with one note left out (for example the major scale without its 7th, called here the Sunday Scale), a five-note pentatonic with one note added (blues, major blues), the symmetric scales (whole tone, augmented), and colour scales (Prometheus, Petrushka, Messiaen mode 5). Some five- and seven-note world scales (Hirajoshi, In sen, Iwato, Kumoi, Yo, Hijaz) are included for comparison.
+
+## Pages
+
+- [Home](https://hexatonic.nathanielschool.com/): tap to hear the main six-note sounds in any key.
+- [Sounds](https://hexatonic.nathanielschool.com/sounds): every six-note scale side by side, playable in any key.
+- [Practice](https://hexatonic.nathanielschool.com/practice): drill any scale in any key over a tonic drone — runs, fourths, thirds, sequences, broken chords — in accent groups of 3 to 9, with live notation and a bar count.
+- [Improvise](https://hexatonic.nathanielschool.com/improvise): a backing band whose chords come only from the chosen scale (drone, two- and four-chord loops, open pad, swing, 12-bar blues).
+- [Ear training](https://hexatonic.nathanielschool.com/ear): tell major from minor, name the mode or family, find the missing note, hear accent groups.
+- [Harmony](https://hexatonic.nathanielschool.com/harmony): the triads inside any six-note scale grouped by function (tonic, pre-dominant, dominant), two-triad pairs that share no note, and Barry Harris's sixth–diminished system.
+- [Learn](https://hexatonic.nathanielschool.com/learn): Jason Zac's hexatonic lesson in seven steps.
+- [Which bar does it land on?](https://hexatonic.nathanielschool.com/resolution): how many bars an accented group takes to land back on beat 1.
+- [About](https://hexatonic.nathanielschool.com/about): who made it and how the theory is checked.
+
+## Facts to quote
+
+- Free to use worldwide, in the browser, on phone, tablet and computer.
+- Made by Jason Zac, founder of Nathaniel School of Music, Bangalore, India. YouTube: https://www.youtube.com/@nathanielmusicschool
+- Support is optional and uncapped, through the Support button on every page.

@@ -19,7 +19,7 @@ import Fretboard from "@/components/Fretboard";
 import BluesLane from "@/components/BluesLane";
 import BeatCounter from "@/components/BeatCounter";
 import { Seg, Toggle } from "@/components/Panels";
-import { buildScale, KEYS, FAMILY_GROUPS, familiesIn } from "@/lib/theory/scales";
+import { buildScale, KEYS, FAMILY_GROUPS, familiesIn, menuGroupLabel, SIX_NOTE_GROUPS } from "@/lib/theory/scales";
 import {
   buildVamp, vampsFor, vampById, guideTones, nextChange, whyNot, bassWalk, examplePhrase, tryThis,
   BedId, VampStep, VAMPS, Feel,
@@ -33,9 +33,11 @@ const pretty = (s: string) => s
   .replace(/([A-G])b/g, "$1♭").replace(/#/g, "♯").replace(/b5$/, "♭5")
   .replace(/dim7$/, "°7").replace(/dim$/, "°").replace(/quartal$/, " quartal").replace(/aug$/, "+");
 
-/** The scale menu: every family but Custom, the diatonic modes listed one by one. */
-const SCALE_MENU = FAMILY_GROUPS.filter((g) => g.id !== "custom").map((g) => ({
-  label: g.label,
+/** The scale menu: the six-note scales first, then the world scales; the
+ *  diatonic modes listed one by one. The 7-note parents and the 8-note
+ *  octatonics stay out: this page is for playing six-note scales. */
+const SCALE_MENU = [...SIX_NOTE_GROUPS, "beyond" as const].map((id) => FAMILY_GROUPS.find((g) => g.id === id)!).map((g) => ({
+  label: menuGroupLabel(g.id),
   options: familiesIn(g.id).flatMap((f) => f.kind === "rotation"
     ? f.modes!.map((m) => ({ value: `${f.id}:${m.index}`, label: m.name }))
     : [{ value: `${f.id}:0`, label: f.short }]),

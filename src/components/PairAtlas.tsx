@@ -27,7 +27,7 @@ type Source = "parent" | "six";
 const pretty = (s: string) => s.replace(/([A-G])b/g, "$1♭").replace(/#/g, "♯");
 
 export default function PairAtlas({ onOpenSixth }: { onOpenSixth?: () => void }) {
-  const [source, setSource] = useState<Source>("parent");
+  const [source, setSource] = useState<Source>("six");
   const [key, setKey] = useState("G");
   const [parentId, setParentId] = useState<ParentId>("ionian");
   const [sixId, setSixId] = useState("diatonic-3");
@@ -71,7 +71,7 @@ export default function PairAtlas({ onOpenSixth }: { onOpenSixth?: () => void })
             <div className="field">
               <label>Start from</label>
               <Seg value={source} ariaLabel="Start from"
-                   options={[{ label: "7-note scale", value: "parent" as const }, { label: "6-note scale", value: "six" as const }]}
+                   options={[{ label: "6-note scale", value: "six" as const }, { label: "7-note parent", value: "parent" as const }]}
                    onChange={(v) => { setSource(v); setPick(null); }} />
             </div>
             <div className="field">

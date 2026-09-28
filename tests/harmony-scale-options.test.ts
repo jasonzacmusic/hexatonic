@@ -68,7 +68,7 @@ describe("Harmony scale menu", () => {
   it("groups the menu: remove one, pentatonic plus one, symmetric, colour, world", () => {
     const groups = [...new Set(SCALE_OPTIONS.map((o) => o.group))];
     expect(groups).toEqual([
-      "Remove one note", "Pentatonic plus one", "Symmetric", "Colour scales", "World scales (5 and 7 notes)",
+      "Six notes · Remove one note", "Six notes · Pentatonic plus one", "Six notes · Symmetric", "Six notes · Colour scales", "Not six notes · World scales (5 and 7)",
     ]);
     const ids = new Set(SCALE_OPTIONS.map((o) => o.id));
     for (const f of FAMILIES.filter((x) => ["remove", "pentatonic", "symmetric", "colour", "beyond"].includes(x.group)))

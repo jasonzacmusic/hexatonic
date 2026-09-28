@@ -13,7 +13,7 @@
  */
 
 import {
-  buildScale, DIATONIC_MODES, FAMILIES, FAMILY_GROUPS, FamilyGroup, KEYS, ScaleInstance,
+  buildScale, DIATONIC_MODES, FAMILIES, FamilyGroup, KEYS, menuGroupLabel, ScaleInstance,
 } from "../../lib/theory/scales";
 import { letterIndex, Letter, Note, noteName, notePretty, pc } from "../../lib/theory/note";
 import type { ChordSet, ThirdsStack } from "../../lib/theory/chords";
@@ -62,7 +62,7 @@ function templateDegrees(semis: number[], templates: number[][]): string {
   return t.map((l, i) => acc(((semis[i] - MAJOR[l] + 18) % 12) - 6) + (l + 1)).join(" ");
 }
 
-const groupLabel = (g: FamilyGroup) => FAMILY_GROUPS.find((x) => x.id === g)?.label ?? g;
+const groupLabel = (g: FamilyGroup) => menuGroupLabel(g);
 
 /** The menu groups, in order. Each family appears under its own group. */
 export const MENU_GROUPS: FamilyGroup[] = ["remove", "pentatonic", "symmetric", "colour", "beyond"];

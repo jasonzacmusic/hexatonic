@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/pageMeta";
 import Link from "next/link";
 import { DIATONIC_MODES } from "@/lib/theory/scales";
 
-export const metadata: Metadata = {
-  alternates: { canonical: "https://hexatonic.nathanielschool.com/about" },
-  title: "About",
-  description: "Who made Hexatonic, how its theory is checked, and a note on two scale names.",
-};
+export const metadata: Metadata = pageMeta("/about", "About",
+  "Who made Hexatonic, how its theory is checked, and a note on two scale names.", "About");
 
 const NO7 = DIATONIC_MODES[3];
 

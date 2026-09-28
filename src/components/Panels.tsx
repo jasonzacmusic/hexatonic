@@ -122,11 +122,14 @@ export function ScaleChips({
           );
         }
         const lit = activePc !== null && pc(item.note) === activePc;
+        /* the root wears the Tonic green from Harmony: home */
+        const root = rel(item.note) === 0;
         return (
           <button
             key={i}
+            title={root ? `${notePretty(item.note)}: the root, home` : undefined}
             onClick={() => void previewAudio([midi(item.note) + 12 * transpose])}
-            className={`chip ${lit ? "chip-lit" : ""} ${lg ? "min-w-[64px] px-4 py-2.5 sm:min-w-[74px] sm:px-5 sm:py-3" : sm ? "min-w-[40px] !px-1.5 !py-1" : "min-w-[58px]"}`}
+            className={`chip ${lit ? "chip-lit" : root ? "!border-[#79C2A5] shadow-[inset_0_-3px_0_#79C2A5]" : ""} ${lg ? "min-w-[64px] px-4 py-2.5 sm:min-w-[74px] sm:px-5 sm:py-3" : sm ? "min-w-[40px] !px-1.5 !py-1" : "min-w-[58px]"}`}
             /* Exactly one lit note: the lit state arrives instantly and leaves
                in 60ms, so two chips are never half-lit at once. */
             style={{ transition: lit ? "none"
@@ -135,7 +138,7 @@ export function ScaleChips({
             <span className={`block font-semibold ${lg ? "text-2xl sm:text-3xl" : "text-lg"}`}>
               {notePretty(item.note)}
             </span>
-            <span className={`block font-mono text-[13px] ${lit ? "text-[#2A2208]" : "text-muted"}`}>
+            <span className={`block font-mono text-[13px] ${lit ? "text-[#2A2208]" : root ? "font-semibold text-[#79C2A5]" : "text-muted"}`}>
               {item.degree?.replace(/b/g, "♭").replace(/#/g, "♯")}
             </span>
           </button>
