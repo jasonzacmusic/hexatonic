@@ -63,3 +63,66 @@ suite did not have: **every family × every mode × all twelve keys.**
 - **Each mode's `hasThird` and `hasFifth` flags match its actual notes.**
 - **An unreachable mode index or an unknown family falls back** rather than
   throwing.
+
+---
+
+## 28 September 2026 — spelling, degrees, symmetrical scales, credits
+
+### Degree labels follow the spelling
+Labels used to come from semitones alone, so sharped notes got flat labels
+(G whole tone showed C♯ as ♭5 and D♯ as ♭6). They are now read from the
+letter plus the accidental: **G whole tone = G A B C♯ D♯ F = 1 2 3 ♯4 ♯5 ♭7**,
+**Prometheus = 1 2 3 ♯4 6 ♭7** in every key. One exception, for the named
+six-note scales only: a white key written in place of an awkward flat (A♭
+blues writes E𝄫 as D) keeps the scale's flat degree, so **the blues reads
+1 ♭3 4 ♭5 5 ♭7 in every key**. Locked by `tests/degree-spelling.test.ts`,
+which fails if a sharped note ever borrows a flat label from another letter.
+
+### The augmented scale: one spelling, and its chords spelled as chords
+- **Scale:** 1 ♯2 3 5 ♭6 7, one letter per note. In G that is
+  **G A♯ B D E♭ F♯**, which is how Jason writes it on his board. Other keys
+  follow the same pattern (C D♯ E G A♭ B); where the ♯2 would be E♯, B♯ or a
+  double sharp the plain white key is written (D F F♯ A B♭ C♯).
+- **Chords:** each triad is spelled as a triad, on its own letters, not
+  borrowed from the scale. No single six-note spelling can hold both
+  augmented triads as triads, so the chords do not always use the scale's
+  letters, and that is deliberate:
+  - **G+ = G B D♯** (never E♭ G B) — the scale's E♭ is the chord's D♯.
+  - **B♭+ = B♭ D F♯** — named from the note just above the tonic; the
+    scale's A♯ is the chord's B♭ (A♯+ would need C𝄪).
+  - Major and minor chords on **G, B and E♭**, roots named as the scale
+    names them (E♭m, not D♯m).
+- One plain line in Pairs and Chords: "The augmented scale holds two
+  augmented chords, plus major and minor chords on G, B and E♭."
+- **Whole tone** holds only two chords, both augmented: **G+ = G B D♯** and
+  **A+ = A C♯ E♯** (E♯ written F in the scale), each one chord seen from
+  three roots (G+ = B+ = D♯+, A+ = C♯+ = F+).
+
+### Exactly five symmetrical six-note scales
+Found by trying all 924 six-note sets (`tests/symmetric.test.ts`), counted by
+transposition:
+
+| Scale | In G | Repeats every | Different ones |
+|---|---|---|---|
+| Whole tone | G A B C♯ D♯ F | whole step | 2 |
+| Augmented | G A♯ B D E♭ F♯ | major third | 4 |
+| Petrushka | G A♭ B D♭ D F | tritone | 6 |
+| Messiaen mode 5 | G A♭ C C♯ D F♯ | tritone | 6 |
+| No common name | G A♭ B♭ C♯ D E | tritone | 6 |
+
+The last one is G minor + C♯ minor, Petrushka turned upside down (same Forte
+class 6-30, the mirror image). It was added to the library. Messiaen mode 5
+is now spelled with matching halves (G A♭ C, then C♯ D F♯).
+
+### Credits
+- **Sunday Scale** — a name made popular by Peter Martin (Open Studio). Jason
+  did not coin it; the app never says he did.
+- **Petrushka** — from Stravinsky's ballet *Petrushka* (1911): two major chords
+  a tritone apart (in G: G major and D♭ major). Never called Bulgarian;
+  Bulgarian material in the app is the odd meters (ruchenitsa and others).
+- **Messiaen mode 5** — one of Olivier Messiaen's modes of limited
+  transposition; it repeats every tritone.
+- **Octatonic** — one of several symmetrical scales, not "the" symmetrical
+  scale.
+- "It's used a lot in gospel music" (the Sunday Scale) is quoted as Jason's
+  words from class, not stated as a bare fact.

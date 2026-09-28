@@ -17,7 +17,7 @@ Practising musicians and music teachers. Two situations:
 
 - a player at an instrument drilling six-note scales against a meter, needing
   the notation, the sound, and the bar-count to be exactly right;
-- a teacher at a whiteboard or on camera, using the Presenter page live in a
+- a teacher at a whiteboard or on camera, using Practice and Sounds live in a
   class and printing a drill sheet from the browser.
 
 Carnatic and Western-jazz vocabulary both appear because the same user often
@@ -44,16 +44,17 @@ app built entirely around hexatonic practice."
 
 ## Operating Context
 
-Used at an instrument, often with a MIDI keyboard attached, and live in class
-via the Presenter page. Works offline (PWA + service worker). Printing is a
+Used at an instrument, often with a MIDI keyboard attached, and live in class. Works offline (PWA + service worker). Printing is a
 first-class output: the print stylesheet strips app furniture and renders the
 drill on white.
 
 ## Capabilities and Constraints
 
-Pages: `/ /practice /improvise /harmony /varisai /learn /scales /resolution
-/live /about`. Next.js 15.5.x + React 19 + TypeScript + Tailwind, VexFlow 4.2.2
-for engraving, Vitest for tests (162 passing).
+Pages: `/ /practice /sounds /improvise /ear /harmony /learn /resolution /about`.
+Old addresses redirect: `/workout` and `/scales` → `/sounds`, `/class` → `/`,
+`/varisai` → `/practice#routines`, `/live` → `/practice`. Next.js 15.5.x +
+React 19 + TypeScript + Tailwind, VexFlow 4.2.2 for engraving, Vitest for tests
+(`npm run check` runs typecheck, tests and build).
 
 Non-negotiable correctness rules, each guarded by tests:
 

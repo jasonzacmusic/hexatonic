@@ -6,18 +6,20 @@
 
 Immediate alias (skips DNS): **https://hexatonic.vercel.app**
 
-| | |
+| Page | What it is |
 |---|---|
-| [/practice](https://hexatonic.nathanielschool.com/practice) | the drill machine |
-| [/workout](https://hexatonic.nathanielschool.com/workout) | knock-one-out from 4 parents, blues/gospel/whole-tone, neighbours, harmonisation, the Barry Harris lens, dice, a 4½-hour plan |
-| [/class](https://hexatonic.nathanielschool.com/class) | the 90-minute public-class run-sheet with one clock |
-| [/improvise](https://hexatonic.nathanielschool.com/improvise) | vamps built from the scale's own harmony |
-| [/harmony](https://hexatonic.nathanielschool.com/harmony) | triads, triad pairs, Barry Harris |
-| [/varisai](https://hexatonic.nathanielschool.com/varisai) | the practice ladder + raga mode |
-| [/learn](https://hexatonic.nathanielschool.com/learn) | the five theorems, each with a button that proves it by ear |
-| [/scales](https://hexatonic.nathanielschool.com/scales) | every family in every key |
+| [/](https://hexatonic.nathanielschool.com/) | home: tap to hear the main six-note sounds in any key |
+| [/practice](https://hexatonic.nathanielschool.com/practice) | the drill machine, with the practice routines |
+| [/sounds](https://hexatonic.nathanielschool.com/sounds) | every six-note scale side by side, including the five symmetrical ones |
+| [/improvise](https://hexatonic.nathanielschool.com/improvise) | backing loops built from the scale's own chords |
+| [/ear](https://hexatonic.nathanielschool.com/ear) | six ear games with levels, including "Which two triads?" |
+| [/harmony](https://hexatonic.nathanielschool.com/harmony) | chords in the scale, two-triad pairs, Barry Harris's sixth–diminished |
+| [/learn](https://hexatonic.nathanielschool.com/learn) | Jason's hexatonic lesson in seven steps |
 | [/resolution](https://hexatonic.nathanielschool.com/resolution) | the bar-count calculator |
-| [/live](https://hexatonic.nathanielschool.com/live) | presenter mode for the shoot |
+| [/about](https://hexatonic.nathanielschool.com/about) | who made it, how the theory is checked, where the names come from |
+
+Old addresses redirect: `/workout` and `/scales` → `/sounds`, `/class` → `/`,
+`/varisai` → `/practice#routines`, `/live` → `/practice`.
 
 **Repo:** https://github.com/jasonzacmusic/hexatonic
 
@@ -29,7 +31,7 @@ Immediate alias (skips DNS): **https://hexatonic.vercel.app**
 **Handing the look to Claude Design?** → [docs/DESIGN-BRIEF-CLAUDE-DESIGN.md](docs/DESIGN-BRIEF-CLAUDE-DESIGN.md) — three ready-to-paste briefs.
 
 Local: `npm install && npm run dev` → http://localhost:3311
-Tests: `npm test` — 56 tests gated against `engine/verified.json`
+Tests: `npm run check` — typecheck, the full Vitest suite, and the production build
 
 ---
 
@@ -179,9 +181,10 @@ still ⚠️ unverified and must not be said as fact.
 teaches two courses under that name. I had labelled your scale "Sunday/gospel"
 throughout the first draft and it was wrong; it's fixed everywhere now.
 
-**"Sunday scale" is also taken** — it's Peter Martin's, in Open Studio's *Elements
-of Gospel Piano*. It is six notes, but its actual content is behind a paywall and I
-couldn't verify it. Don't claim it.
+**"Sunday Scale" is a name made popular by Peter Martin (Open Studio)** — their
+Short "THE Sunday Scale" plays it in B♭, and sundayscale.com points to the Open
+Studio PDF. It is the major scale without its 7th (1 2 3 4 5 6), and the app uses
+it for that rotation only, always credited to Peter Martin. Jason did not coin it.
 
 And a bare **"major hexatonic"** more commonly means the *no-7* scale (C D E F G A),
 not yours. So always qualify.
