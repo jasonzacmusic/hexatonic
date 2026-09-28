@@ -47,15 +47,31 @@ describe("the four augmented triangles", () => {
       expect(augTriangles(buildScale(k, "diatonic", 0).notes).filter((t) => t.inScale)).toHaveLength(0);
     }
   });
-  it("G augmented: E♭ G B and B♭ D F♯, in the scale's own letters", () => {
+  it("G augmented: G B D♯ first (from the tonic), then B♭ D F♯", () => {
     const s = buildScale("G", "aug");
-    expect(augTriangles(s.notes).filter((t) => t.inScale).map((t) => t.name).sort())
-      .toEqual(["B♭ D F♯", "E♭ G B"]);
+    const inside = augTriangles(s.notes).filter((t) => t.inScale).sort((x, y) => x.order - y.order);
+    expect(inside.map((t) => t.name)).toEqual(["G B D♯", "B♭ D F♯"]);
   });
-  it("G whole tone: G B D♯ and F A C♯", () => {
+  it("the same with the board's spelling, G A♯ B D E♭ F♯, and says what is written differently", () => {
+    const board = ["G", "A#", "B", "D", "Eb", "F#"].map((n) => parseNoteName(n));
+    const inside = augTriangles(board).filter((t) => t.inScale).sort((x, y) => x.order - y.order);
+    expect(inside.map((t) => t.name)).toEqual(["G B D♯", "B♭ D F♯"]);
+    expect(inside[0].written.map((w) => `${notePretty(w.chord)}=${notePretty(w.scale)}`)).toEqual(["D♯=E♭"]);
+    expect(inside[1].written.map((w) => `${notePretty(w.chord)}=${notePretty(w.scale)}`)).toEqual(["B♭=A♯"]);
+  });
+  it("G whole tone: G B D♯ then A C♯ E♯, with E♯ written F in the scale", () => {
     const s = buildScale("G", "whole");
-    expect(augTriangles(s.notes).filter((t) => t.inScale).map((t) => t.name).sort())
-      .toEqual(["F A C♯", "G B D♯"]);
+    const inside = augTriangles(s.notes).filter((t) => t.inScale).sort((x, y) => x.order - y.order);
+    expect(inside.map((t) => t.name)).toEqual(["G B D♯", "A C♯ E♯"]);
+    expect(inside[1].written.map((w) => `${notePretty(w.chord)}=${notePretty(w.scale)}`)).toEqual(["E♯=F"]);
+  });
+  it("the tonic's triangle always comes first and starts on the tonic, in every key", () => {
+    for (const k of KEYS) for (const fam of ["aug", "whole"]) {
+      const s = buildScale(k, fam);
+      const first = augTriangles(s.notes).find((t) => t.order === 0)!;
+      expect(pc(first.notes[0]), `${k} ${fam}`).toBe(pc(s.notes[0]));
+      expect(first.notes.some((n) => Math.abs(n.alt) === 2), `${k} ${fam}`).toBe(false);
+    }
   });
   it("augTriad spells in thirds", () => {
     expect(names(augTriad(parseNoteName("Ab"))!)).toBe("A♭ C E");
@@ -63,11 +79,14 @@ describe("the four augmented triangles", () => {
 });
 
 describe("interval labels", () => {
-  it("names each step from the spelling", () => {
-    const s = buildScale("G", "aug"); // G B♭ B D E♭ F♯
-    expect(names(s.notes)).toBe("G B♭ B D E♭ F♯");
-    expect(steps(s.notes).map((x) => x.name)).toEqual(["m3", "aug1", "m3", "m2", "aug2"]);
-    expect(steps(s.notes).map((x) => x.semis)).toEqual([3, 1, 3, 1, 3]);
+  it("names each step from the spelling: the board's G A♯ B D E♭ F♯ alternates aug2 and m2", () => {
+    const board = ["G", "A#", "B", "D", "Eb", "F#"].map((n) => parseNoteName(n));
+    expect(steps(board).map((x) => x.name)).toEqual(["aug2", "m2", "m3", "m2", "aug2"]);
+    expect(steps(board).map((x) => x.semis)).toEqual([3, 1, 3, 1, 3]);
+  });
+  it("a step written as a minor 3rd is labelled m3, never aug2", () => {
+    const flat = ["G", "Bb", "B"].map((n) => parseNoteName(n));
+    expect(steps(flat).map((x) => x.name)).toEqual(["m3", "aug1"]);
   });
   it("draws whole-tone arcs only where the spelling is a major third", () => {
     const s = buildScale("G", "whole"); // G A B C♯ D♯ F

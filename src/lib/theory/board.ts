@@ -37,9 +37,23 @@ export interface AugTriangle {
   /** the triad spelled root, major 3rd, augmented 5th: "G B D♯" */
   notes: Note[];
   name: string;
+  /** For a triangle in the scale: 0 for the one on the tonic, then in the
+   *  order the scale reaches them. -1 when not in the scale. */
+  order: number;
+  /** Notes the chord spells differently from the scale, e.g. E♯ written F. */
+  written: { chord: Note; scale: Note }[];
 }
 
-const cost = (ns: Note[]) => ns.reduce((a, n) => a + Math.abs(n.alt) * (Math.abs(n.alt) === 2 ? 50 : 1), 0);
+const hasDouble = (ns: Note[]) => ns.some((n) => Math.abs(n.alt) >= 2);
+
+/** The same pitch on a neighbouring letter, with at most one accidental. */
+function respell(n: Note): Note | null {
+  for (const k of [1, -1]) {
+    const s = spell(stepLetter(n.letter, k), pc(n));
+    if (s && Math.abs(s.alt) <= 1) return s;
+  }
+  return null;
+}
 
 /** An augmented triad on `root`, spelled in thirds (root, +2 letters, +4 letters). */
 export function augTriad(root: Note): Note[] | null {
@@ -49,29 +63,45 @@ export function augTriad(root: Note): Note[] | null {
   return third && fifth ? [root, third, fifth] : null;
 }
 
-/** The four augmented triangles, each marked as in the scale or not. When it
- *  is in the scale it is spelled from the scale's own notes, choosing the root
- *  that needs the fewest accidentals (the tonic wins a tie). */
+/**
+ * The four augmented triangles, each marked as in the scale or not.
+ *
+ * A triangle in the scale is named as a chord on its lowest note above the
+ * tonic, so the tonic's own triangle comes first and is named from the tonic
+ * (G augmented: G B D♯ then B♭ D F♯; G whole tone: G B D♯ then A C♯ E♯).
+ * When that root would need a double sharp or flat it is respelled (A♯+ is
+ * written B♭+). Where the chord spells a note differently from the scale it
+ * says so: in G whole tone, A C♯ E♯ has its E♯ written F in the scale.
+ */
 export function augTriangles(scale: Note[]): AugTriangle[] {
   const have = new Map(scale.map((n) => [pc(n), n]));
-  const tonicPc = scale.length ? pc(scale[0]) : -1;
+  const tonicPc = scale.length ? pc(scale[0]) : 0;
+  const up = (p: number) => mod12(p - tonicPc);
+  const inside = TRIANGLES.map((t) => t.pcs.every((p) => have.has(p)));
+  const lowest = TRIANGLES.map((t) => Math.min(...t.pcs.map(up)));
+  const ranked = TRIANGLES.map((_, i) => i).filter((i) => inside[i]).sort((x, y) => lowest[x] - lowest[y]);
+
   return TRIANGLES.map((t, index) => {
-    const inScale = t.pcs.every((p) => have.has(p));
-    let best: Note[] | null = null;
-    let bestCost = Infinity;
+    const inScale = inside[index];
+    let notes: Note[] | null = null;
     if (inScale) {
-      for (const p of t.pcs) {
-        const tri = augTriad(have.get(p)!);
-        if (!tri) continue;
-        /* a note written differently from the scale costs most: the triangle
-           should read in the scale's own letters */
-        const mismatch = tri.filter((n) => { const h = have.get(pc(n))!; return h.letter !== n.letter; }).length;
-        const c = mismatch * 10 + cost(tri) - (p === tonicPc ? 0.5 : 0);
-        if (c < bestCost) { best = tri; bestCost = c; }
+      const rootPc = t.pcs.find((p) => up(p) === lowest[index])!;
+      const root = have.get(rootPc)!;
+      notes = augTriad(root);
+      if (!notes || hasDouble(notes)) {
+        const alt = respell(root);
+        const again = alt ? augTriad(alt) : null;
+        if (again && !hasDouble(again)) notes = again;
       }
     }
-    const notes = best ?? augTriad(parseNoteName(t.root))!;
-    return { index, pcs: t.pcs, inScale, notes, name: notes.map(notePretty).join(" ") };
+    notes ??= augTriad(parseNoteName(t.root))!;
+    const written = inScale
+      ? notes.filter((n) => have.get(pc(n))!.letter !== n.letter).map((n) => ({ chord: n, scale: have.get(pc(n))! }))
+      : [];
+    return {
+      index, pcs: t.pcs, inScale, notes, name: notes.map(notePretty).join(" "),
+      order: ranked.indexOf(index), written,
+    };
   });
 }
 

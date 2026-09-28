@@ -12,7 +12,7 @@ import type { ReactElement } from "react";
 
 const INK = {
   line: "#2A2523", faint: "#4A4240", cream: "#F4EFE4", muted: "#A79E94",
-  blue: "#8DBDEB", green: "#79CFAC", red: "#E8666C", gold: "#F3D765", water: "#7CC6EA", copper: "#E0894F",
+  blue: "#8DBDEB", violet: "#BBA6F7", red: "#E8666C", gold: "#F3D765", water: "#7CC6EA", copper: "#E0894F",
 };
 
 export type MarkKind = "harmony" | "ear" | "learn" | "resolution" | "improvise";
@@ -36,7 +36,7 @@ function Harmony() {
         const p = at(i); return <circle key={i} cx={p.x} cy={p.y} r="1.6" fill={INK.faint} />;
       })}
       <polygon points={pts(A)} pathLength={1} fill={INK.blue} fillOpacity="0.08" stroke={INK.blue} strokeWidth="1.6" strokeLinejoin="round" className="hx-draw" />
-      <polygon points={pts(B)} pathLength={1} fill={INK.green} fillOpacity="0.08" stroke={INK.green} strokeWidth="1.6" strokeLinejoin="round" className="hx-draw" style={{ animationDelay: "180ms" }} />
+      <polygon points={pts(B)} pathLength={1} fill={INK.violet} fillOpacity="0.08" stroke={INK.violet} strokeWidth="1.6" strokeLinejoin="round" className="hx-draw" style={{ animationDelay: "180ms" }} />
       {A.map((s, i) => {
         const p = at(s, R + 12);
         const deg = (s / 12) * 360 - 90;
@@ -54,7 +54,7 @@ function Harmony() {
         const l = { x: tip.x - h * Math.cos(a) + h * 0.8 * Math.cos(a + Math.PI / 2), y: tip.y - h * Math.sin(a) + h * 0.8 * Math.sin(a + Math.PI / 2) };
         const r = { x: tip.x - h * Math.cos(a) - h * 0.8 * Math.cos(a + Math.PI / 2), y: tip.y - h * Math.sin(a) - h * 0.8 * Math.sin(a + Math.PI / 2) };
         return (
-          <g key={s} stroke={INK.green} strokeWidth="1.6" strokeLinecap="round" fill="none" className="hx-mark" style={{ animationDelay: `${520 + i * 60}ms` }}>
+          <g key={s} stroke={INK.violet} strokeWidth="1.6" strokeLinecap="round" fill="none" className="hx-mark" style={{ animationDelay: `${520 + i * 60}ms` }}>
             <line x1={tail.x} y1={tail.y} x2={tip.x} y2={tip.y} />
             <polyline points={`${l.x},${l.y} ${tip.x},${tip.y} ${r.x},${r.y}`} strokeLinejoin="round" />
           </g>
@@ -63,7 +63,7 @@ function Harmony() {
       {Object.entries(name).map(([s, n]) => {
         const p = at(+s, R + 12);
         return <text key={s} x={p.x} y={p.y + 4.2} textAnchor="middle" fontFamily="var(--font-plex-mono)" fontSize="12" fontWeight="700"
-                     fill={A.includes(+s) ? INK.blue : INK.green}>{n}</text>;
+                     fill={A.includes(+s) ? INK.blue : INK.violet}>{n}</text>;
       })}
     </svg>
   );
@@ -146,7 +146,7 @@ function Improvise() {
       <g className="hx-mark" style={{ animationDelay: "600ms" }}>
         <ellipse cx={14 + 5 * 28} cy="30" rx="13" ry="17" transform={`rotate(-10 ${14 + 5 * 28} 30)`} fill="none" stroke={INK.blue} strokeWidth="1.4" />
       </g>
-      <g stroke={INK.green} strokeWidth="1.6" strokeLinecap="round" fill="none" className="hx-mark" style={{ animationDelay: "700ms" }}>
+      <g stroke={INK.violet} strokeWidth="1.6" strokeLinecap="round" fill="none" className="hx-mark" style={{ animationDelay: "700ms" }}>
         <line x1={14 + 5 * 28} y1="98" x2={14 + 5 * 28} y2="58" />
         <polyline points={`${14 + 5 * 28 - 5},64 ${14 + 5 * 28},57 ${14 + 5 * 28 + 5},64`} strokeLinejoin="round" />
       </g>

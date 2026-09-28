@@ -36,10 +36,11 @@ import { ReactNode, useEffect, useId, useRef, useState } from "react";
 export type RingLayout = "chromatic" | "fifths";
 
 /** The four augmented triangles' own colours (C E G♯, G B D♯, D F♯ A♯, A C♯ E♯).
- *  None is gold, red or the root green. */
-export const TRIANGLE_INK = ["#E0894F", "#A58CF2", "#D97BC0", "#62B0E0"] as const;
-/** Triad A of a pair is circled, triad B is pointed at: the pair colours. */
-export const PAIR_INK = { a: "#8DBDEB", b: "#79CFAC" } as const;
+ *  None is gold, red, the root green or a pair colour. */
+export const TRIANGLE_INK = ["#E0894F", "#D9BF8C", "#D97BC0", "#62B0E0"] as const;
+/** Triad A of a pair is circled (blue), triad B is pointed at (violet): the
+ *  same two colours as the pair keyboard. Green stays the root's alone. */
+export const PAIR_INK = { a: "#8DBDEB", b: "#BBA6F7" } as const;
 
 export const RING_SIZES = { sm: 112, md: 220, lg: 340 } as const;
 export type RingSize = keyof typeof RING_SIZES;

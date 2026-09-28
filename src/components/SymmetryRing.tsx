@@ -10,7 +10,7 @@
 import { ReactNode } from "react";
 import ScaleRing, { RingLayout, TRIANGLE_INK } from "@/components/ScaleRing";
 import { Seg } from "@/components/Panels";
-import { Note } from "@/lib/theory/note";
+import { Note, notePretty } from "@/lib/theory/note";
 import { augTriangles } from "@/lib/theory/board";
 
 export default function SymmetryRing({
@@ -29,7 +29,7 @@ export default function SymmetryRing({
   className?: string;
   ringClassName?: string;
 }) {
-  const inside = augTriangles(notes).filter((t) => t.inScale);
+  const inside = augTriangles(notes).filter((t) => t.inScale).sort((a, b) => a.order - b.order);
   const fifths = layout === "fifths";
   return (
     <div className={`flex flex-col items-center gap-2.5 ${className}`}>
@@ -39,21 +39,27 @@ export default function SymmetryRing({
       </ScaleRing>
       <Seg small value={layout} ariaLabel="Ring layout" onChange={onLayout}
            options={[{ label: "Clock", value: "chromatic" as const }, { label: "Fifths", value: "fifths" as const }]} />
-      {/* one line, always the same height, so switching never moves the page */}
-      <p className="micro min-h-[1.6em] max-w-[34ch] text-center leading-snug" aria-live="polite">
-        {!fifths ? "One semitone per step. Switch to fifths to see the star."
+      {/* a fixed height, so switching never moves the page */}
+      <div className="micro min-h-[4.4em] max-w-[36ch] text-center leading-snug" aria-live="polite">
+        {!fifths ? <p className="text-muted">One semitone per step. Switch to fifths to see the star.</p>
           : inside.length ? (
             <>
-              {inside.map((t, i) => (
-                <span key={t.index}>
-                  {i > 0 && <span className="text-muted"> and </span>}
-                  <span className="font-semibold" style={{ color: TRIANGLE_INK[t.index] }}>{t.name}</span>
-                </span>
+              <p className="text-muted">Augmented triads inside this scale:</p>
+              {inside.map((t) => (
+                <p key={t.index}>
+                  <span className="font-semibold" style={{ color: TRIANGLE_INK[t.index] }}>
+                    {notePretty(t.notes[0])}+ = {t.name}
+                  </span>
+                  {t.written.length > 0 && (
+                    <span className="text-muted">
+                      {" "}({t.written.map((w) => `${notePretty(w.chord)} written ${notePretty(w.scale)}`).join(", ")})
+                    </span>
+                  )}
+                </p>
               ))}
-              <span className="text-muted">: {inside.length === 1 ? "an augmented triad" : "two augmented triads"} inside</span>
             </>
-          ) : <span className="text-muted">One fifth per step. No augmented triad fits inside this scale.</span>}
-      </p>
+          ) : <p className="text-muted">One fifth per step. No augmented triad fits inside this scale.</p>}
+      </div>
     </div>
   );
 }
