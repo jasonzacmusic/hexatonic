@@ -102,13 +102,16 @@ export function symmetricTriadLine(familyId: string, notes: Note[]): string | nu
     return `The augmented scale holds ${aug.length === 2 ? "two" : aug.length} augmented chords, plus ${where}.`;
   }
   /* Whole tone: every triad is augmented, and each is three roots of one
-     chord. The tonic's chord first, then the one on the 2nd, each spelled as
-     a triad from that root (A C♯ E♯), with the scale's own letter noted. */
+     chord. The tonic's chord first, each named from a root whose triad is the
+     scale's own notes where one exists (F+ = F A C♯ in G), else spelled as a
+     triad with the scale's own letter noted (E♯ is written F). */
   const own = new Set(notes.map(noteName));
   const sets = [...aug].sort((a, b) => Number(b.pcs.includes(pc(notes[0]))) - Number(a.pcs.includes(pc(notes[0]))));
   const named = sets.map((c) => {
     const roots = order(c.pcs);
-    const lead = roots.map((p) => c.names.find((n) => n.root === scaleName(p))).find(Boolean) ?? c.names[0];
+    const lead = c.names.find((n) => n.root === tonic) ??
+      c.names.find((n) => n.notes.every((x) => own.has(x))) ??
+      roots.map((p) => c.names.find((n) => n.root === scaleName(p))).find(Boolean) ?? c.names[0];
     const start = roots.findIndex((p) => scaleName(p) === lead.root);
     const rotated = start > 0 ? [...roots.slice(start), ...roots.slice(0, start)] : roots;
     const foreign = lead.notes.filter((x) => !own.has(x));

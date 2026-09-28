@@ -54,7 +54,7 @@ describe("exactly five six-note scales repeat evenly inside the octave", () => {
     expect(symmetryLine(buildScale("G", "aug", 0).pcs)).toBe("Repeats every major third: only 4 different ones exist.");
   });
 
-  it("spells them in G as class writes them", () => {
+  it("spells them in G", () => {
     expect(names("G", "whole")).toBe("G A B C♯ D♯ F");
     expect(names("G", "aug")).toBe("G A♯ B D E♭ F♯");
     expect(names("G", "petrushka")).toBe("G A♭ B D♭ D F");
@@ -79,11 +79,11 @@ describe("augmented = two augmented triads", () => {
     return ownSpellingFirst(tertianOnly(findChords(s.notes, [3])), s.notes).chords;
   };
 
-  it("in G: two augmented chords (G B D♯ and D F♯ A♯), plus major and minor on G, B and E♭", () => {
+  it("in G: two augmented chords (G B D♯ and B♭ D F♯), plus major and minor on G, B and E♭", () => {
     const tri = augTriads("G");
     expect(tri.length).toBe(8);
     const aug = tri.filter((c) => c.names[0].symbol.endsWith("aug"));
-    expect(aug.map((c) => c.names[0].notes.join(" ")).sort()).toEqual(["D F# A#", "G B D#"]);
+    expect(aug.map((c) => c.names[0].notes.join(" ")).sort()).toEqual(["Bb D F#", "G B D#"]);
     expect(tri.filter((c) => /^[A-G][b#]?$/.test(c.names[0].symbol)).length).toBe(3);
     expect(tri.filter((c) => /^[A-G][b#]?m$/.test(c.names[0].symbol)).length).toBe(3);
     expect(symmetricTriadLine("aug", buildScale("G", "aug", 0).notes))
@@ -105,15 +105,16 @@ describe("augmented = two augmented triads", () => {
     }
   });
 
-  it("Pairs: G+ + D+ is G B D♯ with D F♯ A♯, never G B E♭", () => {
+  it("Pairs: G+ + B♭+ is G B D♯ with B♭ D F♯, never G B E♭", () => {
     const aug = sixNoteScales("G").find((s) => s.familyId === "aug")!;
     const pair = aug.pairs.find((p) => p.shapes.every((s) => s.quality === "aug"))!;
-    expect(pair.shapes.map((s) => s.notes.map(noteName).join(" "))).toEqual(["G B D#", "D F# A#"]);
+    expect(pair.shapes.map((s) => s.notes.map(noteName).join(" "))).toEqual(["G B D#", "Bb D F#"]);
+    expect(pair.symbol).toBe("G+ + B♭+");
     for (const p of aug.pairs) for (const sh of p.shapes)
       if (sh.symbol === "G+") expect(sh.notes.map(noteName)).not.toContain("Eb");
     expect(aug.pairs.length).toBe(4);
     // the other three pairs are a major and a minor chord, roots on G, B and E♭
-    expect(aug.pairs.map((p) => p.symbol).sort()).toEqual(["E♭ + Bm", "G + E♭m", "G+ + D+", "Gm + B"]);
+    expect(aug.pairs.map((p) => p.symbol).sort()).toEqual(["E♭ + Bm", "G + E♭m", "G+ + B♭+", "Gm + B"]);
   });
 
   it("every key: the line counts two augmented chords and three roots", () => {
@@ -125,15 +126,15 @@ describe("augmented = two augmented triads", () => {
 });
 
 describe("whole tone: only two augmented triads, each from three roots", () => {
-  it("in G: G B D♯ and A C♯ E♯ (the scale writes F)", () => {
+  it("in G: G B D♯ and F A C♯ (= A C♯ E♯), each from three roots", () => {
     const s = buildScale("G", "whole", 0);
     const tri = tertianOnly(findChords(s.notes, [3]));
     expect(tri.length).toBe(2);
     expect(tri.every((c) => c.names.every((n) => n.symbol.endsWith("aug")))).toBe(true);
     expect(tri.every((c) => c.names.length >= 2)).toBe(true);
     expect(symmetricTriadLine("whole", s.notes)).toBe(
-      "Whole tone holds only two three-note chords, both augmented: G+ (G B D♯) and A+ (A C♯ E♯; in the scale E♯ is written F). " +
-      "Each is one chord seen from three roots: G+ = B+ = D♯+ and A+ = C♯+ = F+.");
+      "Whole tone holds only two three-note chords, both augmented: G+ (G B D♯) and F+ (F A C♯). " +
+      "Each is one chord seen from three roots: G+ = B+ = D♯+ and F+ = A+ = C♯+.");
   });
 
   it("every key: exactly two triads, both augmented, and the line says so", () => {

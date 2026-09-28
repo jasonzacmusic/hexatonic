@@ -265,8 +265,9 @@ function SweetSpotStep() {
       </>}>
       <p>
         Play {KEY} major but skip the 7th, {P(S.dropped)}: go from {P(S.sunday[5])} straight
-        to the octave. The six notes left, {names(S.sunday)}, are what Jason calls
-        the <strong className="font-semibold text-cream">Sunday Scale</strong>, used a lot in gospel.
+        to the octave. The six notes left, {names(S.sunday)}, are
+        the <strong className="font-semibold text-cream">Sunday Scale</strong>, a name made popular by
+        Peter Martin (Open Studio). It is used a lot in gospel.
       </p>
       <p>
         It is the pentatonic plus one note ({P(S.added)}), or the major scale minus one. To

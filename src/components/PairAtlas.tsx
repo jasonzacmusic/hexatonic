@@ -18,6 +18,7 @@ import { SHAPE_TONES } from "@/components/PairKeyboard";
 import { Seg } from "@/components/Panels";
 import { notePretty, pc } from "@/lib/theory/note";
 import { FAMILY_GROUPS, KEYS } from "@/lib/theory/scales";
+import { symmetricTriadLine } from "@/lib/theory/symmetric";
 import {
   buildParent, ParentId, parentInKey, parentPairs, PARENTS, SixNoteScale, sixNoteScales, TwoChordPair,
 } from "@/lib/theory/pairAtlas";
@@ -217,6 +218,9 @@ function SixPicker({ sixes, six, onSix }: {
         <span className="ml-2 font-mono text-cream/75">{six.notes.map(notePretty).join(" ")}</span>
         {six.removed && <span className="ml-2 font-mono text-red">no {notePretty(six.removed)}</span>}
       </p>
+      {symmetricTriadLine(six.familyId, six.notes) && (
+        <p className="max-w-[68ch] text-[15px] leading-relaxed text-cream/80">{symmetricTriadLine(six.familyId, six.notes)}</p>
+      )}
     </div>
   );
 }

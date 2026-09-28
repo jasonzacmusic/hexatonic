@@ -25,6 +25,7 @@ import { previewAudio } from "@/lib/audio/engine";
 import { playableStack } from "@/lib/audio/voicing";
 import { cap, chordRole, count, list, optionById, optionToShared, ownSpellingFirst, PROSE, ScalePicker, sharedToOption, stackLine } from "./scaleOptions";
 import { useSharedScale } from "@/lib/sharedScale";
+import { symmetricTriadLine } from "@/lib/theory/symmetric";
 import {
   FUNCTION_LABEL, FUNCTION_LINE, HarmonicFunction, harmonicFunction, romanNumeral, triadQuality,
 } from "@/lib/theory/functions";
@@ -173,6 +174,9 @@ export default function ChordsTab() {
               line={scale.removed && lost.length
                 ? `${cap(count(tri.length))} three-note chords live in this scale, grouped by what they do. ${list(lost.map((c) => chordName(c.names[0].symbol)))} ${lost.length === 1 ? "is" : "are"} gone: ${lost.length === 1 ? "it" : "each one"} needed ${removedName}.`
                 : `${cap(count(tri.length))} three-note chords live in this scale, grouped by what they do.`} />
+        {symmetricTriadLine(scale.family.id, notes) && (
+          <p className={`mt-2 ${PROSE}`}>{symmetricTriadLine(scale.family.id, notes)}</p>
+        )}
 
         {/* Tonic, pre-dominant, dominant, left to right as they move. Each group
             is as wide as its chords need; an empty one shrinks to a slim note. */}

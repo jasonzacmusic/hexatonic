@@ -314,8 +314,10 @@ function spellTriad(rootLetter: Letter, rootPc: number, q: TriadQuality): Note[]
  * as the scale names it (E♭m in a scale with E♭, never D♯m), the scale's own
  * letters where they already stack, fewest accidentals otherwise. An
  * augmented triad has three equal roots; the tonic wins if it is one of them
- * (G+ is G B D♯, never E♭ G B), and otherwise the root the scale spells so
- * the whole chord is its own notes (D F♯ A♯ in G A♯ B D E♭ F♯).
+ * (G+ is G B D♯, never E♭ G B). In the augmented scale the other one is
+ * named from the note just above the tonic, spelled as a triad: B♭+ =
+ * B♭ D F♯ in G A♯ B D E♭ F♯ (A♯+ would need C𝄪). Elsewhere (whole tone) it
+ * takes the root whose triad is the scale's own notes: F+ = F A C♯.
  */
 function chordFromPcs(
   rootPc: number, q: TriadQuality, scale: Note[], tonic: Note,
@@ -328,7 +330,10 @@ function chordFromPcs(
       const ns = spellTriad(L, r, q);
       if (!ns) continue;
       const cost = ns.reduce((a, n) => a + Math.abs(n.alt) + (scaleLetter(pc(n)) === n.letter ? 0 : 0.5), 0) +
-        (scaleLetter(r) === L ? 0 : 2) + (q === "aug" && r === pc(tonic) ? -4 : 0);
+        (q === "aug" && r === pc(tonic) ? -4
+          : q === "aug" && isAugmentedScale(scale)
+            ? 3 * [...roots].sort((x, y) => mod12(x - pc(tonic)) - mod12(y - pc(tonic))).indexOf(r)
+            : (scaleLetter(r) === L ? 0 : 2));
       if (!best || cost < best.cost) best = { notes: ns, cost };
     }
   }
@@ -338,6 +343,13 @@ function chordFromPcs(
     symbol: notePretty(best.notes[0]) + SUFFIX[q],
     roman: romanFrom(tonic, best.notes[0], q),
   };
+}
+
+/** The augmented scale (6-20), in any key: two augmented triads a half step apart. */
+export function isAugmentedScale(scale: Note[]): boolean {
+  const s = new Set(scale.map(pc));
+  if (s.size !== 6) return false;
+  return [...s].some((r) => [0, 3, 4, 7, 8, 11].every((i) => s.has(mod12(r + i))));
 }
 
 /** Roman numeral by LETTER distance, so C + F♯ is I + ♯IV and C + G♭ is I + ♭V. */

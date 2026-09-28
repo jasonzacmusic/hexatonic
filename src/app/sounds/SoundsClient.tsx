@@ -32,6 +32,7 @@ import {
 import { PlayGlyph, litIndex, upToOctave, usePreviewRun, Lit } from "@/components/ScalePreview";
 import ScaleRing from "@/components/ScaleRing";
 import KeyPicker, { prettyKey as PRETTY_KEY } from "@/components/KeyPicker";
+import { symmetryLine } from "@/lib/theory/symmetric";
 
 const DEFAULT_KEY = "G";
 const SPREAD = 0.26;
@@ -43,8 +44,8 @@ const MODE_ORDER = [0, 3, 4, 2, 1, 5];
 const GROUPS: { id: string; short: string }[] = [
   { id: "remove", short: "Remove one" },
   { id: "pentatonic", short: "Pentatonic + 1" },
-  { id: "symmetric", short: "Symmetric" },
   { id: "colour", short: "Colour" },
+  { id: "symmetric", short: "Symmetrical" },
   { id: "beyond", short: "World" },
   { id: "custom", short: "Custom" },
 ];
@@ -56,6 +57,8 @@ interface Entry {
   colour: string;
   scale: ScaleInstance;
   practice: string;
+  /** "Repeats every tritone: only 6 different ones exist." for the symmetrical scales */
+  repeats: string | null;
 }
 
 function entryFor(key: string, famId: string, mode = 0): Entry {
@@ -71,6 +74,7 @@ function entryFor(key: string, famId: string, mode = 0): Entry {
     colour: md ? md.colour : (fam.note ?? ""),
     scale,
     practice: `/practice?${q}`,
+    repeats: fam.group === "symmetric" ? symmetryLine(scale.pcs) : null,
   };
 }
 
@@ -178,15 +182,19 @@ export default function SoundsClient() {
         </p>
       </Group>
 
-      {/* ── symmetric ───────────────────────────────────────────────────── */}
-      <Group id="symmetric" title={group("symmetric").label} blurb={group("symmetric").blurb}>
-        <Cards entries={symmetric} player={player} two />
+      {/* ── colour scales ───────────────────────────────────────────────── */}
+      <Group id="colour" title={group("colour").label} blurb={group("colour").blurb}>
+        <Cards entries={colour} player={player} two />
       </Group>
       </div>
 
-      {/* ── colour scales ───────────────────────────────────────────────── */}
-      <Group id="colour" title={group("colour").label} blurb={group("colour").blurb}>
-        <Cards entries={colour} player={player} />
+      {/* ── symmetrical: all five six-note scales that repeat evenly ───────── */}
+      <Group id="symmetric" title={group("symmetric").label} blurb={group("symmetric").blurb}>
+        <Cards entries={symmetric} player={player} />
+        <p className="quiet mt-3">
+          Checked by trying every one of the 924 possible six-note scales: no other repeats.
+          The octatonic (diminished) scale repeats too, but it has eight notes.
+        </p>
       </Group>
 
       {/* ── world scales, 5 and 7 notes ─────────────────────────────────── */}
@@ -312,6 +320,7 @@ function Card({ e, player }: { e: Entry; player: Player }) {
       {s.respelledFrom && (
         <p className="micro mt-2">Written from {PRETTY_KEY(s.tonic)}: in {PRETTY_KEY(s.respelledFrom)} it would need double flats.</p>
       )}
+      {e.repeats && <p className="mt-2.5 font-mono text-[13px] text-cream/80">{e.repeats}</p>}
       <p className="quiet mt-2.5 flex-1">{e.colour}</p>
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2">

@@ -371,7 +371,8 @@ export default function SixthDimTab() {
 
         {step === "scale" && (
           <p className="mt-3 text-[15px] leading-relaxed text-cream/75">
-            Eight notes, but not the octatonic: that scale repeats every minor third and has only{" "}
+            Eight notes, but not the octatonic (the diminished scale, one of several symmetrical
+            scales): that one repeats every minor third and has only{" "}
             {proof.symmetricTranspositions} transpositions. This one has {proof.transpositions}
             {family === "dominant7b5" ? `: it maps onto itself a tritone away, so ${P(root)}7♭5 and ${P(sameRoot(fourths[6], family))}7♭5 share one scale.` : "."}
           </p>

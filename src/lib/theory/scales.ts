@@ -273,13 +273,14 @@ export const FAMILIES: Family[] = [
     id: "aug", short: "Augmented",
     label: "Augmented (in jazz, often just 'the hexatonic scale')", kind: "fixed", size: 6,
     group: "symmetric", character: "shimmer", mixOk: true, plainWhite: true,
-    /* Spelled 1 ♯2 3 5 ♭6 7, one letter per note, as Jason writes it in
-       class and as it is usually printed: G A♯ B D E♭ F♯, C D♯ E G A♭ B.
+    /* Spelled 1 ♯2 3 5 ♭6 7, one letter per note. In G that is G A♯ B D E♭
+       F♯, which is how Jason writes it on his board; other keys follow the
+       same pattern (C D♯ E G A♭ B).
        Where the ♯2 would be E♯ or B♯ (or a double sharp), the plain white key
        is written instead: D F F♯ A B♭ C♯. The chords inside are spelled as
        chords, each on its own letters (MUSICAL_AUDIT.md). */
     semis: [0, 3, 4, 7, 8, 11], letters: [0, 1, 2, 4, 5, 6],
-    note: "Two augmented triads a semitone apart. It holds three major and three minor triads, and no dominant 7th at all, which is why it behaves as a tonic-major colour. It repeats every major third, so only four different ones exist.",
+    note: "Two augmented triads a semitone apart. It holds three major and three minor triads, and no dominant 7th at all, which is why it behaves as a tonic-major colour.",
   },
   {
     id: "prometheus", short: "Prometheus",
@@ -297,7 +298,7 @@ export const FAMILIES: Family[] = [
        (C C♯ E F♯ G A♯) or C + G♭ (C D♭ E G♭ G B♭). Never C D♭ E F♯ G B♭,
        where D♭ and B♭ do not belong to an F♯ chord. */
     letters: [0, 0, 2, 3, 4, 5], letterAlts: [[0, 1, 2, 4, 4, 6]],
-    note: "From Stravinsky's ballet Petrushka (1911): C major against F♯ major, two major triads a tritone apart. It repeats every tritone, so only six different ones exist. Two major triads share no note only a semitone, a whole step or a tritone apart. The semitone pair gives 1 ♭2 3 4 5 ♭6, the whole-step pair gives 1 2 3 ♯4 5 6, and the tritone pair gives this one.",
+    note: "From Stravinsky's ballet Petrushka (1911): two major chords a tritone apart (in G: G major and D♭ major). Two major triads share no note only a semitone, a whole step or a tritone apart. The semitone pair gives 1 ♭2 3 4 5 ♭6, the whole-step pair gives 1 2 3 ♯4 5 6, and the tritone pair gives this one.",
   },
   {
     id: "messiaen5", short: "Messiaen mode 5",
@@ -306,7 +307,7 @@ export const FAMILIES: Family[] = [
     /* Each half spelled alike, the second a tritone above the first:
        G A♭ C, then C♯ D F♯ (letters 0 1 3, then 3 4 6). */
     semis: [0, 1, 5, 6, 7, 11], letters: [0, 1, 3, 3, 4, 6],
-    note: "One of Olivier Messiaen's modes of limited transposition; it repeats every tritone. Each half is a half step and a 4th (G A♭ C, then C♯ D F♯), so only six different ones exist.",
+    note: "One of Olivier Messiaen's modes of limited transposition; it repeats every tritone. Each half is a note with the notes a half step and a 4th above it (in G: G A♭ C, then C♯ D F♯). It holds no major or minor chord at all.",
   },
   {
     id: "tritone-minor", short: "No common name",
@@ -315,7 +316,7 @@ export const FAMILIES: Family[] = [
     /* G A♭ B♭ C♯ D E: G minor (G B♭ D) with C♯ minor (C♯ E G♯, the G♯
        written A♭ so each note has its own letter). Petrushka upside down. */
     semis: [0, 1, 3, 6, 7, 9], letters: [0, 1, 2, 3, 4, 5],
-    note: "Two minor triads a tritone apart: Petrushka turned upside down. It repeats every tritone, so only six different ones exist. It has no common name.",
+    note: "Two minor triads a tritone apart: Petrushka turned upside down. It has no common name.",
   },
   {
     id: "dim-wh", short: "Octatonic (whole–half)",

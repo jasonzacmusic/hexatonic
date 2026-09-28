@@ -169,7 +169,7 @@ describe("#14, #15: spellings in flat keys", () => {
     expect(buildScale("Db", "diatonic", 5).respelledFrom).toBe("Db");
   });
 
-  it("spells augmented the way Jason writes it, 1 ♯2 3 5 ♭6 7: C D♯ E G A♭ B, G A♯ B D E♭ F♯", () => {
+  it("spells augmented 1 ♯2 3 5 ♭6 7: G A♯ B D E♭ F♯ (Jason's board), and C D♯ E G A♭ B", () => {
     expect(names("C", "aug")).toBe("C D# E G Ab B");
     expect(names("G", "aug")).toBe("G A# B D Eb F#");
   });
