@@ -24,10 +24,10 @@ export default function GamePicker({
     nav.scrollLeft += shift;
   }, [current]);
   return (
-    /* On a phone the five cards are one swipeable row, so the game itself stays
+    /* On a phone the six cards are one swipeable row, so the game itself stays
        near the top of the screen; from sm up they are a grid. */
     <nav ref={row} aria-label="Ear games"
-      className="-mx-5 flex snap-x snap-mandatory scroll-px-5 gap-2.5 overflow-x-auto px-5 pb-1 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-5">
+      className="-mx-5 flex snap-x snap-mandatory scroll-px-5 gap-2.5 overflow-x-auto px-5 pb-1 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 sm:pb-0 xl:grid-cols-6">
       {games.map((g, i) => {
         const on = g.id === current;
         const s = scores[g.id];

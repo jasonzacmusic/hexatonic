@@ -16,7 +16,9 @@
  * melody moving with the accents). Levels unlock in progress.ts.
  */
 
-import { Note, notePretty, parseNoteName, pc, spell, stepLetter } from "../theory/note";
+import { LETTERS, Letter, Note, midi, notePretty, parseNoteName, pc, spell, stepLetter } from "../theory/note";
+import { pairLadder } from "../theory/pairAtlas";
+import type { PairChord } from "../theory/pairAtlas";
 import { gatiFor, lcm } from "../theory/resolution";
 import { EarProgram, ProgramBuilder, cadenceChords } from "./program";
 import { PHRASES, SWUNG, stepTime } from "./phrases";
@@ -25,7 +27,7 @@ import {
   relSemi, soundById, spellParent, spellSound,
 } from "./sounds";
 
-export type GameId = "quality" | "mode" | "family" | "missing" | "accents";
+export type GameId = "quality" | "mode" | "family" | "missing" | "accents" | "pairs";
 
 export interface GameInfo {
   id: GameId;
@@ -39,6 +41,7 @@ export const GAMES: GameInfo[] = [
   { id: "family", title: "Which family?", line: "Diatonic, blues, whole tone and more." },
   { id: "missing", title: "Which note is missing?", line: "A scale with one note gone. Find the gap." },
   { id: "accents", title: "Groups of 3, 4, 5 or 7?", line: "Hear where the accents fall." },
+  { id: "pairs", title: "Which two triads?", line: "A triad-pair ladder. Name the pair." },
 ];
 export const gameById = (id: string) => GAMES.find((g) => g.id === id) ?? GAMES[0];
 
@@ -58,12 +61,14 @@ export const LEVELS: Record<GameId, LevelInfo[]> = {
     { name: "Three colours", line: "Major, minor, suspended. Tune, then chord." },
     { name: "Five colours", line: "Adds Sunday Scale and Dark minor." },
     { name: "All six", line: "Adds Unstable. Tune only, no chord." },
+    { name: "Sunday, Major (no 4) or Suspended", line: "Three close sounds: no 7th, no 4th, or no 3rd. Tune, then chord." },
   ],
   family: [
     { name: "Three families", line: "Diatonic, blues, whole tone." },
     { name: "Four families", line: "Adds augmented." },
     { name: "Six families", line: "Adds major blues and Prometheus. Tune only." },
     { name: "Colour and world", line: "Sunday Scale, Prometheus, Hirajoshi, In sen, blues, whole tone." },
+    { name: "Whole tone or augmented", line: "The two symmetrical sounds, side by side. Tune, then chord." },
   ],
   missing: [
     { name: "Major, up and down", line: "A major scale, up and back down." },
@@ -75,7 +80,16 @@ export const LEVELS: Record<GameId, LevelInfo[]> = {
     { name: "3, 4, 5 or 7", line: "All four groupings, tune moving with them." },
     { name: "Accents only", line: "One repeated note. Only the loud ones tell you." },
   ],
+  pairs: [
+    { name: "Three pairs", line: "The home chord with the chord a step up (major or minor) or a step down. Ladder, then both chords." },
+    { name: "Five pairs", line: "Adds a half step up and a tritone away (Petrushka). Ladder, then both chords." },
+    { name: "Ladder only", line: "All five pairs, ladder only: no chords at the end." },
+  ],
 };
+
+/** Levels that zoom in on a few close sounds rather than adding choices:
+ *  they come last, so fewer choices there is not an easier level. */
+export const FOCUS_LEVELS: Partial<Record<GameId, number[]>> = { mode: [4], family: [5] };
 export const levelCount = (g: GameId) => LEVELS[g].length;
 export const clampLevel = (g: GameId, level: number) =>
   Math.min(Math.max(1, Math.round(level) || 1), levelCount(g));
@@ -305,6 +319,7 @@ export function choiceLabel(game: GameId, id: string): string {
     case "family": return FAMILY_LABEL[id] ?? id;
     case "missing": return `the ${ORDINAL[Number(id)] ?? id}`;
     case "accents": return `groups of ${id}`;
+    case "pairs": return PAIR_DEFS.find((d) => d.id === id)?.roman ?? id;
   }
 }
 
@@ -429,6 +444,8 @@ export const MODE_LEVELS: string[][] = [
   ["maj-no4", "sus", "min-no6"],
   ["maj-no4", "folk", "sus", "min-no6", "dark"],
   ["maj-no4", "folk", "sus", "min-no6", "dark", "unstable"],
+  /* focus: the three that differ by the 7th, the 4th or the 3rd */
+  ["folk", "maj-no4", "sus"],
 ];
 
 /** Shared by the mode and family games: a tune over a drone, then its chord. */
@@ -499,7 +516,7 @@ export function modeQuestion(opts: Options, prevKey: string | null, rng: Rng = M
     return { id, label: s.label, hint: s.hint };
   });
   return scaleQuestion("mode", level, opts, prevKey, rng, choices, (id) => soundById(id),
-    pick(ids, rng), fillTell, level < 3);
+    pick(ids, rng), fillTell, level !== 3);
 }
 
 /* ── 3. which family ──────────────────────────────────────────────────── */
@@ -511,6 +528,8 @@ export const FAMILY_LEVELS: string[][] = [
   /* No "Diatonic" here: the Sunday Scale IS a diatonic sound, so the two
      could not both be right answers. Each of these six is one fixed sound. */
   ["folk", "blues", "whole", "prometheus", "hirajoshi", "insen"],
+  /* focus: the two symmetrical sounds */
+  ["whole", "aug"],
 ];
 export const FAMILY_LABEL: Record<string, string> = {
   diatonic: "Diatonic", blues: "Blues", whole: "Whole tone",
@@ -549,7 +568,7 @@ export function familyQuestion(opts: Options, prevKey: string | null, rng: Rng =
   };
   const tellFor = (def: SoundDef, sp: Spelled) =>
     answer === "diatonic" ? `${DIATONIC_TELL} This one was ${def.label}.` : fillTell(def, sp);
-  return scaleQuestion("family", level, opts, prevKey, rng, choices, soundFor, answer, tellFor, level < 3);
+  return scaleQuestion("family", level, opts, prevKey, rng, choices, soundFor, answer, tellFor, level < 3 || level === 5);
 }
 
 /* ── 4. which note is missing ─────────────────────────────────────────── */
@@ -780,6 +799,167 @@ export function accentQuestion(opts: Options, prevKey: string | null, rng: Rng =
   };
 }
 
+/* ── 6. which two triads ──────────────────────────────────────────────── */
+
+/**
+ * The home major chord (I) with one other triad that shares no note with it.
+ * Each pair makes a different six-note scale, so no two can sound alike:
+ *   I + ii   Sunday Scale (1 2 3 4 5 6)       I + II   Lydian, no 7th
+ *   I + ♭VII Mixolydian, no 6th               I + ♭II  1 ♭2 3 4 5 ♭6
+ *   I + ♭V   Petrushka (a tritone apart)
+ */
+export interface PairDef {
+  id: string;
+  roman: string;
+  /** semitones and letters above the tonic for the second chord's root */
+  semi: number;
+  letters: number;
+  quality: "maj" | "min";
+  /** where the second chord sits, for the tell and the tip */
+  where: string;
+  /** what the six notes are called */
+  scale: string;
+}
+
+export const PAIR_DEFS: PairDef[] = [
+  { id: "ii", roman: "I + ii", semi: 2, letters: 1, quality: "min", where: "a minor chord a whole step up", scale: "the Sunday Scale" },
+  { id: "II", roman: "I + II", semi: 2, letters: 1, quality: "maj", where: "a major chord a whole step up", scale: "Lydian with no 7th" },
+  { id: "bVII", roman: "I + ♭VII", semi: 10, letters: 6, quality: "maj", where: "a major chord a whole step down", scale: "Mixolydian with no 6th" },
+  { id: "bII", roman: "I + ♭II", semi: 1, letters: 1, quality: "maj", where: "a major chord a half step up", scale: "1 ♭2 3 4 5 ♭6" },
+  { id: "bV", roman: "I + ♭V", semi: 6, letters: 4, quality: "maj", where: "a major chord a tritone away", scale: "Petrushka" },
+];
+export const PAIR_LEVELS: { ids: string[]; chords: boolean }[] = [
+  { ids: ["ii", "II", "bVII"], chords: true },
+  { ids: ["ii", "II", "bVII", "bII", "bV"], chords: true },
+  { ids: ["ii", "II", "bVII", "bII", "bV"], chords: false },
+];
+
+const TRIAD: Record<"maj" | "min", number[]> = { maj: [0, 4, 7], min: [0, 3, 7] };
+
+/** A triad on a root pitch, spelled a third apart from the preferred letter,
+ *  or from whichever letter needs the fewest accidentals (never a double). */
+function spellPairTriad(rootPc: number, prefer: Letter, q: "maj" | "min"): Note[] {
+  const tryLetter = (L: Letter) => {
+    const ns = TRIAD[q].map((iv, i) => spell(stepLetter(L, i * 2), (rootPc + iv) % 12));
+    return ns.every((n) => n && Math.abs(n.alt) < 2) ? (ns as Note[]) : null;
+  };
+  const own = tryLetter(prefer);
+  if (own) return own;
+  const cost = (ns: Note[]) => ns.reduce((a, n) => a + Math.abs(n.alt), 0);
+  const all = (LETTERS.split("") as Letter[]).map(tryLetter).filter(Boolean) as Note[][];
+  all.sort((a, b) => cost(a) - cost(b));
+  if (!all.length) throw new Error(`no triad on ${rootPc}`);
+  return all[0];
+}
+
+const chordSym = (ns: Note[], q: "maj" | "min") => notePretty(ns[0]) + (q === "min" ? "m" : "");
+
+/** The two triads of a pair on a tonic, spelled, with their symbols. */
+export function pairOn(tonic: Note, id: string): { def: PairDef; a: PairChord; b: PairChord; label: string } {
+  const def = PAIR_DEFS.find((d) => d.id === id)!;
+  const a = spellPairTriad(pc(tonic), tonic.letter, "maj");
+  const b = spellPairTriad((pc(tonic) + def.semi) % 12, stepLetter(tonic.letter, def.letters), def.quality);
+  const chord = (ns: Note[], q: "maj" | "min"): PairChord =>
+    ({ root: ns[0], quality: q, notes: ns, symbol: chordSym(ns, q), roman: null });
+  const A = chord(a, "maj"), B = chord(b, def.quality);
+  return { def, a: A, b: B, label: `${A.symbol} + ${B.symbol}` };
+}
+
+/** Semitones above the tonic of the six notes a pair makes. */
+export const pairSemis = (id: string) => {
+  const def = PAIR_DEFS.find((d) => d.id === id)!;
+  return [...new Set([...TRIAD.maj, ...TRIAD[def.quality].map((x) => (x + def.semi) % 12)])].sort((x, y) => x - y);
+};
+
+export function pairsQuestion(opts: Options, prevKey: string | null, rng: Rng = Math.random): Question {
+  const level = clampLevel("pairs", opts.level);
+  const cfg = PAIR_LEVELS[level - 1];
+  const answer = pick(cfg.ids, rng);
+  const tonicSp = spellParent(chooseKey(opts, prevKey, rng), "major");
+  const tonic = tonicSp.notes[0];
+  const tonicMidi = tonicSp.midis[0];
+  const step = stepOf(opts);
+  const chordDur = Math.max(0.7, step * 1.6);
+  const pairs = Object.fromEntries(cfg.ids.map((id) => [id, pairOn(tonic, id)]));
+  const choices: Choice[] = cfg.ids.map((id) => ({ id, label: pairs[id].label, hint: pairs[id].def.roman }));
+
+  /* The ladder: A, B, A¹, B¹, A², B², A an octave up — Jason's inversion
+     ladder, from the tonic in the drone's register. */
+  const ladderFor = (id: string) => pairLadder({ shapes: [pairs[id].a, pairs[id].b] }, tonicMidi);
+  const playLadder = (b: ProgramBuilder, id: string, row: string | null, sixOrder: number[]) => {
+    for (const st of ladderFor(id)) {
+      const chips = st.voicing.map((m) => sixOrder.indexOf(((m - tonicMidi) % 12 + 12) % 12)).filter((i) => i >= 0);
+      b.add({ midis: st.voicing, dur: chordDur * 1.05, vel: 0.55, spread: 0.015, melody: true,
+        mark: row ? { row, chips } : undefined });
+      b.wait(chordDur);
+    }
+  };
+  const playBoth = (b: ProgramBuilder, id: string, row: string | null, sixOrder: number[]) => {
+    const [first, second] = ladderFor(id);
+    for (const st of [first, second]) {
+      const chips = st.voicing.map((m) => sixOrder.indexOf(((m - tonicMidi) % 12 + 12) % 12)).filter((i) => i >= 0);
+      b.add({ midis: st.voicing, dur: 1.5, vel: 0.5, spread: 0.02, melody: true, mark: row ? { row, chips } : undefined });
+      b.wait(1.6);
+    }
+  };
+
+  const b = new ProgramBuilder();
+  droneIntro(b, step, tonicMidi);
+  b.phase("Listen");
+  playLadder(b, answer, null, pairSemis(answer));
+  if (cfg.chords) { b.wait(0.3); playBoth(b, answer, null, pairSemis(answer)); }
+  b.drone(tonicMidi, 0, b.t);
+
+  /* The six notes, from the tonic, as the two chords spell them. */
+  const rowFor = (id: string, rowId: string, title: string): Row => {
+    const p = pairs[id];
+    const semis = pairSemis(id);
+    const byPc = new Map([...p.a.notes, ...p.b.notes].map((n) => [pc(n), n]));
+    const notes = semis.map((s) => byPc.get((pc(tonic) + s) % 12)!);
+    const bPcs = new Set(p.b.notes.map(pc));
+    const chips: Chip[] = notes.map((n) => ({
+      label: notePretty(n), sub: degreeLabel(tonic, n), state: bPcs.has(pc(n)) ? "tell" : undefined,
+    }));
+    /* the keyboard and ring want real octaves, ascending from the tonic */
+    const scale = notes.map((n, i) => {
+      const m = tonicMidi + semis[i];
+      return { ...n, octave: Math.round((m - midi({ ...n, octave: -1 })) / 12) - 1 };
+    });
+    return { id: rowId, title, kind: "notes", chips, scale, removed: null };
+  };
+
+  return {
+    game: "pairs", level, key: tonicSp.key, tonicPc: pc(tonic), choices, answer, prompt: b.build(),
+    signatures: Object.fromEntries(cfg.ids.map((id) => [id, pairSemis(id).join(",")])),
+    facts: { pair: answer, midis: [tonicMidi], ladder: ladderFor(answer).map((s) => s.voicing), labels: Object.fromEntries(cfg.ids.map((id) => [id, pairs[id].label])) },
+    reveal: (pk) => {
+      const right = pk === answer;
+      const r = new ProgramBuilder();
+      const rows: Row[] = [];
+      if (!right) {
+        rows.push(rowFor(pk, "pick", `Your pick: ${pairs[pk].label}`));
+        r.phase(`Your pick: ${pairs[pk].label}`);
+        playLadder(r, pk, "pick", pairSemis(pk));
+        r.wait(0.5);
+      }
+      rows.push(rowFor(answer, "answer", `The answer: ${pairs[answer].label}`));
+      r.phase(`The answer: ${pairs[answer].label}`);
+      playLadder(r, answer, "answer", pairSemis(answer));
+      r.drone(tonicMidi, 0, r.t);
+      const p = pairs[answer];
+      const six = rowFor(answer, "x", "").chips.map((c) => c.label).join(" ");
+      return {
+        right,
+        verdict: right
+          ? `Yes: ${p.label} (${p.def.roman}), on ${keyName(tonicSp.key)}.`
+          : `It was ${p.label} (${p.def.roman}), on ${keyName(tonicSp.key)}. You said ${pairs[pk].label}.`,
+        tell: `The second chord, ${p.b.symbol}, is ${p.def.where}. The two share no note and make ${six}: ${p.def.scale}.`,
+        rows, program: r.build(), tonicMidi,
+      };
+    },
+  };
+}
+
 /* ── dispatch ─────────────────────────────────────────────────────────── */
 
 export function makeQuestion(game: GameId, opts: Options, prevKey: string | null, rng: Rng = Math.random): Question {
@@ -789,5 +969,6 @@ export function makeQuestion(game: GameId, opts: Options, prevKey: string | null
     case "family": return familyQuestion(opts, prevKey, rng);
     case "missing": return missingQuestion(opts, prevKey, rng);
     case "accents": return accentQuestion(opts, prevKey, rng);
+    case "pairs": return pairsQuestion(opts, prevKey, rng);
   }
 }

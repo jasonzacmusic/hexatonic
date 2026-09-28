@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Ear training: five short games, each with levels.
+ * Ear training: six short games, each with levels.
  *
  * Every round sets the key first (a tonic drone, or a cadence in the
  * missing-note game), plays a short tune or rhythm, and asks one question.
@@ -224,7 +224,7 @@ export default function EarClient() {
         <h1 className="display mt-2 text-[34px] sm:mt-3 sm:text-5xl">Train your ear</h1>
         {/* On a phone the cards say what each game is; the question comes first. */}
         <p className="lede mt-3 hidden sm:block">
-          Five short games, each with levels. Every round sets the key, plays a short tune,
+          Six short games, each with levels. Every round sets the key, plays a short tune,
           and asks one question. Then you hear your pick and the answer back to back.
         </p>
       </header>

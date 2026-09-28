@@ -8,7 +8,7 @@
  */
 
 import {
-  FAMILY_LABEL, GAMES, GameId, ORDINAL, QUALITY_NOTE, choiceLabel, levelCount,
+  FAMILY_LABEL, GAMES, GameId, ORDINAL, PAIR_DEFS, QUALITY_NOTE, choiceLabel, levelCount,
 } from "./games";
 import { degreeLabel, relSemi, soundById, spellSound } from "./sounds";
 
@@ -152,8 +152,8 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const FAMILY_LISTEN: Record<string, string> = {
   diatonic: "no tritone and a plain perfect 5th: a major scale with one note out",
   blues: "the ♭5 rubbing right against the 5th",
-  whole: "whole steps only, with no perfect 5th anywhere",
-  aug: "a minor 3rd and a half step, over and over",
+  whole: "whole steps only, with no perfect 5th anywhere, and only augmented chords",
+  aug: "a minor 3rd and a half step, over and over, with major and minor chords inside it",
   "blues-major": "the ♭3 sliding up into the 3",
   prometheus: "the ♯4 and no 5th, with the 6 and ♭7 side by side",
   folk: "plain major with no 7th, so nothing leans into the tonic",
@@ -207,6 +207,11 @@ export function confusionTip(game: GameId, a: string, b: string): string {
     case "accents": {
       const [x, y] = [Number(a), Number(b)].sort((m, n) => m - n);
       return `Count the soft notes between two loud ones: groups of ${x} have ${x - 1}, groups of ${y} have ${y - 1}.`;
+    }
+    case "pairs": {
+      const da = PAIR_DEFS.find((d) => d.id === a), db = PAIR_DEFS.find((d) => d.id === b);
+      if (!da || !db) return "";
+      return `Listen to the second chord, the one that is not home: in ${da.roman} it is ${da.where}; in ${db.roman} it is ${db.where}.`;
     }
   }
 }

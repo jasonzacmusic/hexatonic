@@ -9,7 +9,8 @@
  */
 import { describe, it, expect } from "vitest";
 import {
-  ACCENT_LEVELS, ACCENT_STEPS, DEFAULT_OPTIONS, FAMILY_DIATONIC, FAMILY_LEVELS, GAMES, GameId, LEVELS,
+  ACCENT_LEVELS, ACCENT_STEPS, DEFAULT_OPTIONS, FAMILY_DIATONIC, FAMILY_LEVELS, FOCUS_LEVELS, GAMES, GameId, LEVELS,
+  PAIR_DEFS, PAIR_LEVELS, pairOn, pairSemis,
   MISSING_LEVELS, MODE_LEVELS, Options, Question, QUALITY_POOL, barsToLand, choiceLabel, clampLevel,
   levelCount, makeQuestion, accentSteps,
 } from "../src/lib/ear/games";
@@ -34,7 +35,7 @@ function seeded(seed: number) {
 }
 
 const OPTION_SETS: Options[] = [];
-for (const level of [1, 2, 3, 4])
+for (const level of [1, 2, 3, 4, 5])
   for (const tempo of [84, 132])
     OPTION_SETS.push({ ...DEFAULT_OPTIONS, level, tempo });
 
@@ -177,19 +178,19 @@ describe("the pitch games play exactly the scale they ask about", () => {
     }
   });
 
-  it("mode: three, then five, then all six rotations; a chord only below the top level", () => {
-    for (const level of [1, 2, 3]) {
+  it("mode: three, then five, then all six rotations; a chord everywhere but 'All six'", () => {
+    for (const level of [1, 2, 3, 4]) {
       for (const { q } of questions("mode", 40, level)) {
         expect(q.choices.map((c) => c.id)).toEqual(MODE_LEVELS[level - 1]);
         const chord = melody(q).some((e) => e.midis.length >= 5);
-        expect(chord).toBe(level < 3);
+        expect(chord).toBe(level !== 3);
       }
     }
-    expect(MODE_LEVELS.map((l) => l.length)).toEqual([3, 5, 6]);
+    expect(MODE_LEVELS.map((l) => l.length)).toEqual([3, 5, 6, 3]);
   });
 
   it("family: the top level offers Sunday Scale, Prometheus, Hirajoshi and In sen, and no catch-all Diatonic", () => {
-    const top = FAMILY_LEVELS[FAMILY_LEVELS.length - 1];
+    const top = FAMILY_LEVELS[3];                       // the top ordinary level; 5 is a focus level
     for (const id of ["folk", "prometheus", "hirajoshi", "insen"]) expect(top).toContain(id);
     expect(top).not.toContain("diatonic");
     expect(choiceLabel("family", "folk")).toBe("Sunday Scale");
@@ -438,7 +439,7 @@ describe("levels", () => {
       expect(levelCount(g.id)).toBeGreaterThanOrEqual(3);
       for (const l of LEVELS[g.id]) { expect(l.name.length).toBeGreaterThan(0); expect(l.line.length).toBeGreaterThan(0); }
     }
-    expect(clampLevel("mode", 99)).toBe(3);
+    expect(clampLevel("mode", 99)).toBe(4);
     expect(clampLevel("mode", 0)).toBe(1);
     expect(clampLevel("family", 4)).toBe(4);
   });
@@ -451,7 +452,11 @@ describe("levels", () => {
         expect(q.level).toBe(l);
         counts.push(q.choices.length);
       }
-      for (let i = 1; i < counts.length; i++) expect(counts[i]).toBeGreaterThanOrEqual(counts[i - 1]);
+      const focus = FOCUS_LEVELS[g.id] ?? [];
+      for (let i = 1; i < counts.length; i++)
+        if (!focus.includes(i + 1)) expect(counts[i], `${g.id} level ${i + 1}`).toBeGreaterThanOrEqual(counts[i - 1]);
+      // a focus level comes after every ordinary level
+      for (const f of focus) expect(f).toBeGreaterThan(levelCount(g.id) - focus.length);
     }
   });
 
@@ -502,21 +507,21 @@ describe("progress: levels unlock after a streak", () => {
   });
 
   it("nothing opens past the last level", () => {
-    let p = { ...freshProgress(), unlocked: 3, level: 3 };
+    let p = { ...freshProgress(), unlocked: 4, level: 4 };
     for (let i = 0; i < 20; i++) {
-      const r = recordAnswer("mode", p, true, 3);
+      const r = recordAnswer("mode", p, true, 4);
       expect(r.unlocked).toBeNull();
       p = r.progress;
     }
-    expect(p.unlocked).toBe(3);
+    expect(p.unlocked).toBe(levelCount("mode"));
   });
 
   it("saved progress loads safely, whatever was stored", () => {
     expect(loadProgress(null).mode).toEqual(freshProgress());
     expect(loadProgress("not json").mode).toEqual(freshProgress());
     const back = loadProgress(JSON.stringify({ mode: { unlocked: 9, level: 7, right: 50, total: 20, toward: 99 } }));
-    expect(back.mode.unlocked).toBe(3);
-    expect(back.mode.level).toBe(3);
+    expect(back.mode.unlocked).toBe(levelCount("mode"));
+    expect(back.mode.level).toBe(levelCount("mode"));
     expect(back.mode.right).toBe(20);                                  // never more right than asked
     expect(back.mode.toward).toBe(UNLOCK_STREAK - 1);
     // the old score-only save still counts
@@ -570,5 +575,103 @@ describe("the session summary", () => {
 
   it("a clean session has no confusions", () => {
     expect(summarise("quality", Array.from({ length: 10 }, () => ({ answer: "major", pick: "major" }))).confusions).toEqual([]);
+  });
+});
+
+describe("the new levels", () => {
+  it("mode level 4: Sunday Scale vs Major (no 4) vs Suspended, every answer in all 12 keys", () => {
+    expect(MODE_LEVELS[3]).toEqual(["folk", "maj-no4", "sus"]);
+    expect(LEVELS.mode[3].name).toBe("Sunday, Major (no 4) or Suspended");
+    for (const key of EAR_KEYS)
+      for (const answer of MODE_LEVELS[3]) {
+        let q: Question | null = null;
+        for (let seed = 0; seed < 200 && !q; seed++) {
+          const c = makeQuestion("mode", { ...DEFAULT_OPTIONS, level: 4, fixedKey: key }, null, seeded(seed));
+          if (c.answer === answer) q = c;
+        }
+        expect(q, `${key} ${answer}`).not.toBeNull();
+        const def = soundById(answer);
+        expect(relPcs(tonicMidi(q!), melody(q!).flatMap((e) => e.midis))).toEqual(def.semis);
+        const r = q!.reveal(answer);
+        expect(r.right).toBe(true);
+        expect(r.rows[0].scale!.length).toBe(6);
+      }
+  });
+
+  it("family level 5: whole tone vs augmented, every answer in all 12 keys, spelled as the app spells them", () => {
+    expect(FAMILY_LEVELS[4]).toEqual(["whole", "aug"]);
+    for (const key of EAR_KEYS)
+      for (const answer of ["whole", "aug"]) {
+        let q: Question | null = null;
+        for (let seed = 0; seed < 200 && !q; seed++) {
+          const c = makeQuestion("family", { ...DEFAULT_OPTIONS, level: 5, fixedKey: key }, null, seeded(seed));
+          if (c.answer === answer) q = c;
+        }
+        expect(q, `${key} ${answer}`).not.toBeNull();
+        expect(relPcs(tonicMidi(q!), melody(q!).flatMap((e) => e.midis))).toEqual(soundById(answer).semis);
+        const other = answer === "whole" ? "aug" : "whole";
+        const r = q!.reveal(other);
+        expect(r.rows.map((x) => x.id)).toEqual(["pick", "answer"]);
+        expect(r.rows.every((x) => (x.scale?.length ?? 0) === 6)).toBe(true);
+      }
+    // the augmented scale reads as the app spells it: G A♯ B D E♭ F♯
+    expect(spellSound("G", soundById("aug")).notes.map((n) => n.letter + (n.alt > 0 ? "#" : n.alt < 0 ? "b" : "")).join(" "))
+      .toBe("G A# B D Eb F#");
+    for (const key of EAR_KEYS) {
+      const app = buildScale(key, "aug").notes.map((n) => `${n.letter}${n.alt}`).join(" ");
+      const ear = spellSound(key, soundById("aug")).notes.map((n) => `${n.letter}${n.alt}`).join(" ");
+      expect(ear, key).toBe(app);
+    }
+  });
+
+  it("which two triads: every pair in all 12 keys is two triads spelled a third apart, sharing no note, making the six notes named", () => {
+    const expected: Record<string, number[]> = {
+      ii: [0, 2, 4, 5, 7, 9], II: [0, 2, 4, 6, 7, 9], bVII: [0, 2, 4, 5, 7, 10], bII: [0, 1, 4, 5, 7, 8], bV: [0, 1, 4, 6, 7, 10],
+    };
+    for (const key of EAR_KEYS) {
+      const tonic = spellParent(key, "major").notes[0];
+      for (const d of PAIR_DEFS) {
+        const p = pairOn(tonic, d.id);
+        expect(pairSemis(d.id)).toEqual(expected[d.id]);
+        for (const tri of [p.a, p.b]) {
+          expect(tri.notes.every((n) => Math.abs(n.alt) < 2), `${key} ${d.id} ${p.label}`).toBe(true);
+          // letters a third apart
+          const L = tri.notes.map((n) => "CDEFGAB".indexOf(n.letter));
+          expect((L[1] - L[0] + 7) % 7).toBe(2);
+          expect((L[2] - L[1] + 7) % 7).toBe(2);
+        }
+        const pcsA = p.a.notes.map((n) => ({ C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[n.letter]! + n.alt + 12) % 12);
+        const pcsB = p.b.notes.map((n) => ({ C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[n.letter]! + n.alt + 12) % 12);
+        expect(pcsA.some((x) => pcsB.includes(x)), `${key} ${p.label} share a note`).toBe(false);
+        const t = ({ C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[tonic.letter]! + tonic.alt + 12) % 12;
+        expect([...pcsA, ...pcsB].map((x) => (x - t + 12) % 12).sort((x, y) => x - y)).toEqual(expected[d.id]);
+        expect(p.label).not.toMatch(/undefined|𝄪|𝄫/);
+      }
+    }
+    expect(PAIR_LEVELS.map((l) => l.ids.length)).toEqual([3, 5, 5]);
+  });
+
+  it("which two triads: the ladder plays exactly the pair's six notes, in seven chords, for every answer in all 12 keys", () => {
+    for (const key of EAR_KEYS)
+      for (const level of [1, 2, 3])
+        for (const answer of PAIR_LEVELS[level - 1].ids) {
+          let q: Question | null = null;
+          for (let seed = 0; seed < 300 && !q; seed++) {
+            const c = makeQuestion("pairs", { ...DEFAULT_OPTIONS, level, fixedKey: key }, null, seeded(seed));
+            if (c.answer === answer) q = c;
+          }
+          expect(q, `${key} L${level} ${answer}`).not.toBeNull();
+          const ladder = q!.facts.ladder as number[][];
+          expect(ladder.length).toBe(7);
+          expect(ladder.every((c) => c.length === 3)).toBe(true);
+          const heard = relPcs(tonicMidi(q!), melody(q!).flatMap((e) => e.midis));
+          expect(heard, `${key} ${answer}`).toEqual(pairSemis(answer));
+          // chords after the ladder only below the top level
+          expect(melody(q!).length).toBe(level < 3 ? 9 : 7);
+          // the reveal shows six notes on the keys and ring, from the tonic
+          const r = q!.reveal(answer);
+          expect(r.rows[0].scale!.length).toBe(6);
+          expect(r.tell).toMatch(/share no note/);
+        }
   });
 });

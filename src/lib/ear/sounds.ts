@@ -34,6 +34,9 @@ export interface SoundDef {
   /** the 3rd decides major / minor / suspended; null when both 3rds or neither
    *  apply in a way the first game should not ask about */
   quality: Quality | null;
+  /** Spell exactly as the app does (buildScale), never re-lettered for the
+   *  game: the augmented scale must read G A♯ B D E♭ F♯ here too. */
+  ownSpelling?: boolean;
 }
 
 export const SOUNDS: SoundDef[] = [
@@ -104,7 +107,7 @@ export const SOUNDS: SoundDef[] = [
     id: "aug", label: "Augmented", hint: "shimmer",
     family: "aug", semis: [0, 3, 4, 7, 8, 11],
     tell: "Minor 3rd, half step, over and over: two augmented triads a half step apart.",
-    tellSemis: [3, 4], quality: null,
+    tellSemis: [3, 4], quality: null, ownSpelling: true,
   },
   {
     id: "prometheus", label: "Prometheus", hint: "mystic",
@@ -258,6 +261,7 @@ export function spellSound(key: string, def: SoundDef): Spelled {
       throw new Error(`${def.id} on ${k} is not ${def.semis.join(" ")}: scales.ts changed`);
     consider(k, own);
   }
+  if (best && def.ownSpelling && (best as Spelled).notes.every((n) => Math.abs(n.alt) < 2)) return best;
   for (const k of tries) for (const notes of letterings(k, def.semis)) consider(k, notes);
   if (best) return best;
   throw new Error(`${def.id} cannot be spelled on ${key}`);
