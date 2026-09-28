@@ -41,6 +41,9 @@ export interface DrillPlan {
   chords?: (number[] | null)[];
   /** seconds between the notes of a stack — 0 for a block chord */
   spread?: number;
+  /** per-step length in steps (a chord struck on a sixteenth grid that lasts a
+   *  quarter holds 4). Default 1. */
+  holds?: number[];
   /** per-step accents; by default every `grouping`-th step is accented */
   accents?: boolean[];
   stepDur: number;          // seconds per note
@@ -166,7 +169,8 @@ export const sameDrillMaterial = (a: CompiledDrill, b: CompiledDrill) =>
   a.src.grouping === b.src.grouping &&
   a.src.subdivision === b.src.subdivision &&
   (a.src.beatsPerBar ?? 4) === (b.src.beatsPerBar ?? 4) &&
-  sameFlags(a.src.accents, b.src.accents);
+  sameFlags(a.src.accents, b.src.accents) &&
+  (a.src.holds ?? []).join(",") === (b.src.holds ?? []).join(",");
 const sameDrillPlan = (a: CompiledDrill, b: CompiledDrill) =>
   sameDrillMaterial(a, b) &&
   a.src.stepDur === b.src.stepDur && !!a.src.swing === !!b.src.swing &&
@@ -623,7 +627,7 @@ export class AudioEngine {
     const accent = src.accents ? !!src.accents[s.index] : s.pos % src.grouping === 0;
     if (stack)
       stack.forEach((m, j) =>
-        this.note(m, s.when + shift + j * (src.spread ?? 0), src.stepDur,
+        this.note(m, s.when + shift + j * (src.spread ?? 0), src.stepDur * (src.holds?.[s.index] ?? 1),
                   accent ? 0.95 : 0.7, this.drillNodes));
     if (src.click && s.pos % src.subdivision === 0)
       this.clickAt(s.when, s.pos % (src.subdivision * (src.beatsPerBar ?? 4)) === 0, this.drillNodes);

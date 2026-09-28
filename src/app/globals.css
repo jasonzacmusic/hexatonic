@@ -406,3 +406,23 @@ body {
 .hx-sheen:active { transform: scale(0.97); }
 @keyframes hx-sweep { 0%, 70% { left: -60%; } 100% { left: 130%; } }
 @media (prefers-reduced-motion: reduce) { .hx-sheen::after { animation: none; display: none; } }
+
+/* ── stage mode (?stage=1): a clean 1920×1080 frame for filming ────────────
+   The boot script in layout.tsx sets html[data-stage] before paint. Menu bar,
+   footer and Support hide; everything marked .stage-hide hides; the page is
+   drawn 25% larger inside a 64px safe margin (51.2px × 1.25 zoom = 64px). */
+html[data-stage] body > header,
+html[data-stage] body > footer,
+html[data-stage] .stage-hide { display: none !important; }
+html[data-stage] main {
+  zoom: 1.25;
+  max-width: none !important;
+  padding: 51.2px !important;
+}
+html[data-stage] { scrollbar-width: none; }
+html[data-stage]::-webkit-scrollbar { display: none; }
+/* a full-screen view (Practice's Big view) frames itself: no zoom, 64px margin */
+html[data-stage] .stage-frame { zoom: 0.8; padding: 64px !important; gap: 16px; }
+html[data-stage] .stage-frame .stage-hide-big { display: none !important; }
+.stage-only { display: none; }
+html[data-stage] .stage-only { display: revert; }

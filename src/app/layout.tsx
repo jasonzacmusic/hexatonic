@@ -4,6 +4,7 @@ import "./globals.css";
 import Nav from "@/components/Nav";
 import Link from "next/link";
 import SupportPanel from "@/components/SupportPanel";
+import { STAGE_BOOT } from "@/lib/stage";
 
 const SITE = "https://hexatonic.nathanielschool.com";
 const BUILD_VERSION = process.env.NEXT_PUBLIC_BUILD_VERSION || "local";
@@ -155,8 +156,10 @@ const JSONLD = { "@context": "https://schema.org", "@graph": [ORG, APP, FAQ] };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
+        {/* ?stage=1 — the filming frame, set before the first paint */}
+        <script dangerouslySetInnerHTML={{ __html: STAGE_BOOT }} />
         <script type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(JSONLD) }} />
       </head>

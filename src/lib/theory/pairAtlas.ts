@@ -23,12 +23,12 @@
 
 import { TriadQuality, triadPairsCovering } from "./chords";
 import {
-  enharmonicTonic, Letter, LETTER_PC, LETTERS, letterIndex, midi, note, Note, notePretty,
+  enharmonicTonic, keySignatureAlterations, Letter, LETTER_PC, LETTERS, letterIndex, MAJOR_KEYS, midi, note, Note, notePretty,
   noteName, pc, spell, stepLetter,
 } from "./note";
 import {
   buildDiatonic, buildScale, DIATONIC_MODES, FAMILIES, FamilyGroup, HARMONIC_MINOR, MAJOR,
-  MELODIC_MINOR,
+  MELODIC_MINOR, NATURAL_MINOR,
 } from "./scales";
 
 const mod12 = (x: number) => ((x % 12) + 12) % 12;
@@ -583,11 +583,17 @@ export function ladderEvents(steps: LadderStep[], dir: LadderDirection = "up-dow
     : { id: `ladder-${i}`, step: k, voicing: steps[k].voicing, label: steps[k].label, shape: steps[k].shape }));
 }
 
-/** The six-note scale up to the octave and back: 12 notes, three bars. */
-export function scaleEvents(pair: TwoChordPair, lowest = 55): PairEvent[] {
+/** The six notes up to the octave and back down (12 spelled notes), the tonic
+ *  placed in the octave from `lowest` up. */
+export function scaleLine(pair: TwoChordPair, lowest = 55): Note[] {
   const up = placeAscending(pair.notes, lowest);
   const top = atMidi(up[0], midi(up[0]) + 12);
-  const line = [...up, top, ...up.slice(1).reverse()];
+  return [...up, top, ...up.slice(1).reverse()];
+}
+
+/** The six-note scale up to the octave and back: 12 notes, three bars. */
+export function scaleEvents(pair: TwoChordPair, lowest = 55): PairEvent[] {
+  const line = scaleLine(pair, lowest);
   const shapeOf = (n: Note): 0 | 1 => (pcSet(pair.shapes[0].notes).has(pc(n)) ? 0 : 1);
   return accentBars(line.map((n, i) => ({
     id: `scale-${i}`, step: i <= 6 ? i : 12 - i, voicing: [midi(n)], label: notePretty(n), shape: shapeOf(n),
@@ -614,4 +620,63 @@ export function provePair(pair: TwoChordPair, scalePcs: number[]): PairProof {
     covers: union.size === 6 && six.size === 6 && [...six].every((p) => union.has(p)),
     inside: [...union].every((p) => scalePcs.includes(p)),
   };
+}
+
+/* ── the key signature a pair is written in ───────────────────────────── */
+
+const MODE_INDEX: Record<ParentId, number> = {
+  ionian: 0, dorian: 1, phrygian: 2, lydian: 3, mixolydian: 4, aeolian: 5, locrian: 6,
+  /* harmonic and melodic minor are written in the natural minor's signature */
+  harmonic: 5, melodic: 5,
+};
+
+/** A parent's key signature: its relative major (A Dorian → G, A harmonic
+ *  minor → C). Null if that major would be a theoretical key. */
+export function parentKeySignature(ps: ParentScale): string | null {
+  const k = (7 - MODE_INDEX[ps.parent.id]) % 7;
+  const n = ps.notes[k];
+  const name = noteName(n);
+  return ["C", "G", "D", "A", "E", "B", "F#", "C#", "F", "Bb", "Eb", "Ab", "Db", "Gb", "Cb"].includes(name) ? name : null;
+}
+
+/** A readable name for a pair in a link: "G-Am", "Em-D", "Gaug-Bbaug". */
+export function pairSlug(pair: TwoChordPair): string {
+  return pair.shapes.map((c) => c.symbol.replace(/♭/g, "b").replace(/♯/g, "#").replace(/\+/g, "aug").replace(/°/g, "dim")).join("-");
+}
+
+/** Find a pair in a list by its slug (either order) or its id. */
+export function findPair(list: TwoChordPair[], want: string | null): TwoChordPair | null {
+  if (!want) return null;
+  const w = want.trim();
+  const flip = w.split("-").reverse().join("-");
+  return list.find((p) => p.id === w || pairSlug(p) === w || pairSlug(p) === flip) ?? null;
+}
+
+/** The major key whose signature spells these seven notes exactly (one of
+ *  each letter), or null. G A B C D E + the removed F♯ → G. */
+export function signatureOfSeven(notes: Note[]): string | null {
+  if (notes.length !== 7 || new Set(notes.map((n) => n.letter)).size !== 7) return null;
+  for (const k of Object.keys(MAJOR_KEYS)) {
+    const alts = keySignatureAlterations(k);
+    if (notes.every((n) => alts[n.letter] === n.alt)) return k;
+  }
+  return null;
+}
+
+/** The signature a pair's staff is written in: the tonic's own major key if
+ *  every note fits it (G Sunday Scale → one sharp), else the tonic's minor
+ *  (G minor no 6 → two flats), else the parent the name promises (six notes
+ *  plus the removed one), else the scale's own. */
+export function pairKeySignature(pair: TwoChordPair, fallback: string | null): string | null {
+  const fits = (k: string | null) => {
+    if (!k || MAJOR_KEYS[k] === undefined) return false;
+    const alts = keySignatureAlterations(k);
+    return pair.notes.every((n) => alts[n.letter] === n.alt);
+  };
+  const major = noteName(pair.tonic);
+  if (fits(major)) return major;
+  const minor = buildDiatonic(major, NATURAL_MINOR);
+  const relative = minor ? noteName(minor[2]) : null;
+  if (fits(relative)) return relative;
+  return (pair.removed && signatureOfSeven([...pair.notes, pair.removed])) || fallback;
 }

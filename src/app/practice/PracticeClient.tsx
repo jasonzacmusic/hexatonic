@@ -19,6 +19,8 @@ import { previewAudio } from "@/lib/audio/engine";
 import CustomBuilder from "@/components/CustomBuilder";
 import MidiPanel from "@/components/MidiPanel";
 import Fretboard from "@/components/Fretboard";
+import RhythmCellPanel from "@/components/RhythmCellPanel";
+import { useStage } from "@/lib/stage";
 import KeyChips, { prettyKey, stepKey } from "./KeyChips";
 import { ROUTINES, SPEEDS, stepState } from "./routines";
 import {
@@ -85,6 +87,15 @@ export default function PracticeClient() {
   const xl = useMedia("(min-width: 1280px)");
   const xxl = useMedia("(min-width: 1400px)");
   const navH = useNavHeight();
+  /* Stage mode (?stage=1, for filming) opens straight into Big view, framed
+     for 1920×1080 — unless the link asks for the rhythm cell (rc=1). */
+  const stage = useStage();
+  const [rcLink, setRcLink] = useState(false);
+  useEffect(() => {
+    const rc = !!new URLSearchParams(window.location.search).get("rc");
+    setRcLink(rc);
+    if (stage && !rc) setBigView(true);
+  }, [stage]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -256,7 +267,7 @@ export default function PracticeClient() {
 
   if (bigView) {
     return (
-      <div className="fixed inset-0 z-[70] flex flex-col gap-2.5 overflow-y-auto bg-bg px-3 pb-3 sm:px-5"
+      <div className="stage-frame fixed inset-0 z-[70] flex flex-col gap-2.5 overflow-y-auto bg-bg px-3 pb-3 sm:px-5"
            role="dialog" aria-label="Big view">
         <Transport d={d} navH={0} bigView setBigView={setBigView} />
         {phoneExtras}
@@ -288,7 +299,7 @@ export default function PracticeClient() {
             </p>
           </div>
           <ScaleChips scale={scale} activePc={activePc} size={wide ? "md" : "sm"} />
-          <button className="btn btn-ghost ml-auto hidden lg:inline-flex" onClick={surprise}
+          <button className="stage-hide btn btn-ghost ml-auto hidden lg:inline-flex" onClick={surprise}
                   title="A random key, sound, pattern and grouping">
             <span aria-hidden>⚄</span> Surprise me
           </button>
@@ -298,13 +309,18 @@ export default function PracticeClient() {
       </section>
 
       {/* ── what moves: the staff, the chords, the instrument ─────────── */}
-      <section className="card space-y-3 !p-3 sm:!p-4" aria-label="The drill">
+      <section className={`card space-y-3 !p-3 sm:!p-4 ${rcLink ? "stage-hide" : ""}`} aria-label="The drill">
         <div ref={staffRef}>
           {staff(false, narrow ? "min(340px, 46dvh)" : staffMax)}
         </div>
         {lower(false)}
       </section>
 
+      <RhythmCellPanel scale={scale.notes} keySignature={scale.keySignature}
+                       label={`${prettyKey(state.key)} ${scale.label}`} bpm={state.bpm} />
+
+      {/* Stage mode (?stage=1) hides everything below: it is for filming. */}
+      <div className="stage-hide space-y-3">
       <HowItWorks />
 
       {/* ── the rest of the settings ─────────────────────────────────── */}
@@ -319,6 +335,7 @@ export default function PracticeClient() {
 
       <MidiPanel expected={notes} grouping={state.grouping}
                  stepDur={d.stepDur} playing={playing} position={d.position} />
+      </div>
     </div>
   );
 }

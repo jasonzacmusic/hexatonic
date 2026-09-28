@@ -199,7 +199,10 @@ export default function Notation({
           const voice = new VF.Voice({ num_beats: meter.top * barsHere, beat_value: meter.bottom })
             .setStrict(false);
           voice.addTickables(tickables);
-          new VF.Formatter().joinVoices([voice]).format([voice], barsHere * barW + 10);
+          // Format into the room after the clef, key and time signature, so the
+          // last note never runs past the end of the stave.
+          new VF.Formatter().joinVoices([voice])
+            .format([voice], Math.max(60, stave.getNoteEndX() - stave.getNoteStartX() - 14));
           voice.draw(ctx, stave);
           beams.forEach((bm) => bm.setContext(ctx).draw());
           tuplets.forEach((t) => t.setContext(ctx).draw());

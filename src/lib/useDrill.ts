@@ -75,7 +75,8 @@ export function encodeState(s: DrillState): string {
 
 export function decodeState(qs: string): DrillState {
   const q = new URLSearchParams(qs);
-  const legacy = [...q.keys()].length > 0 && q.get("v") === null;
+  /* A stage link (?stage=1, for filming) is always new: never read as legacy. */
+  const legacy = [...q.keys()].length > 0 && q.get("v") === null && q.get("stage") === null;
   const base: DrillState = legacy ? { ...DEFAULTS, ...LEGACY } : { ...DEFAULTS };
   const out: DrillState = { ...base };
 
@@ -237,7 +238,11 @@ export function useDrill(initial?: Partial<DrillState>) {
   // keep the URL in step without adding history entries
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const qs = encodeState(state);
+    const q = new URLSearchParams(encodeState(state));
+    // stage mode (?stage=1) and a rhythm-cell choice (rc) survive the rewrite
+    const cur = new URLSearchParams(window.location.search);
+    for (const k of ["stage", "rc"]) { const v = cur.get(k); if (v !== null) q.set(k, v); }
+    const qs = q.toString();
     const url = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
     window.history.replaceState(null, "", url + window.location.hash);
   }, [state]);
