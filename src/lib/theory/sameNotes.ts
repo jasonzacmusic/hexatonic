@@ -46,7 +46,9 @@ export function sameNotes(c: ChordSet, scale: Note[]): SameNotes {
     .map((n) => {
       const suffix = n.symbol.slice(n.root.length);
       return `${scaleName(pc(n.voicing[0]), n.root)}${suffix}/${lead.root}`;
-    });
+    })
+    /* a name that would need a double sharp or flat (F𝄪+ in a melodic-minor mode) is left out: nobody reads it */
+    .filter((o) => !/^[A-G](##|bb)/.test(o));
   return { lead: lead.symbol, others };
 }
 

@@ -310,3 +310,21 @@ export const priceHref = (familyId: string, key: string) =>
 
 export const familyLabel = (id: PriceFamilyId) => familyById(id).short;
 export { notePretty };
+
+/**
+ * The notes to PRINT for a triad from a chord library entry: a major, minor or
+ * diminished triad is written in stacked thirds on its own root letter when
+ * that needs no double accidental (G° = G B♭ D♭, never G B♭ C♯). Anything
+ * else keeps the library's spelling.
+ */
+export function printedTriadNotes(symbol: string, root: string, notes: string[], scale: Note[]): string[] {
+  const kind: Exclude<TriadKind, "aug"> | null =
+    /dim$/.test(symbol) ? "dim" : new RegExp(`^${root.replace("#", "\\#")}m$`).test(symbol) ? "min" : symbol === root ? "maj" : null;
+  if (!kind || notes.length !== 3) return notes;
+  const r = scale.find((x) => noteName(x) === root);
+  const rootPc = r ? pc(r) : null;
+  if (rootPc === null) return notes;
+  const st = stackedTriad(rootPc, kind, scale);
+  if (!st || noteName(st[0]) !== root) return notes;
+  return st.map(noteName);
+}

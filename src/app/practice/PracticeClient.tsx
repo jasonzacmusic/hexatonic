@@ -17,6 +17,7 @@ import { METERS, saptaTalaMeters } from "@/lib/theory/meters";
 import { midi, notePretty, pc } from "@/lib/theory/note";
 import { findChords, tertianOnly } from "@/lib/theory/chords";
 import { ownSpellingFirst } from "@/app/harmony/scaleOptions";
+import { printedTriadNotes } from "@/lib/theory/priceOfOne";
 import { prettyChord as prettySame, sameNotes } from "@/lib/theory/sameNotes";
 import { FUNCTION_LABEL, HarmonicFunction, harmonicFunction, romanNumeral, triadQuality } from "@/lib/theory/functions";
 import { previewAudio } from "@/lib/audio/engine";
@@ -496,7 +497,7 @@ function ChordStrip({ scale, activePc, big = false }: {
                           )}
                         </span>
                         <span className={`block font-mono text-[13px] ${fits ? "text-bg/75" : "text-muted"}`}>
-                          {name.notes.map((n) => n.replace("#", "♯").replace(/b$/, "♭")).join(" ")}
+                          {printedTriadNotes(name.symbol, name.root, name.notes, scale.notes).map((n) => n.replace("#", "♯").replace(/b$/, "♭")).join(" ")}
                         </span>
                       </button>
                     );

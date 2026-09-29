@@ -246,3 +246,7 @@ the same notes, and checked against a brute-force transposition search
 - In this view every non-augmented triad is written in stacked thirds with no
   double sharp or flat: G half–whole G° = G B♭ D♭ (never G B♭ C♯), A♭° becomes
   G♯° = G♯ B D.
+
+
+## Seven-note modes that need a double accidental (29-Sep-2026)
+Spelled one letter per note, seven modes of harmonic/melodic minor need a double accidental in these keys (checked over all families × modes × 12 keys): B harmonic-minor mode 2 and 5, E harmonic-minor mode 5, C and F harmonic-minor mode 6 (e.g. C D♭ E♭ F♭ G♭ A♭ B𝄫), B melodic-minor mode 2, F melodic-minor mode 6. That is the textbook spelling and stays. Chord aliases that would need a double accidental are never shown (sameNotes filters them).
