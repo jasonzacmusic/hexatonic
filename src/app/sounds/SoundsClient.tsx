@@ -25,7 +25,10 @@ import { isStage, keepStage } from "@/lib/stage";
 import StageFit, { useStageNav } from "@/components/StageFit";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useSharedScale } from "@/lib/sharedScale";
+import { isLibraryScale, useSharedScale } from "@/lib/sharedScale";
+import ScaleModePicker from "@/components/ScaleModePicker";
+import PractiseCard from "@/components/PractiseCard";
+import { PAGE_EXCLUDE } from "@/lib/scaleMenu";
 import {
   KEYS, DIATONIC_MODES, FAMILY_GROUPS, buildScale, familyById, familiesIn, prettyDegree,
   ScaleInstance,
@@ -52,6 +55,7 @@ const MODE_ORDER = [0, 3, 4, 2, 1, 5];
 
 /** The groups in page order, with the short names used by the jump links. */
 const GROUPS: { id: string; short: string }[] = [
+  { id: "modes", short: "Every mode" },
   { id: "remove", short: "Remove one" },
   { id: "pentatonic", short: "Pentatonic + 1" },
   { id: "colour", short: "Colour" },
@@ -75,7 +79,7 @@ interface Entry {
 function entryFor(key: string, famId: string, mode = 0): Entry {
   const scale = buildScale(key, famId, mode);
   const fam = familyById(famId);
-  const md = fam.kind === "rotation" ? DIATONIC_MODES[mode] : null;
+  const md = fam.modes?.[mode] ?? null;
   const q = new URLSearchParams({ k: key, f: famId });
   if (md) q.set("m", String(mode));
   return {
@@ -127,7 +131,13 @@ export default function SoundsClient() {
       else setFocus(focusId(sp.get("family"), sp.get("m")));
     }
   }, []);
-  useSharedScale({ key }, (s) => setKey(s.key), () => new URLSearchParams(window.location.search).has("k"));
+  /* the one scale picked in "Every scale, every mode"; it follows the player */
+  const [pick, setPick] = useState({ family: "diatonic", mode: 3 });
+  useSharedScale({ key, family: pick.family, mode: pick.mode }, (s) => {
+    setKey(s.key);
+    if (isLibraryScale(s.family, s.mode) && !PAGE_EXCLUDE.sounds(familyById(s.family))) setPick({ family: s.family, mode: s.mode });
+  }, () => new URLSearchParams(window.location.search).has("k"));
+  const picked = useMemo(() => ({ ...entryFor(key, pick.family, pick.mode), id: `pick:${pick.family}-${pick.mode}` }), [key, pick]);
   const pickKey = (k: string) => {
     replay.current = sounding;
     setKey(k);
@@ -154,7 +164,7 @@ export default function SoundsClient() {
     replay.current = null;
     const r = id ? reg.current[id] : undefined;
     if (id && r) void play(id, r.midis, r.spread);
-  }, [key, parent, focus, play]);
+  }, [key, parent, focus, pick, play]);
 
   const remove = useMemo(() => [
     ...MODE_ORDER.map((m) => entryFor(key, "diatonic", m)),
@@ -279,8 +289,25 @@ export default function SoundsClient() {
       </div>
       {jump("mt-3 flex flex-wrap gap-x-4 gap-y-1.5 xl:hidden")}
 
+      {/* ── every scale, every mode: one picker, the sound, how to practise it ── */}
+      <Group id="modes" title="Every scale, every mode" first
+             blurb="Pick any scale in the app, then tap a mode to hear it and see how to practise it.">
+        <div className="card mb-3 !p-3 sm:!p-4">
+          <ScaleModePicker idPrefix="snd" page="sounds" family={pick.family} mode={pick.mode} arrowKeys
+                           onChange={(family, mode) => {
+                             /* the picked sound carries on as the new mode if it was playing */
+                             replay.current = sounding === picked.id ? `pick:${family}-${mode}` : null;
+                             setPick({ family, mode });
+                           }} />
+        </div>
+        <div className="grid gap-3 lg:grid-cols-2">
+          <Card key={picked.id} e={picked} player={player} />
+          <PractiseCard keyName={key} family={pick.family} mode={pick.mode} className="self-start" />
+        </div>
+      </Group>
+
       {/* ── remove one note ─────────────────────────────────────────────── */}
-      <Group id="remove" title={group("remove").label} blurb={group("remove").blurb} first>
+      <Group id="remove" title={group("remove").label} blurb={group("remove").blurb}>
         <Cards entries={remove} player={player}
                extra={<KnockOut keyName={key} parent={parent} setParent={setParent} rows={rows}
                                 note={parentDef.note} player={player} />} />

@@ -60,7 +60,7 @@ export const LEVELS: Record<GameId, LevelInfo[]> = {
   mode: [
     { name: "Three colours", line: "Major, minor, suspended. Tune, then chord." },
     { name: "Five colours", line: "Adds Sunday Scale and Dark minor." },
-    { name: "All six", line: "Adds Unstable. Tune only, no chord." },
+    { name: "All six", line: "Adds Phrygian (no 5th). Tune only, no chord." },
     { name: "Sunday, Major (no 4) or Suspended", line: "Three close sounds: no 7th, no 4th, or no 3rd. Tune, then chord." },
   ],
   family: [

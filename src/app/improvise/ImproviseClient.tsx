@@ -13,14 +13,17 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { linkKey, useSharedScale } from "@/lib/sharedScale";
+import { isLibraryScale, linkKey, useSharedScale } from "@/lib/sharedScale";
 import SplashToggle from "@/components/SplashToggle";
 import Keyboard from "@/components/Keyboard";
 import Fretboard from "@/components/Fretboard";
 import BluesLane from "@/components/BluesLane";
 import BeatCounter from "@/components/BeatCounter";
 import { Seg, Toggle } from "@/components/Panels";
-import { buildScale, KEYS, FAMILY_GROUPS, familiesIn, menuGroupLabel, SIX_NOTE_GROUPS } from "@/lib/theory/scales";
+import { buildScale, familyById, hasModes, KEYS } from "@/lib/theory/scales";
+import ScaleModePicker, { ModeStrip, useModeArrows } from "@/components/ScaleModePicker";
+import PractiseCard from "@/components/PractiseCard";
+import { codeOf, PAGE_EXCLUDE, parseCode, scaleName as nameOfScale } from "@/lib/scaleMenu";
 import {
   buildVamp, vampsFor, vampById, guideTones, nextChange, whyNot, bassWalk, examplePhrase, tryThis,
   BedId, VampStep, VAMPS, Feel,
@@ -35,15 +38,10 @@ const pretty = (s: string) => s
   .replace(/([A-G])b/g, "$1♭").replace(/#/g, "♯").replace(/b5$/, "♭5")
   .replace(/dim7$/, "°7").replace(/dim$/, "°").replace(/quartal$/, " quartal").replace(/aug$/, "+");
 
-/** The scale menu: the six-note scales first, then the world scales; the
- *  diatonic modes listed one by one. The 7-note parents and the 8-note
- *  octatonics stay out: this page is for playing six-note scales. */
-const SCALE_MENU = [...SIX_NOTE_GROUPS, "beyond" as const].map((id) => FAMILY_GROUPS.find((g) => g.id === id)!).map((g) => ({
-  label: menuGroupLabel(g.id),
-  options: familiesIn(g.id).flatMap((f) => f.kind === "rotation"
-    ? f.modes!.map((m) => ({ value: `${f.id}:${m.index}`, label: m.name }))
-    : [{ value: `${f.id}:0`, label: f.short }]),
-})).filter((g) => g.options.length);
+/** A scale this page can play: any in the library but Custom (the shared
+ *  menu greys that out, with its reason). */
+const playable = (family: string, mode: number) =>
+  isLibraryScale(family, mode) && !PAGE_EXCLUDE.improvise(familyById(family));
 
 const LOOP_SHORT: Record<BedId, string> = {
   drone: "Drone", two: "Two chords", four: "Four chords", sus: "Open pad", swing: "Swing", blues: "12-bar blues",
@@ -59,7 +57,7 @@ export default function ImproviseClient() {
     const bed = q.get("bed") ?? (q.get("lane") === "blues" ? "blues" : null);
     if (bed && VAMPS.some((v) => v.id === bed)) setBedId(bed as BedId);
     const sc = q.get("scale");
-    if (sc && SCALE_MENU.some((g) => g.options.some((o) => o.value === sc))) setScaleId(sc);
+    if (sc) { const p = parseCode(sc); if (playable(p.family, p.mode)) setScaleId(codeOf(p.family, p.mode)); }
     const k = linkKey();
     if (k) setKey(k);
   }, []);
@@ -78,9 +76,10 @@ export default function ImproviseClient() {
   const [famId, modeStr] = scaleId.split(":");
   useSharedScale({ key, family: famId, mode: Number(modeStr) || 0 }, (s) => {
     setKey(s.key);
-    const id = `${s.family}:${s.mode}`;
-    if (SCALE_MENU.some((g) => g.options.some((o) => o.value === id))) setScaleId(id);
+    if (playable(s.family, s.mode)) setScaleId(codeOf(s.family, s.mode));
   }, () => new URLSearchParams(window.location.search).has("scale"));
+  /* ← and → step the modes; Space still plays and stops. */
+  useModeArrows(famId, Number(modeStr) || 0, (m) => setScaleId(codeOf(famId, m)), bedId !== "blues");
   const menuScale = useMemo(() => buildScale(key, famId, Number(modeStr) || 0), [key, famId, modeStr]);
   const isBlues = bedId === "blues";
   const scale = useMemo(() => (isBlues ? buildScale(key, bluesScale) : menuScale), [isBlues, key, bluesScale, menuScale]);
@@ -187,7 +186,7 @@ export default function ImproviseClient() {
 
   const scaleName = isBlues
     ? `${pretty(key)} ${bluesScale === "blues" ? "minor blues" : "major blues"}`
-    : `${pretty(scale.tonic)} ${menuScale.family.kind === "rotation" ? menuScale.family.modes![menuScale.modeIndex].name : menuScale.family.short}`;
+    : `${pretty(scale.tonic)} ${nameOfScale(menuScale.family.id, menuScale.modeIndex)}`;
 
   return (
     <div className="relative space-y-4 pb-10">
@@ -212,17 +211,10 @@ export default function ImproviseClient() {
       {/* ── 1 & 2: scale, key and loop ───────────────────────────────── */}
       <section className="card card-tight space-y-3" aria-label="Scale and loop">
         <div className="grid grid-cols-[minmax(0,1fr)_88px] gap-3 sm:grid-cols-[minmax(0,320px)_100px_minmax(0,1fr)] sm:items-end">
-          <div className="field">
-            <label htmlFor="imp-scale">{isBlues ? "Scale · the blues picks its own" : "Scale"}</label>
-            <select id="imp-scale" className="sel" value={scaleId} disabled={isBlues}
-                    onChange={(e) => setScaleId(e.target.value)}>
-              {SCALE_MENU.map((g) => (
-                <optgroup key={g.label} label={g.label}>
-                  {g.options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-                </optgroup>
-              ))}
-            </select>
-          </div>
+          <ScaleModePicker idPrefix="imp" page="improvise" hideStrip disabled={isBlues}
+                           label={isBlues ? "Scale · the blues picks its own" : "Scale"}
+                           family={famId} mode={Number(modeStr) || 0}
+                           onChange={(f, m) => setScaleId(codeOf(f, m))} />
           <div className="field">
             <label htmlFor="imp-key">Key</label>
             <select id="imp-key" className="sel" value={key} onChange={(e) => setKey(e.target.value)}>
@@ -236,6 +228,11 @@ export default function ImproviseClient() {
             )}
           </p>
         </div>
+
+        {!isBlues && hasModes(menuScale.family) && (
+          <ModeStrip idPrefix="imp-mode" family={famId} mode={Number(modeStr) || 0} arrowKeys
+                     onPick={(m) => setScaleId(codeOf(famId, m))} />
+        )}
 
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6" role="group" aria-label="Backing loop">
           {loops.map(({ v, ok, summary }) => {
@@ -388,6 +385,9 @@ export default function ImproviseClient() {
         {live.error && <p className="mt-2 text-[15px] text-red-hi">{live.error}</p>}
       </section>
 
+      {/* how to practise the scale over the band */}
+      {!isBlues && <PractiseCard keyName={key} family={famId} mode={Number(modeStr) || 0} />}
+
       {/* ── the band ─────────────────────────────────────────────────── */}
       <section className="card card-tight" aria-label="The band">
         <div className="flex flex-wrap items-center gap-2">
@@ -401,7 +401,7 @@ export default function ImproviseClient() {
           <Toggle on={comp} onClick={() => setComp((v) => !v)}>Chords</Toggle>
           <Toggle on={click} onClick={() => setClick((v) => !v)}>Click</Toggle>
           <Toggle on={countIn} onClick={() => setCountIn((v) => !v)}>Count-in</Toggle>
-          <span className="ml-auto font-mono text-[13px] text-muted">space · play / stop</span>
+          <span className="ml-auto font-mono text-[13px] text-muted">space · play / stop · ← → mode</span>
         </div>
       </section>
     </div>

@@ -23,8 +23,17 @@ import { letterIndex, midi, note, Note, notePretty, pc } from "@/lib/theory/note
 import { prettyChordSymbol } from "@/lib/theory/movement";
 import { previewAudio } from "@/lib/audio/engine";
 import { playableStack } from "@/lib/audio/voicing";
-import { cap, chordRole, count, list, optionById, optionToShared, ownSpellingFirst, PROSE, ScalePicker, sharedToOption, stackLine } from "./scaleOptions";
-import { useSharedScale } from "@/lib/sharedScale";
+import { cap, chordRole, count, list, optionById, ownSpellingFirst, prettyDegrees, PROSE, stackLine } from "./scaleOptions";
+import { isLibraryScale, useSharedScale } from "@/lib/sharedScale";
+import { buildScale, familyById, hasModes, KEYS } from "@/lib/theory/scales";
+import ScaleModePicker, { ModeStrip, PickerExtra, useModeArrows } from "@/components/ScaleModePicker";
+import PractiseCard from "@/components/PractiseCard";
+import { PAGE_EXCLUDE } from "@/lib/scaleMenu";
+
+/** The one colour the library builds by hand for this tab: minor with no 7th. */
+const CHORD_EXTRAS: PickerExtra[] = [
+  { value: "minor-no7", label: optionById("minor-no7").label, group: "remove" },
+];
 import { symmetricTriadLine } from "@/lib/theory/symmetric";
 import { prettyChord as prettySame, sameNotes } from "@/lib/theory/sameNotes";
 import {
@@ -79,13 +88,19 @@ type Sound = (label: string, midis: number[], spread?: number) => void;
 
 export default function ChordsTab() {
   const [key, setKey] = useState("G");
-  const [optionId, setOptionId] = useState("d0");
-  useSharedScale({ key, ...optionToShared(optionId) }, (s) => {
+  /* Any scale in the library, by family and mode, from the shared menu; or
+     the one hand-built extra ("Minor, no 7th"). */
+  const [sel, setSel] = useState<{ family: string; mode: number; extra: string | null }>({ family: "diatonic", mode: 0, extra: null });
+  useSharedScale(sel.extra ? { key } : { key, family: sel.family, mode: sel.mode }, (s) => {
     setKey(s.key);
-    const id = sharedToOption(s.family, s.mode);
-    if (id) setOptionId(id);
+    if (isLibraryScale(s.family, s.mode) && !PAGE_EXCLUDE.chords(familyById(s.family)))
+      setSel({ family: s.family, mode: s.mode, extra: null });
   });
-  const scale = useMemo(() => optionById(optionId).build(key), [optionId, key]);
+  const optionId = sel.extra ?? `${sel.family}:${sel.mode}`;
+  /* ← and → step the modes (no other shortcut on this tab uses them) */
+  useModeArrows(sel.family, sel.mode, (mode) => setSel({ family: sel.family, mode, extra: null }), !sel.extra);
+  const scale = useMemo(() => (sel.extra ? optionById(sel.extra).build(key) : buildScale(key, sel.family, sel.mode)),
+    [sel, key]);
   const notes = scale.notes;
 
   /* One piano for the whole page: `picked` marks a chord at rest, `lit` is sounding. */
@@ -145,7 +160,19 @@ export default function ChordsTab() {
       <div className="lg:sticky lg:top-[59px] lg:z-30 lg:-mt-2 lg:bg-bg lg:pt-2">
       <section className="card !p-4 sm:!p-5 lg:grid lg:grid-cols-[minmax(300px,380px)_minmax(0,1fr)] lg:items-center lg:gap-6">
         <div className="space-y-3">
-          <ScalePicker idPrefix="ch" keyName={key} setKey={setKey} optionId={optionId} setOption={setOptionId} />
+          <div className="flex flex-wrap items-start gap-3">
+            <div className="field w-[84px] shrink-0">
+              <label htmlFor="ch-key">Key</label>
+              <select id="ch-key" className="sel" value={key} onChange={(e) => setKey(e.target.value)}>
+                {KEYS.map((k) => <option key={k} value={k}>{prettyDegrees(k)}</option>)}
+              </select>
+            </div>
+            <ScaleModePicker idPrefix="ch" page="chords" className="flex-1 basis-[220px]" hideStrip
+                             family={sel.family} mode={sel.mode}
+                             extras={CHORD_EXTRAS} extraValue={sel.extra}
+                             onExtra={(v) => setSel((x) => ({ ...x, extra: v }))}
+                             onChange={(family, mode) => setSel({ family, mode, extra: null })} />
+          </div>
           <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
             <p className="font-mono text-[22px] leading-tight tracking-[0.04em] text-cream">
               {notes.map(notePretty).join(" ")}
@@ -166,8 +193,18 @@ export default function ChordsTab() {
           <MainPiano notes={notes} removed={scale.removed} lit={lit} picked={picked?.pcs} lowest={lowest} />
           <Legend />
         </div>
+        {/* the modes, the full width of the card, one tap each */}
+        {!sel.extra && hasModes(familyById(sel.family)) && (
+          <div className="mt-3 lg:col-span-2 lg:mt-1">
+            <ModeStrip idPrefix="ch-mode" family={sel.family} mode={sel.mode} arrowKeys
+                       onPick={(mode) => setSel({ family: sel.family, mode, extra: null })} />
+          </div>
+        )}
       </section>
       </div>
+
+      {/* how to practise this mode: colour, pair, drone, the note to leave out */}
+      {!sel.extra && <PractiseCard keyName={key} family={sel.family} mode={sel.mode} className="stage-hide" />}
 
       {/* ── triads, grouped by what they do ──────────────────────────── */}
       <section className="card">
