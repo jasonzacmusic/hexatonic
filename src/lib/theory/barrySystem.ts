@@ -21,7 +21,7 @@ import {
   buildSixthDim, sixthDimById, SixthFamily, SIXTH_DIMINISHED,
 } from "./barryharris";
 import {
-  Letter, LETTER_PC, midi, Note, note, noteName, parseNoteName, pc, stepLetter,
+  Letter, LETTER_PC, midi, Note, note, noteName, notePretty, parseNoteName, pc, stepLetter,
 } from "./note";
 
 const mod = (n: number, m: number) => ((n % m) + m) % m;
@@ -237,6 +237,107 @@ export function inversionLadder(root: string, f: SixthFamily, octave = 3): Syste
       symbol: isDim ? bs.dimSymbol
         : d % 8 === 0 ? bs.chordSymbol : `${bs.chordSymbol}/${noteName(bass)}`,
       label: isDim ? "diminished between" : INVERSION[(d % 8) / 2],
+    };
+  });
+}
+
+/* ── d′. the ladder as two chords, each in four inversions ──────────────
+
+   Jason's reading of the same ladder (28 Sep 2026): name every chord by the
+   note in the bass. Then the ladder is plainly two chords, each seen four
+   ways. In G major 6th diminished:
+
+     G6 · A°7 · G6/B · C°7 · G6/D · E♭°7 · Em7 · F♯°7 · G6
+     tonic family: G6, G6/B, G6/D, Em7 (= G6/E) — one chord, G B D E
+     diminished family: A°7, C°7, E♭°7, F♯°7 — one chord, A C E♭ F♯
+
+   Naming, the same rule in every system:
+   · a diminished 7th is named from its bass (every note of it is a root),
+     its notes spelled as the scale spells them;
+   · the tonic chord in root position is its own name (G6, Gm6, G7, G7♭5);
+   · with another note in the bass, if those four notes read as a standard
+     four-note chord FROM THAT BASS, that is its name and the slash name is
+     kept beside it: Em7 = G6/E, Em7♭5 = Gm6/E, D♭7♭5 = G7♭5/D♭;
+   · otherwise it is a slash chord: G6/B, G7/F.
+   The first chord of each family on the ladder is its home: G6 and A°7. */
+
+export type LadderFamily = "tonic" | "dim";
+
+export interface SameNotesRung {
+  /** close position, ascending, bass first */
+  notes: Note[];
+  family: LadderFamily;
+  isDiminished: boolean;
+  /** ASCII symbol read from the bass: "G6", "Adim7", "G6/B", "Em7" */
+  symbol: string;
+  /** the slash name when the symbol is another name for the tonic chord: "G6/E" */
+  slash: string | null;
+  /** 0 root position, 1–3 inversions, counted from the family's home chord */
+  inversion: number;
+  /** the family's home chord, ASCII: "G6" or "Adim7" */
+  home: string;
+  /** the plain-English line under the name, with ♭ ♯ ° */
+  line: string;
+  /** scale index 0–7 of the bass */
+  degree: number;
+}
+
+const ORDINAL = ["root position", "1st inversion", "2nd inversion", "3rd inversion"];
+
+/** Display form: ♭ ♯ ° for any symbol the ladder produces. */
+export const prettyLadder = (s: string) =>
+  s.replace(/dim7/g, "°7").replace(/([A-G])b/g, "$1♭").replace(/([A-G])#/g, "$1♯")
+    .replace(/b(?=\d)/g, "♭").replace(/#(?=\d)/g, "♯");
+
+/** The 7♭5 chord read from its ♭5 is a tritone reading whose letters never
+ *  stack (G B D♭ F from D♭), so its root takes the plainer of its two names:
+ *  B7♭5, never C♭7♭5, in F. Every other reading keeps the scale's letter,
+ *  because there the letters do stack (E♯m7♭5 = E♯ G♯ B D♯ in G♯ minor). */
+function plainRoot(n: Note, f: SixthFamily): Note {
+  if (f !== "dominant7b5" || !(
+    (n.alt === -1 && (n.letter === "C" || n.letter === "F")) ||
+    (n.alt === 1 && (n.letter === "E" || n.letter === "B")))) return n;
+  const L = stepLetter(n.letter, n.alt === -1 ? -1 : 1) as Letter;
+  return note(L, 0, n.octave + (n.letter === "C" && n.alt === -1 ? -1 : n.letter === "B" ? 1 : 0));
+}
+
+export function sameNotesLadder(root: string, f: SixthFamily, octave = 3): SameNotesRung[] {
+  const bs = barryScale(root, f, octave);
+  const s = bs.notes;
+  const tonicHome = bs.chordSymbol;
+  const dimHome = noteName(s[1]) + "dim7";
+  return Array.from({ length: 9 }, (_, d) => {
+    const notes = [at(s, d), at(s, d + 2), at(s, d + 4), at(s, d + 6)];
+    const isDim = d % 2 === 1;
+    const bass = notes[0];
+    const inversion = isDim ? ((d - 1) / 2) % 4 : (d / 2) % 4;
+    const P = prettyLadder;
+    if (isDim) {
+      const symbol = noteName(bass) + "dim7";
+      return {
+        notes, family: "dim" as const, isDiminished: true, symbol, slash: null, inversion,
+        home: dimHome, degree: d % 8,
+        line: inversion === 0 ? "root position" : `same notes as ${P(dimHome)} · ${ORDINAL[inversion]}`,
+      };
+    }
+    let symbol = tonicHome;
+    let slash: string | null = null;
+    let line = d === 8 ? "root position, an octave up" : "root position";
+    if (inversion > 0) {
+      const slashName = `${tonicHome}/${noteName(bass)}`;
+      const own = tetradName(notes, plainRoot(bass, f));
+      if (own && !own.rootless && own.symbol !== tonicHome) {
+        symbol = own.symbol;
+        slash = slashName;
+        line = `${P(tonicHome)} with ${notePretty(bass)} in the bass · ${ORDINAL[inversion]}`;
+      } else {
+        symbol = slashName;
+        line = `same notes as ${P(tonicHome)} · ${ORDINAL[inversion]}`;
+      }
+    }
+    return {
+      notes, family: "tonic" as const, isDiminished: false, symbol, slash, inversion,
+      home: tonicHome, degree: d % 8, line,
     };
   });
 }

@@ -161,3 +161,67 @@ six-note scale, mode and key). **E whole tone: E+ = E G♯ B♯ and G♭+ = G♭
 on all four (F♯+ would need C𝄪). The ring used to disagree in a few keys —
 B whole tone showed C♭+ (C♭ E♭ G) where the others said G+ (G B D♯), F♯
 whole tone G♭+ where the others said D+ — and now follows the same rule.
+
+## 29 September 2026 — the sixth–diminished ladder as two chords in four inversions
+
+Jason's request: on the sixth–diminished ladder, name each chord **from its
+bass**, so the eight chords read as what they are, **two chords, each in four
+inversions**. Harmony → Sixth–diminished → 4 "Inversion ladder" (deep link
+`/harmony?tab=sixth&k=G&sys=major6&stage=1`; `sys` = major6, minor6,
+dominant7, dominant7b5). Computed by `sameNotesLadder` in
+`src/lib/theory/barrySystem.ts`, locked by `tests/inversion-ladder.test.ts`
+(all four systems × twelve roots).
+
+### The four scales (unchanged, re-checked)
+Barry Harris's four sixth–diminished scales, each a chord interlocked with the
+diminished 7th on its major-7th degree (sources: Alan Kingstone, *Barry Harris'
+Harmonic Method* workbook; Howard Rees, *The Barry Harris Harmonic Method for
+Piano*; Barry Harris workshop videos — summarised in `docs/08-JAZZ-GOSPEL.md` §1.6):
+
+| System | In G | Tonic chord | Diminished |
+|---|---|---|---|
+| Major 6th diminished | G A B C D E♭ E F♯ | G6 = G B D E | A C E♭ F♯ |
+| Minor 6th diminished | G A B♭ C D E♭ E F♯ | Gm6 = G B♭ D E | A C E♭ F♯ |
+| Seventh diminished | G A B C D E♭ F F♯ | G7 = G B D F | A C E♭ F♯ |
+| Seventh ♭5 diminished | G A B C D♭ E♭ F F♯ | G7♭5 = G B D♭ F | A C E♭ F♯ |
+
+The dominant one has the ♭6 (E♭), not the 6: G A B C D E F F♯ is the bebop
+dominant scale, not one of these.
+
+### The ladder in G, every system
+- **Major 6:** G6 · A°7 · G6/B · C°7 · G6/D · E♭°7 · **Em7** (= G6/E) · F♯°7 · G6
+- **Minor 6:** Gm6 · A°7 · Gm6/B♭ · C°7 · Gm6/D · E♭°7 · **Em7♭5** (= Gm6/E, E G B♭ D) · F♯°7 · Gm6
+- **Dominant 7:** G7 · A°7 · G7/B · C°7 · G7/D · E♭°7 · G7/F · F♯°7 · G7
+- **7♭5:** G7♭5 · A°7 · G7♭5/B · C°7 · **D♭7♭5** (= G7♭5/D♭) · E♭°7 · G7♭5/F · F♯°7 · G7♭5
+
+### The naming rule
+1. A **diminished 7th is named from its bass** (every note of it is a root):
+   A°7, C°7, E♭°7, F♯°7 are one chord, A C E♭ F♯. Its notes keep the scale's
+   spelling (E♭°7 is written E♭ F♯ A C, not E♭ G♭ B𝄫 D♭), so the staff never
+   needs a double flat. The first diminished on the ladder (A°7, on the 2nd
+   degree) is the family's "root position"; C°7 is its 1st inversion, E♭°7 its
+   2nd, F♯°7 its 3rd. (Barry names the diminished from the 7th degree, F♯°7;
+   the 2nd-degree reference is Jason's, because that is where the ladder meets
+   it first. Both are the same four notes.)
+2. The tonic chord in root position keeps its own name (G6, Gm6, G7, G7♭5).
+3. With another note in the bass: **if the four notes read as a standard
+   four-note chord from that bass, that name leads and the slash name sits
+   beside it** (Em7 = G6/E, Em7♭5 = Gm6/E, D♭7♭5 = G7♭5/D♭). Otherwise it is a
+   slash chord (G6/B, G6/D, G7/B, G7/D, G7/F). The dominant 7th has no other
+   standard name in any inversion, so all three of its inversions are slashes.
+4. **Ambiguity decided:** the 7♭5 read from its ♭5 is the tritone twin
+   (G7♭5 = D♭7♭5). Its letters never stack from that root, so the root takes
+   the plainer name: **B7♭5, not C♭7♭5, in F; E7♭5, not F♭7♭5, in B♭**. The
+   bass itself keeps the scale's letter (F7♭5/C♭). Every other reading keeps the
+   scale's letter because its letters do stack (E♯m7♭5 = E♯ G♯ B D♯ in G♯ minor).
+
+### Chords that are inversions of each other, everywhere else
+Harmony → Chords (triad cards, chord trees, "Same notes, two names") and the
+Practice chord strip now show a chord with more than one name as **one chord
+with its other names over its bass**: **C6 = Am7/C**, **Em7 = G6/E**,
+**G+ = B+/G = D♯+/G** (G whole tone), **G+ = B+/G = E♭+/G** (G augmented
+scale, whose note is E♭). The lead name is still chosen by `ownSpellingFirst`
+(G+ = G B D♯, B♭+ = B♭ D F♯); the other roots are named as the scale names
+them, so an alias never shows a root the scale does not have. This also fixed
+the chord trees, which listed "G+ = E♭+ = C♭+" in G whole tone. Locked by
+`tests/same-notes.test.ts` (every scale, mode and key).

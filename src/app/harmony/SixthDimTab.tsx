@@ -19,7 +19,7 @@
  * change is part of the music, not a restart.
  */
 
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { DrillPlan, previewAudio, previewChords } from "@/lib/audio/engine";
 import { useLiveDrill } from "@/lib/audio/useLive";
 import BeatCounter from "@/components/BeatCounter";
@@ -30,25 +30,37 @@ import { Seg, Toggle } from "@/components/Panels";
 import { fitSixthDim, notOctatonic, prettySymbol, SixthFamily } from "@/lib/theory/barryharris";
 import {
   barryRoots, barryScale, barrySplit, BORROWINGS, borrowedChord, diminishedFamily, FAMILY_INFO,
-  FAMILY_ORDER, harmonisedScale, harmonisedWithBorrowing, inversionLadder, keySignatureFor,
-  bebopDominant, rootsByFourths, sameRoot, SystemChord, tetradPairsCovering, voice, VoicingKind, VOICINGS,
+  FAMILY_ORDER, harmonisedScale, harmonisedWithBorrowing, keySignatureFor,
+  bebopDominant, prettyLadder, rootsByFourths, sameNotesLadder, sameRoot, SystemChord, tetradPairsCovering, voice,
+  VoicingKind, VOICINGS,
 } from "@/lib/theory/barrySystem";
+import InversionFamilies from "./InversionFamilies";
+import StageFit from "@/components/StageFit";
+import { useStage } from "@/lib/stage";
 import { midi, Note, noteName, notePretty, pc } from "@/lib/theory/note";
 import { buildScale } from "@/lib/theory/scales";
 import { optionById, optionToShared, PROSE, ScalePicker, sharedToOption } from "./scaleOptions";
 import { useSharedScale } from "@/lib/sharedScale";
 
 type StepId = "scale" | "harmonised" | "voicings" | "inversions" | "borrowing" | "family";
-type Direction = "updown" | "up";
+type Direction = "updown" | "up" | "down";
 
 const STEPS: { id: StepId; n: string; label: string }[] = [
   { id: "scale", n: "1", label: "The scale" },
   { id: "harmonised", n: "2", label: "Harmonise it" },
   { id: "voicings", n: "3", label: "Drop voicings" },
-  { id: "inversions", n: "4", label: "Inversions" },
+  { id: "inversions", n: "4", label: "Inversion ladder" },
   { id: "borrowing", n: "5", label: "Borrowing" },
   { id: "family", n: "6", label: "The family" },
 ];
+
+/** ?sys= in a link: the family ids, and the short names a person would type. */
+const SYS_ALIAS: Record<string, SixthFamily> = {
+  major6: "major6", maj6: "major6", "6": "major6", major: "major6",
+  minor6: "minor6", m6: "minor6", min6: "minor6", minor: "minor6",
+  dominant7: "dominant7", dom7: "dominant7", "7": "dominant7", dominant: "dominant7",
+  dominant7b5: "dominant7b5", "7b5": "dominant7b5", dom7b5: "dominant7b5",
+};
 
 const names = (ns: Note[]) => ns.map(notePretty).join(" ");
 const P = prettySymbol;
@@ -93,8 +105,10 @@ function entriesFor(step: StepId, root: string, f: SixthFamily, voicing: Voicing
     }
     case "harmonised": return harmonisedScale(root, f).map((c) => fromChord(c, "close"));
     case "voicings": return harmonisedScale(root, f).map((c) => fromChord(c, voicing));
-    case "inversions": return inversionLadder(root, f).map((c) => ({
-      ...fromChord(c, "close"), sub: c.isDiminished ? "passing" : c.label!,
+    /* Jason's ladder: every chord named by its bass, so the eight read as two
+       chords in four inversions each (G6 · A°7 · G6/B · C°7 · … · Em7 · F♯°7). */
+    case "inversions": return sameNotesLadder(root, f).map((r) => ({
+      notes: r.notes, label: prettyLadder(r.symbol), sub: r.line, isDiminished: r.isDiminished,
     }));
     case "borrowing": return harmonisedWithBorrowing(root, f, borrowId).map((c) => fromChord(c, voicing));
     case "family": return diminishedFamily(root, f).flatMap((m) => [
@@ -110,23 +124,25 @@ function orderFor(n: number, step: StepId, direction: Direction, loop: boolean):
   const seq: (number | null)[] =
     step === "family" ? up
     : direction === "up" ? up
+    : direction === "down" ? [...up].reverse()
     : [...up, ...up.slice(1, -1).reverse(), ...(loop ? [] : [0])];
   while (seq.length % 4) seq.push(null);
   return seq;
 }
 
+/** The width of a box, kept current. A callback ref, so it follows the box
+ *  when it remounts (stage mode wraps the step card after the first paint). */
 function useWidth<T extends HTMLElement>() {
-  const ref = useRef<T>(null);
+  const [el, ref] = useState<T | null>(null);
   const [w, setW] = useState(0);
   useLayoutEffect(() => {
-    const el = ref.current;
     if (!el) return;
     const measure = () => setW(el.clientWidth);
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  }, [el]);
   return [ref, w] as const;
 }
 
@@ -143,6 +159,23 @@ export default function SixthDimTab() {
   const [allKeys, setAllKeys] = useState(false);
   const [bpm, setBpm] = useState(80);
 
+  const stage = useStage();
+  /* Deep link: /harmony?tab=sixth&k=G&sys=minor6&stage=1 opens that system's
+     inversion ladder, ready to film. ?step= picks another step. Runs after the
+     shared key has been applied, so the link's key and system win. */
+  useEffect(() => {
+    let q: URLSearchParams;
+    try { q = new URLSearchParams(window.location.search); } catch { return; }
+    const sys = SYS_ALIAS[(q.get("sys") ?? "").toLowerCase()];
+    const k = q.get("k");
+    const st = STEPS.find((x) => x.id === q.get("step"))?.id;
+    if (sys) {
+      setFamily(sys);
+      setRootRaw((r) => { try { return sameRoot(k || r, sys); } catch { return sameRoot(r, sys); } });
+    }
+    if (st) setStep(st);
+    else if (sys) setStep("inversions");
+  }, []);
   const setRoot = (r: string) => setRootRaw(sameRoot(r, family));
   useSharedScale({ key: root }, (s) => setRootRaw(sameRoot(s.key, family)));
   const chooseFamily = (f: SixthFamily) => { setFamily(f); setRootRaw((r) => sameRoot(r, f)); };
@@ -209,17 +242,22 @@ export default function SixthDimTab() {
   const hi = Math.max(...shown.entries.flatMap((e) => e.notes.map(midi)));
   const start = Math.floor(lo / 12) * 12;
   const octaves = Math.max(2, Math.ceil((hi + 1 - start) / 12));
-  const keyWidth = Math.max(10, Math.min(40, kbW ? Math.floor(kbW / (octaves * 7)) : 28));
+  const keyWidth = Math.max(10, Math.min(step === "inversions" ? 58 : 40, kbW ? Math.floor(kbW / (octaves * 7)) : 28));
   const shownScale = useMemo(() => barryScale(shown.root, family), [shown.root, family]);
 
   const stepIndex = STEPS.findIndex((s) => s.id === step);
   const proof = notOctatonic(family);
+  const ladder = step === "inversions";
+  const rungs = useMemo(() => (ladder ? sameNotesLadder(shown.root, family) : []), [ladder, shown.root, family]);
+  /* In stage mode the ladder is the whole frame: the setup and the sections
+     below it step aside, and the card scales to fit 1920×1080. */
+  const ladderStage = stage && ladder;
   const moveRoot = (by: number) => setRootRaw(rootsByFourths(root, family)[(12 + by) % 12]);
 
   return (
     <div className="space-y-5">
       {/* ── setup ─────────────────────────────────────────────────────── */}
-      <section className="card">
+      <section className={`card ${ladderStage ? "stage-hide" : ""}`}>
         <p className="eyebrow">Barry Harris · the sixth–diminished system</p>
         <p className={`mt-2 ${PROSE}`}>
           Eight notes, two chords. A 6th (or 7th) chord and a diminished 7th woven together, so every
@@ -276,8 +314,17 @@ export default function SixthDimTab() {
       </section>
 
       {/* ── the system, step by step ───────────────────────────────────── */}
+      <StageWrap on={ladderStage}>
       <section className="card">
-        <div className="-mx-1 overflow-x-auto px-1">
+        {ladderStage && (
+          <div className="mb-3 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+            <h2 className="text-[30px] font-extrabold tracking-[-0.015em] text-cream">
+              {P(shown.root)} {info.name.toLowerCase()}: the inversion ladder
+            </h2>
+            <p className="font-mono text-[15px] text-cream/75">{names(shownScale.notes)}</p>
+          </div>
+        )}
+        <div className={`-mx-1 overflow-x-auto px-1 ${ladderStage ? "stage-hide" : ""}`}>
           <div className="seg w-max" role="tablist" aria-label="The system, step by step">
             {STEPS.map((s) => (
               <button key={s.id} role="tab" type="button" data-on={step === s.id} aria-selected={step === s.id}
@@ -311,7 +358,7 @@ export default function SixthDimTab() {
         {/* transport */}
         <div className="mt-4 flex flex-wrap items-end gap-x-4 gap-y-3">
           <button className={`btn ${live.playing ? "btn-stop" : "btn-primary"} min-w-[112px]`} onClick={live.toggle}>
-            {live.loading ? "Loading…" : live.playing ? "■ Stop" : "▶ Play"}
+            {live.loading ? "Loading…" : live.playing ? "■ Stop" : ladder ? "▶ Play the ladder" : "▶ Play"}
           </button>
           <div className="field">
             <label htmlFor="bh-tempo">Tempo · {bpm}</label>
@@ -322,7 +369,11 @@ export default function SixthDimTab() {
             <div className="field">
               <label>Direction</label>
               <Seg value={direction} ariaLabel="Direction" onChange={setDirection}
-                   options={[{ label: "Up and down", value: "updown" as const }, { label: "Up", value: "up" as const }]} />
+                   options={[
+                     { label: "Up", value: "up" as const },
+                     { label: "Down", value: "down" as const },
+                     { label: "Up and down", value: "updown" as const },
+                   ]} />
             </div>
           )}
           <Toggle on={loop} onClick={() => setLoop((v) => !v)}>Loop</Toggle>
@@ -363,6 +414,8 @@ export default function SixthDimTab() {
           })}
         </div>
 
+        {ladder && <InversionFamilies rungs={rungs} active={activeEntry} />}
+
         <div ref={kbRef} className="mt-4">
           <Keyboard scale={shownScale.notes} removed={null} octaves={octaves} startMidi={start}
                     height={104} keyWidth={keyWidth} activeMidi={activeNotes ? activeNotes.map(midi) : null}
@@ -379,14 +432,22 @@ export default function SixthDimTab() {
         )}
         {step === "family" && <FamilyTable root={root} family={family} />}
       </section>
+      </StageWrap>
 
+      <div className={`space-y-5 ${ladderStage ? "stage-hide" : ""}`}>
       <TwoChords root={root} family={family} onPick={(f) => { chooseFamily(f); setStep("scale"); }} />
 
       <HexatonicBridge onUse={(f, r) => { setFamily(f); setRootRaw(sameRoot(r, f)); setStep("harmonised"); }} />
 
       <p className="pull text-center text-[20px] text-cream/80">The sixth–diminished system of Barry Harris.</p>
+      </div>
     </div>
   );
+}
+
+/** The step card, fitted to the 1920×1080 frame in stage mode. */
+function StageWrap({ on, children }: { on: boolean; children: React.ReactNode }) {
+  return on ? <StageFit>{children}</StageFit> : <>{children}</>;
 }
 
 /* ── the words for each step ─────────────────────────────────────────── */
@@ -410,7 +471,8 @@ function StepText({ step, root, family, voicing, borrowId }: {
       text = <>The same line, spread for two hands. {VOICINGS.find((v) => v.id === voicing)!.says} The melody stays on top.</>;
       break;
     case "inversions":
-      text = <>{chord} through its four inversions, with {dim} passing between each one, up and back down. The bass climbs the scale.</>;
+      text = <>Climb the scale in the bass and name each chord from its bass note. There are only two chords here, each played four ways:{" "}
+        {chord} and its inversions, and one diminished 7th whose four notes each take a turn in the bass. Every voice moves up one step.</>;
       break;
     case "borrowing": {
       const b = borrowedChord(root, family, borrowId);
