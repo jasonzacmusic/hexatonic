@@ -12,7 +12,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Note, midi, pc } from "./theory/note";
-import { buildScale, familyById, FAMILIES, KEYS } from "./theory/scales";
+import { buildScale, familyById, FAMILIES, KEYS, modeCount } from "./theory/scales";
 import { buildPattern, patternById, PatternId, resolvePatternId } from "./theory/patterns";
 import { solveResolution, ResolveMode, gatiFor } from "./theory/resolution";
 import { meterById, METERS, allTalaMeters } from "./theory/meters";
@@ -98,8 +98,10 @@ export function decodeState(qs: string): DrillState {
   out.key = oneOf(q.get(SHORT.key), KEYS, base.key);
   out.family = oneOf(q.get(SHORT.family), FAMILIES.map((f) => f.id), base.family);
   out.pattern = resolvePatternId(q.get(SHORT.pattern)) ?? base.pattern;
-  out.mode = integer(q.get(SHORT.mode), { min: 0, max: 5 }, base.mode);
-  if (familyById(out.family).kind !== "rotation") out.mode = 0;
+  /* Up to seven modes (the seven-note parents); a mode the family does not
+     have falls back to its first. */
+  out.mode = integer(q.get(SHORT.mode), { min: 0, max: 6 }, base.mode);
+  if (out.mode >= modeCount(familyById(out.family))) out.mode = 0;
   out.cell = integer(q.get(SHORT.cell), [3, 4, 5, 6], base.cell);
   out.octaves = integer(q.get(SHORT.octaves), [1, 2, 3], base.octaves);
   out.includeTop = bool(q.get(SHORT.includeTop), base.includeTop);

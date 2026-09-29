@@ -13,7 +13,7 @@
  */
 
 import { useEffect, useState } from "react";
-import { FAMILIES, KEYS } from "./theory/scales";
+import { FAMILIES, KEYS, modeCount } from "./theory/scales";
 
 export interface SharedScale {
   key: string;
@@ -82,7 +82,7 @@ export function linkKey(): string | null {
 export function isLibraryScale(family: string, mode: number): boolean {
   const f = FAMILIES.find((x) => x.id === family);
   if (!f || f.kind === "custom") return false;
-  return f.kind === "rotation" ? mode >= 0 && mode < (f.modes?.length ?? 0) : mode === 0;
+  return Number.isInteger(mode) && mode >= 0 && mode < modeCount(f);
 }
 
 /**

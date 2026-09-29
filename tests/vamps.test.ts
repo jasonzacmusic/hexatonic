@@ -24,7 +24,7 @@ const mod = (a: number, n: number) => ((a % n) + n) % n;
 
 /** Every scale the Improvise menu offers: all families except Custom, every mode. */
 const OFFERED: [string, number][] = FAMILIES.filter((f) => f.kind !== "custom").flatMap((f) =>
-  f.kind === "rotation" ? f.modes!.map((m) => [f.id, m.index] as [string, number]) : [[f.id, 0] as [string, number]]);
+  f.modes ? f.modes.map((m) => [f.id, m.index] as [string, number]) : [[f.id, 0] as [string, number]]);
 const LOOPS = VAMPS.filter((v) => v.id !== "blues");
 const feelOf = (id: BedId) => (vampById(id).feel === "swing" ? "swing" : "straight") as "swing" | "straight";
 const barsOf = (steps: VampStep[]) => steps.flatMap((s) => Array.from({ length: s.bars }, () => s.chord.chordTones));

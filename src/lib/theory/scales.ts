@@ -156,7 +156,128 @@ export const DIATONIC_MODES: ModeDef[] = [
   },
 ];
 
-export type FamilyKind = "rotation" | "omit" | "omitMulti" | "fixed" | "symmetric8" | "custom";
+/* ── the parents and every one of their modes ─────────────────────────────
+   A parent (seven notes, or the pentatonic: seven with two left out) played
+   from each of its own notes. Mode k starts on the k-th note the parent keeps.
+   Semitones, degrees and the 3rd/5th flags are computed from the rotation, so
+   no degree formula here is typed by hand (tests/parent-modes.test.ts). */
+
+interface ModeSpec { name: string; modal: string; character: string; colour: string; aka?: string[] }
+
+const rot = (xs: number[], k: number) => xs.map((_, i) => (xs[(i + k) % xs.length] - xs[k] + 12) % 12);
+
+/** The degrees of a mode ("1 2 b3 4 5 6 b7"), read by letter from its seven
+ *  notes: one letter per degree, so ♯4 and ♭5 never get confused. */
+function modeDegrees(semis7: number[], keep: number[]): string {
+  const out: string[] = [];
+  for (const i of keep) {
+    const d = semis7[i] - MAJOR[i];
+    out.push((d < 0 ? "b".repeat(-d) : "#".repeat(d)) + String(i + 1));
+  }
+  return out.join(" ");
+}
+
+/** The kept degrees (0-based) of a parent once `omit` (1-based) is taken out. */
+const keptOf = (omit: number[]) => [0, 1, 2, 3, 4, 5, 6].filter((i) => !omit.includes(i + 1));
+
+/** The seven-note rotation a mode is spelled from, and which of its degrees
+ *  (1-based) the mode leaves out. */
+export function modeSource(parent: number[], omit: number[], mode: number): { semis7: number[]; omit: number[] } {
+  const start = keptOf(omit)[mode] ?? 0;
+  return {
+    semis7: rot(parent, start),
+    omit: omit.map((o) => ((o - 1 - start + 7) % 7) + 1),
+  };
+}
+
+function parentModes(parent: number[], omit: number[], specs: ModeSpec[]): ModeDef[] {
+  return specs.map((sp, index) => {
+    const src = modeSource(parent, omit, index);
+    const keep = keptOf(src.omit);
+    const set = keep.map((i) => src.semis7[i]);
+    return {
+      index, name: sp.name, modal: sp.modal, character: sp.character, colour: sp.colour,
+      aka: sp.aka ?? [], degrees: modeDegrees(src.semis7, keep), missing: "", teaching: sp.colour,
+      hasThird: set.includes(3) || set.includes(4), hasFifth: set.includes(7),
+    };
+  });
+}
+
+/** The seven modes of the major scale, in order from its 1st note. */
+export const MAJOR_SCALE_MODES = parentModes(MAJOR, [], [
+  { name: "Major", modal: "Ionian", character: "bright",
+    colour: "The major 7th leans up into the tonic, and the 4th sits a half step above the 3rd." },
+  { name: "Dorian", modal: "Dorian", character: "soulful",
+    colour: "A minor scale with a major 6th: the 6th lifts it." },
+  { name: "Phrygian", modal: "Phrygian", character: "dark",
+    colour: "The ♭2, a half step above the tonic, is the whole sound." },
+  { name: "Lydian", modal: "Lydian", character: "dreamy",
+    colour: "The ♯4 floats above the major 3rd." },
+  { name: "Mixolydian", modal: "Mixolydian", character: "bluesy",
+    colour: "A major 3rd with a ♭7: the dominant sound." },
+  { name: "Natural minor", modal: "Aeolian", character: "sad",
+    colour: "The ♭6 makes it the plain, sad minor." },
+  { name: "Locrian", modal: "Locrian", character: "unstable",
+    colour: "The ♭5 makes its home chord diminished, so it never rests." },
+]);
+
+/** The seven modes of harmonic minor. */
+export const HARMONIC_MINOR_MODES = parentModes(HARMONIC_MINOR, [], [
+  { name: "Harmonic minor", modal: "Aeolian ♯7", character: "exotic",
+    colour: "The ♭6 and the major 7th, three half steps apart." },
+  { name: "Locrian ♮6", modal: "Locrian ♮6", character: "tense",
+    colour: "Locrian with a major 6th." },
+  { name: "Ionian ♯5", modal: "Augmented major", character: "strange",
+    colour: "A major scale with its 5th raised." },
+  { name: "Dorian ♯4", modal: "Ukrainian Dorian", character: "folk",
+    colour: "Dorian with a ♯4 next to the 5th." },
+  { name: "Phrygian dominant", modal: "Phrygian major", character: "fiery",
+    colour: "The ♭2 and the major 3rd: the flamenco and klezmer sound. The same notes as Hijaz.",
+    aka: ["Hijaz (on a piano)", "Freygish"] },
+  { name: "Lydian ♯2", modal: "Lydian ♯2", character: "glassy",
+    colour: "A ♯2 and a ♯4 around the major 3rd." },
+  { name: "Altered ♭♭7", modal: "Super-Locrian ♭♭7", character: "dissonant",
+    colour: "Every note but the tonic lowered; the ♭♭7 sounds like a 6th." },
+]);
+
+/** The seven modes of melodic minor, as jazz plays it (the same up and down). */
+export const MELODIC_MINOR_MODES = parentModes(MELODIC_MINOR, [], [
+  { name: "Melodic minor", modal: "Jazz minor", character: "smooth",
+    colour: "A minor 3rd, then a major 6th and major 7th." },
+  { name: "Dorian ♭2", modal: "Phrygian ♮6", character: "dark",
+    colour: "Dorian with a ♭2." },
+  { name: "Lydian augmented", modal: "Lydian ♯5", character: "floating",
+    colour: "Lydian with its 5th raised." },
+  { name: "Lydian dominant", modal: "Mixolydian ♯4", character: "bright",
+    colour: "A ♯4 and a ♭7: Lydian and Mixolydian at once." },
+  { name: "Mixolydian ♭6", modal: "Aeolian dominant", character: "bittersweet",
+    colour: "A major 3rd with a ♭6." },
+  { name: "Locrian ♮2", modal: "Half-diminished", character: "hollow",
+    colour: "Locrian with a natural 2nd: the sound over a m7♭5 chord." },
+  { name: "Altered", modal: "Super-Locrian", character: "tense",
+    colour: "Every tension a dominant chord can take: ♭9, ♯9, ♯11 and ♭13 (written ♭2 ♭3 ♭5 ♭6), with the ♭4 sounding as the 3rd." },
+]);
+
+/** The five modes of the major pentatonic. */
+export const PENTATONIC_MODES = parentModes(MAJOR, [4, 7], [
+  { name: "Major pentatonic", modal: "Major without 4 and 7", character: "open",
+    colour: "No half steps at all, so nothing clashes." },
+  { name: "Suspended pentatonic", modal: "Egyptian", character: "open",
+    colour: "No 3rd: neither major nor minor." },
+  { name: "Man gong", modal: "Blues minor", character: "dark",
+    colour: "A minor 3rd and a ♭6, with no 2nd and no 5th." },
+  { name: "Ritsusen", modal: "Blues major", character: "folk",
+    colour: "No 3rd, with a major 6th. The same notes as the Yo scale.", aka: ["Yo"] },
+  { name: "Minor pentatonic", modal: "Minor pentatonic", character: "bluesy",
+    colour: "A minor 3rd and a ♭7: the rock and blues scale." },
+]);
+
+/** How many modes a family offers (1 when it has none). */
+export const modeCount = (f: { modes?: unknown[] }) => f.modes?.length ?? 1;
+/** True for every family whose modes a player can choose between. */
+export const hasModes = (f: { modes?: unknown[] }) => modeCount(f) > 1;
+
+export type FamilyKind = "rotation" | "omit" | "omitMulti" | "fixed" | "symmetric8" | "custom" | "parentModes";
 
 /**
  * How a family reaches its notes. Practice and Sounds group by this.
@@ -167,11 +288,13 @@ export type FamilyKind = "rotation" | "omit" | "omitMulti" | "fixed" | "symmetri
  *                 mode 5 and one with no common name)
  *   custom      — whatever the player builds
  *   beyond      — reference only: not a six-note scale, or a one-composer sound
- *   compare     — the five- and seven-note parents, for comparison
- *   reference   — data other screens need (Harmony's triad pairs, octatonics)
+ *   seven       — the seven-note scales and all their modes: the major
+ *                 scale, harmonic minor and melodic minor
+ *   compare     — the major pentatonic and its five modes
+ *   reference   — the two eight-note octatonics
  */
 export type FamilyGroup =
-  | "remove" | "pentatonic" | "symmetric" | "colour" | "custom" | "beyond" | "compare" | "reference";
+  | "remove" | "pentatonic" | "symmetric" | "colour" | "custom" | "beyond" | "compare" | "reference" | "seven";
 
 /** The groups that are six-note scales: always first in every menu. */
 export const SIX_NOTE_GROUPS: FamilyGroup[] = ["remove", "pentatonic", "symmetric", "colour"];
@@ -200,8 +323,10 @@ export const FAMILY_GROUPS: { id: FamilyGroup; label: string; blurb: string }[] 
   { id: "custom", label: "Custom", blurb: "Pick any notes you like." },
   { id: "beyond", label: "World scales (5 and 7 notes)",
     blurb: "Japanese pentatonics and Hijaz: not six notes, but close relatives worth playing." },
-  { id: "compare", label: "Compare with", blurb: "The five- and seven-note parents." },
-  { id: "reference", label: "Reference", blurb: "Used by the Harmony pages." },
+  { id: "seven", label: "Seven notes and their modes",
+    blurb: "The parents: the major scale, harmonic minor and melodic minor, each from all seven of its notes." },
+  { id: "compare", label: "Pentatonic and its modes (5 notes)", blurb: "The five-note parent, from each of its five notes." },
+  { id: "reference", label: "Octatonic (8 notes)", blurb: "Two eight-note scales that repeat every minor third." },
 ];
 
 export interface Family {
@@ -341,17 +466,31 @@ export const FAMILIES: Family[] = [
   },
   {
     id: "penta", short: "Major pentatonic (5)",
-    label: "Major pentatonic (5 notes) · audava", kind: "omitMulti", size: 5,
+    label: "Major pentatonic (5 notes) · audava, and its five modes", kind: "parentModes", size: 5,
     group: "compare", character: "open",
-    parent: MAJOR, omit: [4, 7],
-    note: "Remove two notes instead of one: the 4th and the 7th.",
+    parent: MAJOR, omit: [4, 7], modes: PENTATONIC_MODES,
+    note: "Remove two notes instead of one: the 4th and the 7th. Start it on each of its five notes for its five modes.",
   },
   {
     id: "hepta", short: "Major scale (7)",
-    label: "Major scale (7 notes) · sampurna", kind: "omitMulti", size: 7,
-    group: "compare", character: "complete",
-    parent: MAJOR, omit: [],
+    label: "Major scale (7 notes) · sampurna, and its seven modes", kind: "parentModes", size: 7,
+    group: "seven", character: "complete",
+    parent: MAJOR, omit: [], modes: MAJOR_SCALE_MODES,
     note: "The parent. One tritone (4 and 7), and removing either of those two notes is what kills it.",
+  },
+  {
+    id: "harm-minor", short: "Harmonic minor (7)",
+    label: "Harmonic minor (7 notes), and its seven modes", kind: "parentModes", size: 7,
+    group: "seven", character: "exotic", mixOk: true,
+    parent: HARMONIC_MINOR, omit: [], modes: HARMONIC_MINOR_MODES,
+    note: "Natural minor with its 7th raised, so the V chord is major. The gap from ♭6 up to 7 is three half steps.",
+  },
+  {
+    id: "mel-minor", short: "Melodic minor (7)",
+    label: "Melodic minor (7 notes), and its seven modes", kind: "parentModes", size: 7,
+    group: "seven", character: "smooth", mixOk: true,
+    parent: MELODIC_MINOR, omit: [], modes: MELODIC_MINOR_MODES,
+    note: "A major scale with a minor 3rd. Jazz plays it the same up and down, and its modes cover most altered dominant sounds.",
   },
 
   /* ── Beyond six notes: reference scales from other traditions ────────────
@@ -573,6 +712,26 @@ export function buildScale(
     if (!full) return fail(`${tonicName} cannot be spelled here.`);
     const om = family.omit as number[];
     notes = full.filter((_, i) => !om.includes(i + 1));
+    keySignature = inferMajorKey(full);
+  } else if (family.kind === "parentModes") {
+    /* One letter per degree of the seven-note rotation, then the left-out
+       degrees taken away. Where the tonic's own spelling needs more double
+       accidentals than its enharmonic (D♭ Locrian, A♭ harmonic minor), the
+       enharmonic tonic spells it: C♯ Locrian, G♯ harmonic minor. The altered
+       ♭♭7 keeps its one double flat: that degree IS a diminished 7th. */
+    const md = family.modes![modeIndex] ?? family.modes![0];
+    const src = modeSource(family.parent!, family.omit as number[], md.index);
+    const cost = (ns: Note[]) => ns.reduce((a, n) => a + (Math.abs(n.alt) === 2 ? 100 : Math.abs(n.alt)), 0);
+    let full = buildDiatonic(tonicName, src.semis7);
+    const alt = enharmonicTonic(tonicName);
+    const other = alt ? buildDiatonic(alt, src.semis7) : null;
+    if (other && (!full || cost(other) + 1 < cost(full) && hasDouble(full))) { full = other; tonic = alt!; respelledFrom = tonicName; }
+    if (!full) return fail(`${tonicName} cannot be spelled in this mode. Try another key.`);
+    notes = full.filter((_, i) => !src.omit.includes(i + 1));
+    degrees = md.degrees.split(" ");
+    label = md.name;
+    aka = [md.modal, ...md.aka].filter((x) => x !== md.name);
+    teaching = md.colour;
     keySignature = inferMajorKey(full);
   } else if (family.kind === "custom") {
     /* Whatever the user built. Everything downstream — harmony, interval cycles,

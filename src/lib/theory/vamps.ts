@@ -261,6 +261,82 @@ export const PROGRESSIONS: Record<string, Plan> = {
     sus: [[0, "fifths"], [5, "fifths"]],
     swing: [[0, "maj7"], [9, "m7"], [2, "m7"], [7, "7"]],
   },
+  /* The modes of the major scale: each one's own vamp, home chord first. */
+  "hepta:1": {   // Dorian: i7 to IV7, the major IV is the Dorian 6th
+    two: [[0, "m7"], [5, "7"]],
+    four: [[0, "m7"], [5, "7"], [3, "maj7"], [10, "maj"]],
+    swing: [[0, "m7"], [5, "7"]],
+  },
+  "hepta:2": {   // Phrygian: i to ♭II
+    two: [[0, "min"], [1, "maj"]],
+    four: [[0, "min"], [1, "maj"], [10, "min"], [1, "maj"]],
+    why: { swing: "Its sound is the ♭II over the home chord, not a swing groove." },
+  },
+  "hepta:3": {   // Lydian: I to II, the major II holds the ♯4
+    two: [[0, "maj7"], [2, "maj"]],
+    four: [[0, "maj7"], [2, "maj"], [11, "m7"], [7, "maj7"]],
+    swing: [[0, "maj7"], [2, "7"]],
+  },
+  "hepta:4": {   // Mixolydian: I to ♭VII
+    two: [[0, "maj"], [10, "maj"]],
+    four: [[0, "7"], [10, "maj"], [5, "maj"], [7, "min"]],
+    swing: [[0, "7"], [7, "m7"]],
+  },
+  "hepta:5": {   // Natural minor: i to ♭VI
+    two: [[0, "m7"], [8, "maj7"]],
+    four: [[0, "min"], [8, "maj"], [3, "maj"], [10, "maj"]],
+    swing: [[0, "m7"], [5, "m7"]],
+  },
+  "hepta:6": {   // Locrian: the half-diminished home chord to ♭II
+    two: [[0, "m7b5"], [1, "maj7"]],
+    why: { four: TWO_ONLY, swing: "Its home chord is half-diminished, so it never settles into a groove." },
+  },
+  /* Harmonic minor: i to a major V7, the raised 7th doing the work. */
+  "harm-minor": {
+    two: [[0, "min"], [7, "7"]],
+    four: [[0, "min"], [8, "maj"], [5, "min"], [7, "7"]],
+    why: { swing: "Its home chord is minor with a major 7th: it wants a slow tempo, not a swing groove." },
+  },
+  "harm-minor:1": {},
+  "harm-minor:2": {},
+  "harm-minor:3": {   // Dorian ♯4: i7 to II7
+    two: [[0, "m7"], [2, "7"]],
+  },
+  "harm-minor:4": {   // Phrygian dominant: I to ♭II, as Hijaz
+    two: [[0, "maj"], [1, "maj"]],
+    four: [[0, "maj"], [5, "min"], [10, "min"], [1, "maj"]],
+    why: { swing: "Its sound is the I–♭II move, not a swing groove." },
+  },
+  "harm-minor:5": {},
+  "harm-minor:6": {},
+  /* Melodic minor: the minor 6th chord to V7. */
+  "mel-minor": {
+    two: [[0, "m6"], [7, "7"]],
+    swing: [[0, "m6"], [7, "7"]],
+  },
+  "mel-minor:1": {},
+  "mel-minor:2": {},
+  "mel-minor:3": {   // Lydian dominant: I9♯11 to II7, as Prometheus
+    two: [[0, "9#11"], [2, "7"]],
+    swing: [[0, "9#11"], [2, "7"]],
+  },
+  "mel-minor:4": {   // Mixolydian ♭6: I to iv
+    two: [[0, "maj"], [5, "min"]],
+  },
+  "mel-minor:5": {},
+  "mel-minor:6": {},
+  /* The pentatonic's other modes. */
+  "penta:1": {},
+  "penta:2": {},
+  "penta:3": {   // Ritsusen: the same notes as Yo
+    two: [[0, "sus2"], [5, "maj"]],
+    sus: [[0, "fifths"], [5, "fifths"]],
+  },
+  "penta:4": {   // Minor pentatonic
+    two: [[0, "m7"], [5, "7sus4"]],
+    sus: [[0, "7sus4"], [5, "7sus4"]],
+    swing: [[0, "m7"], [5, "7sus4"]],
+  },
   hirajoshi: {
     two: [[0, "min"], [8, "maj7"]],
     sus: [[0, "fifths"]],
@@ -298,7 +374,10 @@ export const PROGRESSIONS: Record<string, Plan> = {
 
 /** The progression table's key for a scale: diatonic modes by rotation. */
 export const scaleKey = (scale: ScaleInstance) =>
-  scale.family.kind === "rotation" ? `${scale.family.id}:${scale.modeIndex}` : scale.family.id;
+  scale.family.kind === "rotation" ? `${scale.family.id}:${scale.modeIndex}`
+    /* the parents' other modes each get a table of their own; mode 0 keeps the family's */
+    : scale.family.modes && scale.modeIndex > 0 ? `${scale.family.id}:${scale.modeIndex}`
+    : scale.family.id;
 
 /* ── building a chord ─────────────────────────────────────────────────── */
 
