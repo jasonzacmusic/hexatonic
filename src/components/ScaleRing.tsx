@@ -70,6 +70,11 @@ export interface ScaleRingProps {
   marks?: { a: number[]; b: number[] } | null;
   /** Splash a played note that is outside the scale. */
   splash?: boolean;
+  /** The pitch class drawn at 12 o'clock. Default: the tonic. Holding it
+   *  still while the tonic moves turns the shape round the clock: B
+   *  augmented drawn over G's clock is G's shape turned a major third, and
+   *  lands on the same notes. */
+  anchorPc?: number | null;
 }
 
 /** Everything is drawn in a 200-unit box and scaled. */
@@ -99,7 +104,7 @@ export function ringPositions(notes: Note[]): number[] {
 export function ScaleRing({
   notes, removed, activePc = null, size = "md",
   showLabels, spin = false, morph = true, className = "", children,
-  layout = "chromatic", augStar = false, marks = null, splash = false,
+  layout = "chromatic", augStar = false, marks = null, splash = false, anchorPc = null,
 }: ScaleRingProps) {
   const uid = useId().replace(/:/g, "");
   const px = typeof size === "number" ? size : RING_SIZES[size];
@@ -112,9 +117,9 @@ export function ScaleRing({
   const unit = V / Math.max(px, 1); // viewBox units per CSS pixel
   const dotR = Math.max(V * 0.03, 3.2 * unit);
 
-  const rootPc = notes.length ? pc(notes[0]) : 0;
+  const rootPc = anchorPc ?? (notes.length ? pc(notes[0]) : 0);
   const slotOf = (rel: number) => (layout === "fifths" ? fifthsSlot(rel) : rel);
-  const target = ringPositions(notes).map(slotOf);
+  const target = notes.map((n) => relOf(pc(n), rootPc)).map(slotOf);
   const targetKey = target.join(",");
 
   /* ── the morph ────────────────────────────────────────────────────── */

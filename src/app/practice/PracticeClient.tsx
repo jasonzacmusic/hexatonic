@@ -24,6 +24,8 @@ import SplashToggle from "@/components/SplashToggle";
 import Fretboard from "@/components/Fretboard";
 import RhythmCellPanel from "@/components/RhythmCellPanel";
 import { useStage } from "@/lib/stage";
+import { LearnOnePanel } from "@/components/PriceOfOne";
+import { isPriceFamily } from "@/lib/theory/priceOfOne";
 import KeyChips, { prettyKey, stepKey } from "./KeyChips";
 import { ROUTINES, SPEEDS, stepState } from "./routines";
 import {
@@ -318,6 +320,12 @@ export default function PracticeClient() {
         </div>
         {lower(false)}
       </section>
+
+      {/* a symmetrical scale: learn one, get the others with the same notes */}
+      {isPriceFamily(state.family) && (
+        <LearnOnePanel familyId={state.family} keyName={state.key}
+                       onKey={(k) => setState((s) => ({ ...s, key: k }))} />
+      )}
 
       <RhythmCellPanel scale={scale.notes} keySignature={scale.keySignature}
                        label={`${prettyKey(state.key)} ${scale.label}`} bpm={state.bpm} />
