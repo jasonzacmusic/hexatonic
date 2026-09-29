@@ -15,6 +15,7 @@ import { METERS, saptaTalaMeters } from "@/lib/theory/meters";
 import { midi, notePretty, pc } from "@/lib/theory/note";
 import { findChords, tertianOnly } from "@/lib/theory/chords";
 import { ownSpellingFirst } from "@/app/harmony/scaleOptions";
+import { prettyChord as prettySame, sameNotes } from "@/lib/theory/sameNotes";
 import { FUNCTION_LABEL, HarmonicFunction, harmonicFunction, romanNumeral, triadQuality } from "@/lib/theory/functions";
 import { previewAudio } from "@/lib/audio/engine";
 import CustomBuilder from "@/components/CustomBuilder";
@@ -508,8 +509,13 @@ function ChordStrip({ scale, activePc, big = false }: {
                                 fits ? "border-cream bg-cream text-bg" : "border-line bg-surface2 text-cream hover:border-[#4A4240]"}`}>
                         <span className={`flex items-baseline gap-1.5 font-bold ${big ? "text-[20px]" : "text-[16px]"}`}>
                           {roman && <span className={`font-serif font-normal italic ${fits ? "text-bg/70" : "text-cream/70"}`}>{roman}</span>}
-                          {/* a symmetric chord shows only its lead name (G+, spelled G B D♯), never its aliases */}
-                          {(name.symbol.endsWith("aug") ? [name] : c.names).map((x) => prettyChord(x.symbol)).join(" = ")}
+                          {prettyChord(name.symbol)}
+                          {/* the same notes under another name, as that chord over this bass: C6 = Am7/C, G+ = B+/G = D♯+/G */}
+                          {c.names.length > 1 && (
+                            <span className={`font-mono text-[13px] font-medium ${fits ? "text-bg/75" : "text-cream/70"}`}>
+                              = {sameNotes(c, scale.notes).others.map(prettySame).join(" = ")}
+                            </span>
+                          )}
                         </span>
                         <span className={`block font-mono text-[13px] ${fits ? "text-bg/75" : "text-muted"}`}>
                           {name.notes.map((n) => n.replace("#", "♯").replace(/b$/, "♭")).join(" ")}

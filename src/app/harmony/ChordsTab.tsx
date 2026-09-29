@@ -26,6 +26,7 @@ import { playableStack } from "@/lib/audio/voicing";
 import { cap, chordRole, count, list, optionById, optionToShared, ownSpellingFirst, PROSE, ScalePicker, sharedToOption, stackLine } from "./scaleOptions";
 import { useSharedScale } from "@/lib/sharedScale";
 import { symmetricTriadLine } from "@/lib/theory/symmetric";
+import { prettyChord as prettySame, sameNotes } from "@/lib/theory/sameNotes";
 import {
   FUNCTION_LABEL, FUNCTION_LINE, HarmonicFunction, harmonicFunction, romanNumeral, triadQuality,
 } from "@/lib/theory/functions";
@@ -208,7 +209,7 @@ export default function ChordsTab() {
                     const first = chord.names[0];
                     const name = chordName(first.symbol);
                     return (
-                      <TriadCard key={name} name={name} roman={roman} color={c} chord={chord}
+                      <TriadCard key={name} name={name} roman={roman} color={c} chord={chord} scale={notes}
                                  inv={invOf[name] ?? 0} lit={lit}
                                  onPick={(k) => {
                                    setInvOf((v) => ({ ...v, [name]: k }));
@@ -231,13 +232,13 @@ export default function ChordsTab() {
       </section>
 
       {/* ── chord trees: every chord that fits under a melody note ───── */}
-      <ChordTrees under={under} sound={sound} lit={lit} fnOf={fnOf} bySymbol={bySymbol} />
+      <ChordTrees under={under} sound={sound} lit={lit} fnOf={fnOf} bySymbol={bySymbol} scale={notes} />
 
       {/* ── one set of notes, two names ──────────────────────────────── */}
       <section className="card">
         <Head title="Same notes, two names" n={twoNamed.length}
               line={twoNamed.length
-                ? `${cap(count(twoNamed.length))} four-note ${twoNamed.length === 1 ? "chord has" : "chords have"} two correct names. The notes are identical; the bass note decides which name you hear.`
+                ? `${cap(count(twoNamed.length))} four-note ${twoNamed.length === 1 ? "chord has" : "chords have"} more than one correct name. Each is one chord in different inversions: the notes are identical, and the bass note decides which name you hear.`
                 : "No four-note chord in this scale has a second name."} />
         {twoNamed.length > 0 && (
           <div className="mt-4 grid gap-3 md:grid-cols-2">
@@ -252,7 +253,10 @@ export default function ChordsTab() {
                     </span>
                   ))}
                 </div>
-                <p className="mt-1.5 font-mono text-[13px] text-cream/70">{c.noteNames.map(pn).join(" · ")}</p>
+                <p className="mt-1.5 text-[15px] font-semibold text-cream/85">
+                  {[chordName(c.names[0].symbol), ...sameNotes(c, notes).others.map(prettySame)].join(" = ")}
+                </p>
+                <p className="mt-1 font-mono text-[13px] text-cream/70">{c.noteNames.map(pn).join(" · ")}</p>
                 <MiniKeys className="mt-2.5" voicing={c.names[0].voicing.map(midi)} lit={lit} />
                 <p className="mt-2 text-[15px] leading-snug text-cream/80">
                   {c.names.map((n) => `${chordName(n.symbol)} if ${pn(n.root)} is in the bass`).join("; ")}.
@@ -461,11 +465,13 @@ function Pills({ label, items, value, onPick }: {
 
 /* ── a triad, with its inversions ────────────────────────────────────── */
 
-function TriadCard({ name, roman, color, chord, inv, lit, onPick }: {
-  name: string; roman: string; color: string; chord: ChordSet; inv: number; lit: number[] | null;
+function TriadCard({ name, roman, color, chord, scale, inv, lit, onPick }: {
+  name: string; roman: string; color: string; chord: ChordSet; scale: Note[]; inv: number; lit: number[] | null;
   onPick: (k: number) => void;
 }) {
   const n = chord.names[0];
+  /* an augmented triad is one chord from three roots: its other names are its inversions */
+  const also = sameNotes(chord, scale).others;
   return (
     <div className="well min-w-0 !p-2.5">
       <div className="flex flex-wrap items-start justify-between gap-2">
@@ -477,6 +483,11 @@ function TriadCard({ name, roman, color, chord, inv, lit, onPick }: {
           <span className="mt-1.5 block font-mono text-[13px] leading-none text-cream/70">
             {[...n.notes.slice(inv), ...n.notes.slice(0, inv)].map(pn).join(" · ")}
           </span>
+          {also.length > 0 && (
+            <span className="mt-1 block font-mono text-[13px] leading-snug text-muted">
+              = {also.map(prettySame).join(" = ")}
+            </span>
+          )}
         </button>
         <Pills label={`${name} inversion`} items={["Root", "1st", "2nd"]} value={inv} onPick={onPick} />
       </div>
@@ -541,10 +552,15 @@ const ROLE_WORD: Record<string, string> = { root: "root", "3rd": "3rd", "5th": "
 /** "F#m7 = A6" → "F#": the root of the first name. */
 const rootOf = (symbol: string) => /^[A-G](?:##|#|bb|b)?/.exec(symbol)?.[0] ?? symbol[0];
 
-function ChordTrees({ under, sound, lit, fnOf, bySymbol }: {
+function ChordTrees({ under, sound, lit, fnOf, bySymbol, scale }: {
   under: Under[]; sound: Sound; lit: number[] | null; fnOf: (root: string) => HarmonicFunction;
-  bySymbol: Map<string, ChordSet>;
+  bySymbol: Map<string, ChordSet>; scale: Note[];
 }) {
+  /* One chord, its other names as inversions over its bass: G+ = B+/G = D♯+/G, never a C♭+ */
+  const oneChord = (sym: string) => {
+    const c = bySymbol.get(sym);
+    return c ? [chordName(c.names[0].symbol), ...sameNotes(c, scale).others.map(prettySame)].join(" = ") : chordName(sym);
+  };
   /* The names on a branch, led by the scale's own spelling, and the job the
      melody note does in the chord under that first name. */
   const rename = (sym: string) => bySymbol.get(sym)?.names.map((x) => x.symbol).join(" = ") ?? sym;
@@ -644,7 +660,7 @@ function ChordTrees({ under, sound, lit, fnOf, bySymbol }: {
                       className={`flex w-full items-baseline justify-between gap-4 rounded-lg border border-l-[3px] px-3.5 py-2 text-left transition-colors ${
                         on ? "border-gold/70 bg-gold/[0.10]" : picked ? "border-cream/50 bg-surface2" : "border-line bg-surface2 hover:border-[#4A4240]"}`}>
                 <span className="text-[16px] font-semibold text-cream">
-                  {rename(u.symbol).split(" = ").map(chordName).join(" = ")}
+                  {oneChord(u.symbol)}
                 </span>
                 <span className="shrink-0 text-[14px] text-cream/75">
                   {melody} is the <span className="font-semibold text-cream">{role(u)}</span>
