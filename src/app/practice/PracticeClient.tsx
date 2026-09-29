@@ -6,7 +6,9 @@ import Keyboard from "@/components/Keyboard";
 import ScaleRing from "@/components/ScaleRing";
 import { ResolutionBanner, ScaleChips, Seg, Toggle, groupingLabel } from "@/components/Panels";
 import { useDrill, DrillState } from "@/lib/useDrill";
-import { FAMILIES, DIATONIC_MODES, KEYS, buildScale } from "@/lib/theory/scales";
+import { FAMILIES, KEYS, buildScale, hasModes, modeCount } from "@/lib/theory/scales";
+import ScaleModePicker, { ModeStrip, useModeArrows } from "@/components/ScaleModePicker";
+import PractiseCard from "@/components/PractiseCard";
 import {
   PATTERNS, PATTERN_FAMILIES, patternFamilyOf, describeSkip, PatternId,
 } from "@/lib/theory/patterns";
@@ -26,7 +28,7 @@ import { useStage } from "@/lib/stage";
 import KeyChips, { prettyKey, stepKey } from "./KeyChips";
 import { ROUTINES, SPEEDS, stepState } from "./routines";
 import {
-  groupFamilies, isSixNoteSound, prettyDegree, ragasForScale, topNoteCost, tripletHint,
+  isSixNoteSound, prettyDegree, ragasForScale, topNoteCost, tripletHint,
 } from "./scaleFacts";
 
 const GROUPINGS = [3, 4, 5, 6, 7, 9];
@@ -139,7 +141,7 @@ export default function PracticeClient() {
     for (let tries = 0; tries < 20; tries++) {
       const key = pick(KEYS);
       const fam = pick(pool);
-      const mode = fam.kind === "rotation" ? Math.floor(Math.random() * 6) : 0;
+      const mode = Math.floor(Math.random() * modeCount(fam));
       if (buildScale(key, fam.id, mode).error) continue;
       const pattern = pick(PATTERNS).id;
       setState((s) => ({
@@ -318,6 +320,9 @@ export default function PracticeClient() {
         {lower(false)}
       </section>
 
+      {/* how to practise this mode: colour, pair, drone, the note to leave out */}
+      <PractiseCard keyName={state.key} family={state.family} mode={state.mode} className="stage-hide" />
+
       <RhythmCellPanel scale={scale.notes} keySignature={scale.keySignature}
                        label={`${prettyKey(state.key)} ${scale.label}`} bpm={state.bpm} />
 
@@ -348,11 +353,8 @@ function QuickBar({ d, narrow, big = false, onSurprise }: {
   d: Drill; narrow: boolean; big?: boolean; onSurprise?: () => void;
 }) {
   const { state, set, setState, scale } = d;
-  const groups = useMemo(() => groupFamilies(FAMILIES), []);
-  /* An old link can open on a family the menu no longer lists; show it
-     anyway, so the menu never claims a different scale from the one playing. */
-  const listed = groups.some((g) => g.families.some((f) => f.id === state.family));
-  const isRotation = scale.family.kind === "rotation";
+  /* ← and → step the modes (the strip below); [ and ] step the key. */
+  useModeArrows(state.family, state.mode, (m) => set("mode", m));
   const fam = patternFamilyOf(state.pattern);
   const pickFamily = (id: string) => {
     const f = PATTERN_FAMILIES.find((x) => x.id === id)!;
@@ -370,36 +372,10 @@ function QuickBar({ d, narrow, big = false, onSurprise }: {
                 title="[ and ] step round the circle of fifths">Key</span>
           <KeyChips value={state.key} onChange={(k) => set("key", k)} size={big && !narrow ? "sm" : "md"} />
         </div>
-        <div className="grid w-full grid-cols-1 gap-2 sm:flex sm:w-auto sm:gap-3">
-          <InsideLabel id={big ? "fam-big" : "fam"} label="Scale">
-            <select id={big ? "fam-big" : "fam"} className="sel sm:w-[240px] lg:w-[210px] xl:w-[240px]" style={{ paddingLeft: 70 }}
-                    value={state.family}
-                    onChange={(e) => setState((s) => ({ ...s, family: e.target.value, mode: 0 }))}>
-              {groups.map((g) => (
-                <optgroup key={g.group} label={g.group}>
-                  {g.families.map((f) => <option key={f.id} value={f.id}>{f.short}</option>)}
-                </optgroup>
-              ))}
-              {!listed && (
-                <optgroup label="Other">
-                  <option value={state.family}>{scale.family.short}</option>
-                </optgroup>
-              )}
-            </select>
-          </InsideLabel>
-          {isRotation && (
-            /* the degrees are already under the note chips, so the mode menu
-               only needs the name */
-            <InsideLabel id={big ? "mode-big" : "mode"} label="Mode">
-              <select id={big ? "mode-big" : "mode"} className="sel sm:w-[250px] lg:w-[240px] xl:w-[250px]" style={{ paddingLeft: 64 }}
-                      value={state.mode}
-                      onChange={(e) => set("mode", Number(e.target.value))}>
-                {DIATONIC_MODES.map((m) => (
-                  <option key={m.index} value={m.index}>{m.name}</option>))}
-              </select>
-            </InsideLabel>
-          )}
-        </div>
+        <ScaleModePicker idPrefix={big ? "fam-big" : "fam"} page="practice" hideStrip
+                         family={state.family} mode={state.mode}
+                         onChange={(f, m) => setState((s) => ({ ...s, family: f, mode: m }))}
+                         className="w-full sm:w-auto" />
         {/* an iPad in portrait: Surprise me sits here, beside the menus */}
         {onSurprise && (
           <button className="btn btn-ghost hidden sm:inline-flex lg:hidden" onClick={onSurprise}
@@ -408,6 +384,13 @@ function QuickBar({ d, narrow, big = false, onSurprise }: {
           </button>
         )}
       </div>
+      {hasModes(scale.family) && (
+        <div className={row}>
+          <span className={lbl}>Mode</span>
+          <ModeStrip idPrefix={big ? "mode-big" : "mode"} family={state.family} mode={state.mode}
+                     arrowKeys onPick={(m) => set("mode", m)} />
+        </div>
+      )}
       <div className={row}>
         <span className={lbl}>Pattern</span>
         <div className="flex flex-wrap items-center gap-1.5" >
@@ -445,18 +428,6 @@ function QuickBar({ d, narrow, big = false, onSurprise }: {
   );
 }
 
-/** A select with its label drawn inside the box, on the left: one row high. */
-function InsideLabel({ id, label, children }: { id: string; label: string; children: React.ReactNode }) {
-  return (
-    <div className="relative min-w-0">
-      <label htmlFor={id}
-             className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 font-mono text-[13px] uppercase tracking-[0.08em] text-muted">
-        {label}
-      </label>
-      {children}
-    </div>
-  );
-}
 
 /* ── chords in the scale, live: the ones that hold the sounding note light ─ */
 
@@ -720,7 +691,7 @@ function Settings({ d, copied, copyLink }: { d: Drill; copied: boolean; copyLink
         </button>
         <button className="btn btn-ghost" onClick={() => window.print()}>Print</button>
         <span className="ml-auto hidden font-mono text-[13px] text-muted lg:inline">
-          Space play · [ ] key · L loop · C click · D drone · B big view
+          Space play · [ ] key · ← → mode · L loop · C click · D drone · B big view
         </span>
       </div>
       <p className="mt-2 text-[15px] text-cream/75 empty:hidden" role="status" aria-live="polite">
@@ -738,7 +709,7 @@ function MoreAbout({ d }: { d: Drill }) {
   const { scale, state } = d;
   const ragas = useMemo(() => ragasForScale(state.key, scale.notes), [state.key, scale.notes]);
   if (scale.error) return null;
-  const familyNote = scale.family.kind === "rotation" ? scale.family.note : null;
+  const familyNote = scale.family.modes ? scale.family.note : null;
   return (
     <details className="card group !py-3">
       <summary className="flex cursor-pointer list-none items-center gap-3 text-[15px] font-semibold text-cream">

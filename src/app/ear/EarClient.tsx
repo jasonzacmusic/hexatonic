@@ -18,8 +18,15 @@ import {
   DEFAULT_OPTIONS, GAMES, GameId, LEVELS, Options, Question, Reveal, gameById, makeQuestion,
 } from "@/lib/ear/games";
 import {
-  AllProgress, Attempt, SESSION_LENGTH, freshAll, loadProgress, recordAnswer, summarise,
+  AllProgress, Attempt, SESSION_LENGTH, freshAll, loadProgress, openLevel, recordAnswer, summarise,
 } from "@/lib/ear/progress";
+import ScaleModePicker from "@/components/ScaleModePicker";
+import PractiseCard from "@/components/PractiseCard";
+import { isLibraryScale, useSharedScale } from "@/lib/sharedScale";
+import { buildScale, familyById, KEYS } from "@/lib/theory/scales";
+import { midi, notePretty } from "@/lib/theory/note";
+import { PlayGlyph, litIndex, upToOctave, usePreviewRun } from "@/components/ScalePreview";
+import { PAGE_EXCLUDE } from "@/lib/scaleMenu";
 import { EAR_KEYS } from "@/lib/ear/sounds";
 import { useEarPlayer } from "@/lib/ear/useEarPlayer";
 import GamePicker from "@/components/ear/GamePicker";
@@ -84,13 +91,22 @@ export default function EarClient() {
 
   /* deep link (?game=mode) and remembered progress: conveniences only */
   useEffect(() => {
+    let linked: { game: GameId; level: number } | null = null;
     try {
-      const g = new URLSearchParams(window.location.search).get("game");
-      if (g && GAMES.some((x) => x.id === g)) setGame(g as GameId);
+      const q = new URLSearchParams(window.location.search);
+      const g = q.get("game");
+      if (g && GAMES.some((x) => x.id === g)) {
+        setGame(g as GameId);
+        /* ?level=4 opens that level: the practise cards link straight to it */
+        const lv = Number(q.get("level"));
+        if (lv) linked = { game: g as GameId, level: lv };
+      }
     } catch {}
+    let saved = freshAll();
     try {
-      setProgress(loadProgress(window.localStorage.getItem(STORE), window.localStorage.getItem(LEGACY)));
+      saved = loadProgress(window.localStorage.getItem(STORE), window.localStorage.getItem(LEGACY));
     } catch {}
+    setProgress(linked ? openLevel(saved, linked.game, linked.level) : saved);
     loaded.current = true;
   }, []);
   useEffect(() => {
@@ -400,6 +416,62 @@ export default function EarClient() {
           )}
         </div>
       </section>
+
+      <ListenFirst />
     </div>
+  );
+}
+
+/* ── hear any scale first ─────────────────────────────────────────────────
+   Every scale and mode in the app, one tap to hear it, with how to practise
+   it and the Ear level that asks about it. The key and scale follow the
+   player from the other pages. */
+function ListenFirst() {
+  const [key, setKey] = useState("G");
+  const [pick, setPick] = useState({ family: "diatonic", mode: 3 });
+  useSharedScale({ key, family: pick.family, mode: pick.mode }, (s) => {
+    setKey(s.key);
+    if (isLibraryScale(s.family, s.mode) && !PAGE_EXCLUDE.ear(familyById(s.family))) setPick({ family: s.family, mode: s.mode });
+  });
+  const run = usePreviewRun();
+  const scale = buildScale(key, pick.family, pick.mode);
+  const id = `listen:${key}:${pick.family}:${pick.mode}`;
+  const on = run.lit?.id === id || run.pending === id;
+  const idx = litIndex(run.lit, id, scale.notes.length);
+  const play = () => (on ? run.stop() : void run.play(id, upToOctave(scale.notes.map(midi)), 0.26));
+  return (
+    <section className="card space-y-3" aria-labelledby="listen-h">
+      <div>
+        <h2 id="listen-h" className="display text-[26px] sm:text-[30px]">Hear any scale first</h2>
+        <p className="mt-1 text-[15px] text-cream/75">
+          Every scale and every mode in the app. Tap a mode, hear it, then play the game that asks about it.
+        </p>
+      </div>
+      <div className="flex flex-wrap items-start gap-3">
+        <div className="field w-[84px] shrink-0">
+          <label htmlFor="ls-key">Key</label>
+          <select id="ls-key" className="sel" value={key} onChange={(e) => setKey(e.target.value)}>
+            {KEYS.map((k) => <option key={k} value={k}>{pretty(k)}</option>)}
+          </select>
+        </div>
+        <ScaleModePicker idPrefix="ls" page="ear" className="min-w-0 flex-1 basis-[240px]" arrowKeys
+                         family={pick.family} mode={pick.mode}
+                         onChange={(family, mode) => setPick({ family, mode })} />
+      </div>
+      <div className="flex flex-wrap items-center gap-3">
+        <button type="button" onClick={play} aria-pressed={on} aria-label={`${on ? "Stop" : "Play"} ${scale.label}`}
+                className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border transition-colors ${
+                  on ? "border-gold bg-gold text-[#17130a]" : "border-line-control/70 bg-surface2 text-cream hover:border-cream/60"}`}>
+          <PlayGlyph playing={on} size={13} />
+        </button>
+        <span className="flex flex-wrap gap-1">
+          {scale.notes.map((n, i) => (
+            <span key={i} className={`note-dot text-[15px] ${idx === i ? "is-lit" : ""}`}>{notePretty(n)}</span>
+          ))}
+        </span>
+        {scale.removed && <span className="font-mono text-[14px] text-red">no {notePretty(scale.removed)}</span>}
+      </div>
+      <PractiseCard keyName={key} family={pick.family} mode={pick.mode} inset />
+    </section>
   );
 }

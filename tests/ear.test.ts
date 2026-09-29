@@ -552,7 +552,7 @@ describe("the session summary", () => {
     expect(confusionTip("mode", "maj-no4", "folk"))
       .toBe("Listen for the 7: Major (no 4) has it, Sunday Scale (no 7) has the 4 instead.");
     expect(confusionTip("mode", "dark", "unstable"))
-      .toBe("Listen for the 5: Dark minor (no 2) has it, Unstable (no 5th) has the ♭2 instead.");
+      .toBe("Listen for the 5: Dark minor (no 2) has it, Phrygian (no 5th) has the ♭2 instead.");
   });
 
   it("every pair in every game gets a tip with no gaps in it", () => {

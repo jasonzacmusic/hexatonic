@@ -20,7 +20,8 @@ import { useSharedScale } from "@/lib/sharedScale";
 import { SHAPE_TONES } from "@/components/PairKeyboard";
 import { Seg } from "@/components/Panels";
 import { notePretty, pc } from "@/lib/theory/note";
-import { buildScale, FAMILY_GROUPS, KEYS } from "@/lib/theory/scales";
+import { buildScale, KEYS } from "@/lib/theory/scales";
+import ScaleModePicker from "@/components/ScaleModePicker";
 import { symmetricTriadLine } from "@/lib/theory/symmetric";
 import {
   buildParent, findPair, ParentId, parentInKey, parentKeySignature, pairKeySignature, parentPairs, PARENTS, pairSlug,
@@ -153,7 +154,7 @@ export default function PairAtlas({ onOpenSixth }: { onOpenSixth?: () => void })
           <ParentPicker ps={ps} parentId={parentId} chosen={chosen}
             onParent={(id) => { setParentId(id); setPick(null); }} />
         ) : (
-          <SixPicker sixes={sixes} six={six} onSix={(id) => { setSixId(id); setPick(null); }} />
+          <SixPicker six={six} onSix={(id) => { setSixId(id); setPick(null); }} />
         )}
 
         {/* ── the pairs ─────────────────────────────────────────────────── */}
@@ -247,43 +248,23 @@ function ParentPicker({ ps, parentId, chosen, onParent }: {
   );
 }
 
-const GROUP_ORDER = ["remove", "pentatonic", "symmetric", "colour"] as const;
-
-function SixPicker({ sixes, six, onSix }: {
-  sixes: SixNoteScale[];
+/** The six-note scale, from the one scale menu every page uses. Scales that
+ *  are not six notes are listed greyed out, with the reason (scaleMenu.ts). */
+function SixPicker({ six, onSix }: {
   six: SixNoteScale;
   onSix: (id: string) => void;
 }) {
   return (
     <div className="mt-4 space-y-3">
-      {GROUP_ORDER.map((g) => {
-        const items = sixes.filter((s) => s.group === g);
-        if (!items.length) return null;
-        return (
-          <div key={g}>
-            <p className="micro-caps mb-1.5">{FAMILY_GROUPS.find((x) => x.id === g)?.label}</p>
-            <div className="flex flex-wrap gap-1.5">
-              {items.map((s) => {
-                const on = s.id === six.id;
-                return (
-                  <button key={s.id} type="button" aria-pressed={on} onClick={() => onSix(s.id)}
-                    className={`rounded-lg border px-3 py-1.5 text-left text-[15px] font-medium transition-colors duration-150 ${
-                      on ? "border-cream bg-cream text-bg" : "border-line-control bg-surface2 text-cream/85 hover:border-cream/50"}`}>
-                    {s.name}
-                    <span className={`ml-2 font-mono text-[13px] ${on ? "text-bg/70" : "text-muted"}`}>
-                      {s.pairs.length ? `${s.pairs.length} ${s.pairs.length === 1 ? "pair" : "pairs"}` : "none"}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })}
+      <ScaleModePicker idPrefix="pa" page="pairs" family={six.familyId} mode={six.mode} arrowKeys
+                       onChange={(family, mode) => onSix(`${family}-${mode}`)} />
       <p className="text-[15px] text-cream/80">
         <span className="font-semibold text-cream">{notePretty(six.tonic)} {six.name}</span>
         <span className="ml-2 font-mono text-cream/75">{six.notes.map(notePretty).join(" ")}</span>
         {six.removed && <span className="ml-2 font-mono text-red">no {notePretty(six.removed)}</span>}
+        <span className="ml-2 font-mono text-[13px] text-muted">
+          {six.pairs.length ? `${six.pairs.length} ${six.pairs.length === 1 ? "pair" : "pairs"}` : "no pair"}
+        </span>
       </p>
       {symmetricTriadLine(six.familyId, six.notes) && (
         <p className="max-w-[68ch] text-[15px] leading-relaxed text-cream/80">{symmetricTriadLine(six.familyId, six.notes)}</p>

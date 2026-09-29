@@ -72,7 +72,7 @@ export const SOUNDS: SoundDef[] = [
     tellSemis: [8], quality: "minor",
   },
   {
-    id: "unstable", label: "Unstable (no 5th)", hint: "floating, tense",
+    id: "unstable", label: "Phrygian (no 5th)", hint: "floating, tense",
     family: "diatonic", semis: [0, 1, 3, 5, 8, 10],
     tell: "There is no 5th, so it floats. The {1} sits a half step above the tonic.",
     tellSemis: [1], quality: null,
@@ -80,7 +80,7 @@ export const SOUNDS: SoundDef[] = [
 
   /* the other six-note families */
   {
-    id: "mixo", label: "Mixolydian (no 4)", hint: "dominant",
+    id: "mixo", label: "Dominant (no 4)", hint: "dominant",
     family: "mixo", semis: [0, 2, 4, 7, 9, 10],
     tell: "A major {4} with a {10}: the dominant colour.",
     tellSemis: [4, 10], quality: "major",

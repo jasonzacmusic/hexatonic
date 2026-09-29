@@ -39,6 +39,14 @@ export const freshProgress = (): GameProgress => ({
 export const freshAll = (): AllProgress =>
   Object.fromEntries(GAMES.map((g) => [g.id, freshProgress()])) as AllProgress;
 
+/** Open one level from a link (?game=mode&level=4): the level is chosen, and
+ *  unlocked if it was not yet, because a link is a deliberate choice. */
+export function openLevel(all: AllProgress, game: GameId, level: number): AllProgress {
+  const n = Math.min(Math.max(1, Math.round(level) || 1), levelCount(game));
+  const p = all[game];
+  return { ...all, [game]: { ...p, level: n, unlocked: Math.max(p.unlocked, n) } };
+}
+
 export interface Recorded {
   progress: GameProgress;
   /** the level that just opened, if one did */
