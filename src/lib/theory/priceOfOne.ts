@@ -89,6 +89,8 @@ export interface PriceSet {
   pcs: number[];
   /** the scale as it is spelled from the lead */
   scale: ScaleInstance;
+  /** each key as the lead scale spells it (C♯ in G whole tone), same order as keys */
+  names: string[];
 }
 
 export interface PriceFamily {
@@ -118,7 +120,8 @@ export function priceFamily(familyId: PriceFamilyId, from = "G"): PriceFamily {
   const sets = [...groups.entries()].map(([id, keys]) => {
     const lead = [...keys].sort((a, b) => up(a) - up(b))[0];
     const ordered = [...keys].sort((a, b) => mod12(keyPc(a) - keyPc(lead)) - mod12(keyPc(b) - keyPc(lead)));
-    return { lead, keys: ordered, pcs: id.split(",").map(Number), scale: buildScale(lead, familyId, 0) };
+    const scale = buildScale(lead, familyId, 0);
+    return { lead, keys: ordered, pcs: id.split(",").map(Number), scale, names: ordered.map((k) => startName(scale.notes, k, familyId)) };
   }).sort((a, b) => up(a.lead) - up(b.lead)).map((s, index) => ({ ...s, index }));
   const size = buildScale(from, familyId, 0).notes.length;
   const period = repeatsEvery(sets[0].pcs);
@@ -143,7 +146,7 @@ export const sayNumber = (n: number) => NUMBER[n] ?? String(n);
 
 /** "G, B and E♭ augmented are the same six notes." */
 export function sameNotesLine(fam: PriceFamily, set: PriceSet): string {
-  return `${sayList(set.keys.map(prettyKeyName))} ${PRICE_NOUN[fam.familyId]} are the same ${sayNumber(fam.size)} notes.`;
+  return `${sayList(set.names.map(prettyKeyName))} ${PRICE_NOUN[fam.familyId]} are the same ${sayNumber(fam.size)} notes.`;
 }
 
 /** "Learn these 4 and you know all 12 augmented scales." */
@@ -269,8 +272,33 @@ export function chordsLine(fam: PriceFamily, set: PriceSet, chords: SharedChord[
 }
 
 /** The scale from each starting note of a set, spelled from that note. */
+/** Too awkward for a tonic: E♯, B♯, F♭, C♭ or any double sharp or flat. */
+const awkwardTonic = (n: Note) =>
+  Math.abs(n.alt) > 1 || (n.alt === -1 && (n.letter === "C" || n.letter === "F")) ||
+  (n.alt === 1 && (n.letter === "E" || n.letter === "B"));
+
+/**
+ * A starting note's name, spelled as the scale it sits on spells it: C♯ in
+ * G whole tone (G A B C♯ D♯ F), not D♭. Where that would be an awkward tonic
+ * (E♯, B♯, F♭, C♭, a double), the key's own name is used and the scale is
+ * spelled from there instead.
+ */
+export function startName(scale: Note[], key: string, familyId?: string): string {
+  const n = scale.find((x) => pc(x) === keyPc(key));
+  if (!n || awkwardTonic(n)) return key;
+  const name = noteName(n);
+  /* the scale must really be spelled from that name (G♯ augmented would need
+     double sharps, so the app writes it from A♭: use A♭ then) */
+  if (familyId && name !== key) {
+    const s = buildScale(name, familyId, 0);
+    if (s.error || !s.notes.length || noteName(s.notes[0]) !== name) return key;
+  }
+  return name;
+}
+
+/** The scale from each starting note of a set, spelled from the name on its button. */
 export const startScales = (fam: PriceFamily, set: PriceSet) =>
-  set.keys.map((k) => ({ key: k, scale: buildScale(k, fam.familyId, 0) }));
+  set.keys.map((k, i) => ({ key: k, name: set.names[i], scale: buildScale(set.names[i], fam.familyId, 0) }));
 
 /** Practice link for a key: /practice?k=G&f=aug */
 export const practiceHref = (familyId: string, key: string) =>

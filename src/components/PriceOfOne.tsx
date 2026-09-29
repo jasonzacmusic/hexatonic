@@ -21,12 +21,12 @@ import ScaleRing from "@/components/ScaleRing";
 import { PlayGlyph, litIndex, upToOctave, usePreviewRun } from "@/components/ScalePreview";
 import { useStageNav } from "@/components/StageFit";
 import { midi, notePretty, pc } from "@/lib/theory/note";
-import { prettyDegree } from "@/lib/theory/scales";
+import { buildScale, prettyDegree } from "@/lib/theory/scales";
 import { previewAudio } from "@/lib/audio/engine";
 import {
   PRICE_FAMILIES, PRICE_NOUN, PRICE_SHORT, PriceFamilyId, chordsLine, isPriceFamily, keyPc,
   learnRoute, practiceHref, prettyKeyName, priceFamily, priceHref, routeLine, sameNotesLine,
-  setOfKey, sharedTriads, startScales, whyLine,
+  setOfKey, sharedTriads, startName, startScales, whyLine,
 } from "@/lib/theory/priceOfOne";
 
 /** One colour per set. None is gold (sounding), red (removed), the root
@@ -110,7 +110,7 @@ export function PriceOfOneView({
                        className={stage ? "!w-[440px]" : "!w-[260px] sm:!w-[280px] lg:!w-[340px]"}>
               <span className="pointer-events-auto">
                 <RoundPlay on={soundingShown} onClick={() => playStart(shown.key)}
-                           label={`${soundingShown ? "Stop" : "Play"} ${prettyKeyName(shown.key)} ${PRICE_NOUN[familyId]}`} />
+                           label={`${soundingShown ? "Stop" : "Play"} ${prettyKeyName(shown.name)} ${PRICE_NOUN[familyId]}`} />
               </span>
             </ScaleRing>
 
@@ -125,7 +125,7 @@ export function PriceOfOneView({
                             className={`min-w-[3rem] rounded-lg border px-3 font-bold transition-[background-color,color,transform] duration-150 active:scale-[0.97] ${
                               stage ? "py-2 text-[24px]" : "py-1.5 text-[18px]"} ${
                               sel ? "border-cream bg-cream text-[#17130a]" : "border-line-control/70 bg-surface2 text-cream hover:border-cream/60"}`}>
-                      {prettyKeyName(s.key)}
+                      {prettyKeyName(s.name)}
                     </button>
                   );
                 })}
@@ -139,7 +139,7 @@ export function PriceOfOneView({
               </div>
               <div>
               <p className={`font-semibold text-cream ${stage ? "text-[22px]" : "mt-4 text-[16px] lg:mt-0"}`}>
-                {prettyKeyName(shown.key)} {PRICE_NOUN[familyId]}
+                {prettyKeyName(shown.name)} {PRICE_NOUN[familyId]}
               </p>
               <span className="mt-1 flex flex-wrap gap-1">
                 {shown.scale.notes.map((x, i) => (
@@ -150,7 +150,7 @@ export function PriceOfOneView({
                 {shown.scale.degrees.map(prettyDegree).join("  ")}
               </p>
               <Link href={practiceHref(familyId, shown.key)} className="stage-hide btn btn-ghost mt-3 px-3.5 py-2 text-[14px]">
-                Practise {prettyKeyName(shown.key)} {PRICE_NOUN[familyId]} →
+                Practise this →
               </Link>
               </div>
             </div>
@@ -220,16 +220,17 @@ function KeyGrid({ fam, activeKey, onPick, stage }: {
           return (
             <div key={s.lead} className={`flex min-w-0 flex-col gap-1.5 rounded-xl p-1.5 ${on ? "bg-white/[0.05]" : ""}`}>
               <span aria-hidden className="mx-auto h-1.5 w-8 rounded-full" style={{ background: ink }} />
-              {s.keys.map((k) => {
+              {s.keys.map((k, i) => {
                 const sel = k === activeKey;
+                const label = prettyKeyName(s.names[i]);
                 return (
                   <button key={k} type="button" onClick={() => onPick(k)} aria-pressed={sel}
-                          aria-label={`${prettyKeyName(k)}: set ${s.index + 1}`}
+                          aria-label={`${label}: set ${s.index + 1}`}
                           className={`rounded-lg border font-bold tabular-nums transition-[background-color,color,transform] duration-150 active:scale-[0.97] ${
                             stage ? "py-2 text-[22px]" : "py-1.5 text-[17px]"} ${
                             sel ? "border-cream bg-cream text-[#17130a]" : "text-cream hover:brightness-125"}`}
                           style={sel ? undefined : { borderColor: `${ink}99`, background: `${ink}1F` }}>
-                    {prettyKeyName(k)}
+                    {label}
                   </button>
                 );
               })}
@@ -253,7 +254,7 @@ function Route({ fam, onKey, stage }: {
       <ol className="mt-3 space-y-1.5">
         {fam.sets.map((s) => {
           const ink = SET_INK[s.index % SET_INK.length];
-          const also = s.keys.filter((k) => k !== s.lead).map(prettyKeyName);
+          const also = s.names.slice(1).map(prettyKeyName);
           return (
             <li key={s.lead} className="flex max-w-none flex-wrap items-center gap-x-3 gap-y-1">
               <span aria-hidden className="h-3 w-3 shrink-0 rounded-full" style={{ background: ink }} />
@@ -325,27 +326,29 @@ export function LearnOnePanel({ familyId, keyName, onKey }: {
   const clock = anchor.current?.key ?? keyName;
   const fam = useMemo(() => (valid ? priceFamily(familyId as PriceFamilyId, clock) : null), [valid, familyId, clock]);
   if (!fam) return null;
-  const set = setOfKey(fam, keyName);
-  const starts = startScales(fam, set);
-  const here = starts.find((s) => s.key === keyName) ?? starts[0];
+  /* the chips sit on the scale Practice is playing, and are spelled as it
+     spells them (C♯ in G whole tone), unless that is an awkward tonic */
+  const here = buildScale(keyName, familyId, 0);
+  const set0 = setOfKey(fam, keyName);
+  const set = { ...set0, names: set0.keys.map((k) => startName(here.notes, k, familyId)) };
   const route = learnRoute(fam);
   return (
     <section className="stage-hide card !p-3 sm:!p-4" aria-label="Learn one, get more">
       <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
-        <ScaleRing notes={here.scale.notes} removed={null} size={176} anchorPc={keyPc(clock)}
+        <ScaleRing notes={here.notes} removed={null} size={176} anchorPc={keyPc(clock)}
                    className="!w-[150px] sm:!w-[176px]" />
         <div className="min-w-0 flex-1 basis-64">
           <h2 className="display text-[26px] leading-none sm:text-[30px]">Learn 1, get {fam.perSet}</h2>
           <p className="mt-1.5 text-[15px] text-cream/80">{sameNotesLine(fam, set)} {whyLine(fam)}</p>
           <div className="mt-2 flex flex-wrap items-center gap-1.5" role="group" aria-label="Same notes, another home">
             <span className="micro-caps mr-1">Same notes from</span>
-            {set.keys.map((k) => {
+            {set.keys.map((k, i) => {
               const sel = k === keyName;
               return (
                 <button key={k} type="button" onClick={() => onKey(k)} aria-pressed={sel}
                         className={`min-w-[2.6rem] rounded-lg border px-2.5 py-1 text-[16px] font-bold transition-[background-color,color,transform] duration-150 active:scale-[0.97] ${
                           sel ? "border-cream bg-cream text-[#17130a]" : "border-line-control/70 bg-surface2 text-cream hover:border-cream/60"}`}>
-                  {prettyKeyName(k)}
+                  {prettyKeyName(set.names[i])}
                 </button>
               );
             })}

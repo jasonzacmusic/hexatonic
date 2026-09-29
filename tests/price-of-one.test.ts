@@ -10,7 +10,7 @@ import { KEYS, buildScale } from "../src/lib/theory/scales";
 import { noteName, pc } from "../src/lib/theory/note";
 import {
   PRICE_FAMILIES, PriceFamilyId, chordsLine, keyPc, learnRoute, priceFamily, routeLine, sameNotesLine,
-  setOfKey, sharedTriads, startScales,
+  setOfKey, sharedTriads, startName, startScales,
 } from "../src/lib/theory/priceOfOne";
 
 const mod12 = (x: number) => ((x % 12) + 12) % 12;
@@ -190,5 +190,30 @@ describe("the chords a set shares, spelled by the house rules", () => {
     expect(dims).toContain("G° = G B♭ D♭");
     expect(dims).toContain("G♯° = G♯ B D");
     expect(dims.join()).not.toContain("G B♭ C♯");
+  });
+
+  it("every family, every key: a starting-note button reads as its scale spells it, and opens a scale from that very name", () => {
+    const awkward = /^(E#|B#|Fb|Cb)$|##|bb|^[A-G]x/;
+    for (const f of PRICE_FAMILIES) for (const from of KEYS) {
+      const fam = priceFamily(f, from);
+      for (const set of fam.sets) {
+        const starts = startScales(fam, set);
+        for (const st of starts) {
+          // the scale the button opens starts on the button's own name
+          expect(noteName(st.scale.notes[0]), `${f} ${st.name}`).toBe(st.name);
+          expect(st.name, `${f} ${st.name}`).not.toMatch(awkward);
+          // and the button is spelled as the note it sits on in the set's scale, unless that is awkward
+          const onScale = noteName(set.scale.notes.find((x) => pc(x) === keyPc(st.key))!);
+          const builds = noteName(buildScale(onScale, f, 0).notes[0] ?? { letter: "C", alt: 0, octave: 4 }) === onScale;
+          if (!awkward.test(onScale) && builds) expect(st.name, `${f} from ${from}: ${st.key}`).toBe(onScale);
+          else expect(st.name).toBe(st.key);
+        }
+      }
+    }
+    // G whole tone: G A B C♯ D♯ F, so the buttons say C♯ and D♯, not D♭ and E♭
+    const g = setOfKey(priceFamily("whole", "G"), "G");
+    expect(g.names).toEqual(["G", "A", "B", "C#", "D#", "F"]);
+    expect(sameNotesLine(priceFamily("whole", "G"), g)).toBe("G, A, B, C♯, D♯ and F whole tone are the same six notes.");
+    expect(startName(buildScale("G", "whole", 0).notes, "Db")).toBe("C#");
   });
 });
