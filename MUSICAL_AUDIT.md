@@ -161,3 +161,24 @@ six-note scale, mode and key). **E whole tone: E+ = E G♯ B♯ and G♭+ = G♭
 on all four (F♯+ would need C𝄪). The ring used to disagree in a few keys —
 B whole tone showed C♭+ (C♭ E♭ G) where the others said G+ (G B D♯), F♯
 whole tone G♭+ where the others said D+ — and now follows the same rule.
+
+## 29 September 2026 — For the price of one
+
+A symmetrical scale started on another of its own notes gives back the same
+notes. Found by building each scale in all twelve keys and grouping keys with
+the same notes, and checked against a brute-force transposition search
+(`tests/price-of-one.test.ts`):
+
+| Scale | Sets | Keys per set | In G |
+|---|---|---|---|
+| Whole tone | 2 | 6 | G A B D♭ E♭ F · A♭ B♭ C D E F♯ |
+| Augmented | 4 | 3 | G B E♭ · A♭ C E · A D♭ F · B♭ D F♯ |
+| Petrushka, Messiaen mode 5, no common name | 6 | 2 | G D♭ · A♭ D · … |
+| Octatonic (half–whole, whole–half) | 3 | 4 | G B♭ D♭ E · A♭ B D F · A C E♭ F♯ |
+
+- The chords are the same from every starting note of a set (checked by sound,
+  all keys). Augmented: G+ = G B D♯, B♭+ = B♭ D F♯, and a major and a minor
+  chord on each starting note (G, B, E♭).
+- In this view every non-augmented triad is written in stacked thirds with no
+  double sharp or flat: G half–whole G° = G B♭ D♭ (never G B♭ C♯), A♭° becomes
+  G♯° = G♯ B D.

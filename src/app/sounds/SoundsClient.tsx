@@ -41,6 +41,8 @@ import ScaleRing from "@/components/ScaleRing";
 import PageMark from "@/components/PageMark";
 import KeyPicker, { prettyKey as PRETTY_KEY } from "@/components/KeyPicker";
 import { symmetryLine } from "@/lib/theory/symmetric";
+import { PriceOfOneView } from "@/components/PriceOfOne";
+import { PriceFamilyId, isPriceFamily } from "@/lib/theory/priceOfOne";
 
 const DEFAULT_KEY = "G";
 const SPREAD = 0.26;
@@ -54,6 +56,7 @@ const GROUPS: { id: string; short: string }[] = [
   { id: "pentatonic", short: "Pentatonic + 1" },
   { id: "colour", short: "Colour" },
   { id: "symmetric", short: "Symmetrical" },
+  { id: "price-of-one", short: "Price of one" },
   { id: "beyond", short: "World" },
   { id: "custom", short: "Custom" },
 ];
@@ -96,6 +99,11 @@ export default function SoundsClient() {
   const [parent, setParentRaw] = useState("major");
   /* stage mode: null = the normal page; "" = the list; else an entry id */
   const [focus, setFocus] = useState<string | null>(null);
+  /* For the price of one: which symmetrical family, and (stage mode,
+     ?sym=aug&stage=1) whether it fills the frame on its own */
+  const [sym, setSym] = useState<PriceFamilyId>("aug");
+  const [symLinked, setSymLinked] = useState(false);
+  const [symStage, setSymStage] = useState(false);
   const run = usePreviewRun();
   const reg = useRef<Record<string, { midis: number[]; spread: number }>>({});
   const replay = useRef<string | null>(null);
@@ -111,7 +119,13 @@ export default function SoundsClient() {
     const sp = new URLSearchParams(window.location.search);
     const k = sp.get("k");
     if (k && KEYS.includes(k)) setKey(k);
-    if (isStage()) setFocus(focusId(sp.get("family"), sp.get("m")));
+    const sy = sp.get("sym");
+    const symOk = !!sy && isPriceFamily(sy);
+    if (symOk) { setSym(sy as PriceFamilyId); setSymLinked(true); }
+    if (isStage()) {
+      if (symOk) setSymStage(true);
+      else setFocus(focusId(sp.get("family"), sp.get("m")));
+    }
   }, []);
   useSharedScale({ key }, (s) => setKey(s.key), () => new URLSearchParams(window.location.search).has("k"));
   const pickKey = (k: string) => {
@@ -119,8 +133,9 @@ export default function SoundsClient() {
     setKey(k);
     writeUrl(k, focus);
   };
-  const writeUrl = (k: string, f: string | null) => {
+  const writeUrl = (k: string, f: string | null, sy: string | null = symLinked ? sym : null) => {
     const sp = keepStage(new URLSearchParams(k === DEFAULT_KEY ? "" : `k=${encodeURIComponent(k)}`));
+    if (sy) sp.set("sym", sy);
     if (f) {
       const [fam, m] = splitId(f);
       sp.set("family", fam);
@@ -173,6 +188,26 @@ export default function SoundsClient() {
       {GROUPS.map((g) => <a key={g.id} href={`#${g.id}`} className="link-gold">{g.short}</a>)}
     </nav>
   );
+
+  const pickSym = (f: PriceFamilyId) => {
+    setSym(f);
+    setSymLinked(true);
+    writeUrl(key, focus, f);
+  };
+
+  if (symStage) {
+    return (
+      <StageFit>
+        <div className="mx-auto w-full max-w-[1500px]">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
+            <h1 className="display text-[40px]">For the price of one</h1>
+            <KeyPicker value={key} onChange={pickKey} size="sm" hideLabel />
+          </div>
+          <PriceOfOneView familyId={sym} keyName={key} onFamily={pickSym} onKey={pickKey} player={run} stage />
+        </div>
+      </StageFit>
+    );
+  }
 
   if (focus !== null) {
     const cur = at >= 0 ? all[at] : null;
@@ -276,6 +311,12 @@ export default function SoundsClient() {
           Checked by trying every one of the 924 possible six-note scales: no other repeats.
           The octatonic (diminished) scale repeats too, but it has eight notes.
         </p>
+      </Group>
+
+      {/* ── for the price of one: the symmetrical scales, grouped by their notes ── */}
+      <Group id="price-of-one" title="For the price of one"
+             blurb="Start a symmetrical scale on another of its own notes and you get the same notes back. Learn one, and you have learned two, three, four or six.">
+        <PriceOfOneView familyId={sym} keyName={key} onFamily={pickSym} onKey={pickKey} player={run} />
       </Group>
 
       {/* ── world scales, 5 and 7 notes ─────────────────────────────────── */}
