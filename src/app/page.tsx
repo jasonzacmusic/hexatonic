@@ -28,6 +28,7 @@ export default function Home() {
     /* -mb-16 hands back most of the layout's 112px bottom padding: the page
        ends on its last line, not on a band of empty screen above the footer. */
     <div className="-mb-16">
+      <link rel="canonical" href="https://hexatonic.nathanielschool.com/" />
       <HomeHero />
 
       <section aria-label="Where to start" className="stage-hide mt-8 grid gap-2.5 sm:mt-10 sm:grid-cols-2 lg:grid-cols-4">

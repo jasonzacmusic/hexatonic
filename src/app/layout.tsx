@@ -48,7 +48,6 @@ export const metadata: Metadata = {
   },
   manifest: "/manifest.webmanifest",
   icons: { icon: "/icon.svg", apple: "/apple-icon.png" },
-  alternates: { canonical: `${SITE}/` },
 };
 
 /* The page is dark in both schemes, so both status bars match the header.
