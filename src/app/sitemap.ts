@@ -5,7 +5,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const page = (path: string, priority: number, changeFrequency: "monthly" | "yearly" = "monthly") =>
     ({ url: `${SITE}${path}`, lastModified: now, changeFrequency, priority });
   return [
-    page("", 1),
+    page("/", 1),
     page("/practice", 0.9),
     page("/sounds", 0.9),
     page("/improvise", 0.9),

@@ -48,7 +48,7 @@ export const metadata: Metadata = {
   },
   manifest: "/manifest.webmanifest",
   icons: { icon: "/icon.svg", apple: "/apple-icon.png" },
-  alternates: { canonical: SITE },
+  alternates: { canonical: `${SITE}/` },
 };
 
 /* The page is dark in both schemes, so both status bars match the header.
@@ -192,7 +192,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="border-t border-line/60">
             <div className="mx-auto max-w-content px-5 py-5 sm:px-8">
               <p className="font-mono text-[13px] text-muted">
-                Nathaniel School of Music · free to use · works offline
+                <a href="https://nathanielschool.com" className="underline">Nathaniel School of Music</a> · <a href="https://apps.nathanielschool.com" className="underline">More free music apps</a> · free to use · works offline
               </p>
             </div>
           </div>
