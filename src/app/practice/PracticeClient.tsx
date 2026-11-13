@@ -14,7 +14,7 @@ import {
 } from "@/lib/theory/patterns";
 import { SUBDIVISIONS, gatiFor } from "@/lib/theory/resolution";
 import { METERS, saptaTalaMeters } from "@/lib/theory/meters";
-import { midi, notePretty, pc } from "@/lib/theory/note";
+import { midi, noteArticle, notePretty, pc } from "@/lib/theory/note";
 import { findChords, tertianOnly } from "@/lib/theory/chords";
 import { ownSpellingFirst } from "@/app/harmony/scaleOptions";
 import { printedTriadNotes } from "@/lib/theory/priceOfOne";
@@ -302,7 +302,7 @@ export default function PracticeClient() {
               <span className="text-lg font-semibold text-cream sm:text-xl">{scale.label}</span>
             </h1>
             <p className="text-[15px] text-cream/75">
-              {state.drone ? `Over a ${notePretty(scale.notes[0] ?? { letter: "G", alt: 0, octave: 4 })} drone. ` : ""}
+              {state.drone ? `Over ${noteArticle(notePretty(scale.notes[0] ?? { letter: "G", alt: 0, octave: 4 }))} ${notePretty(scale.notes[0] ?? { letter: "G", alt: 0, octave: 4 })} drone. ` : ""}
               {scale.removed ? <>The missing note is <span className="font-semibold text-red-hi">{notePretty(scale.removed)}</span>.</> : null}
             </p>
           </div>

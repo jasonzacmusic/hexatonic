@@ -34,6 +34,14 @@ export const pc = (n: Note): number => (((LETTER_PC[n.letter] + n.alt) % 12) + 1
 export const midi = (n: Note): number => 12 * (n.octave + 1) + LETTER_PC[n.letter] + n.alt;
 export const noteName = (n: Note): string => n.letter + ALT_NAME[String(n.alt)];
 export const notePretty = (n: Note): string => n.letter + ALT_GLYPH[String(n.alt)];
+/**
+ * "a" or "an" for a spoken note name. A, E and F (including F♯, said "F sharp")
+ * take "an". Everything else takes "a" ("a B♭", "a D♭").
+ */
+export function noteArticle(name: string): "a" | "an" {
+  const c = name.trim().charAt(0).toUpperCase();
+  return c === "A" || c === "E" || c === "F" ? "an" : "a";
+}
 /** VexFlow key format, e.g. "c#/4". Must use ASCII accidentals. */
 export const vexKey = (n: Note): string =>
   `${n.letter.toLowerCase()}${ALT_NAME[String(n.alt)]}/${n.octave}`;
